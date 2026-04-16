@@ -243,16 +243,16 @@ flowchart LR
         direction TB
         N[Nginx Container<br>:80]
         PB[Pocketbase Container<br>:8090]
-        ANG[Angular SPA<br>(build output)]
+        ANG["Angular SPA<br>(build output)"]
     end
     
     subgraph Volumes
-        V1["./server/logs/" → "/var/log/nginx/"]
-        V2["./server/conf.d/" → "/etc/nginx/conf.d/"]
-        V3["./db/pb_data/" → "/pb/pb_data/"]
-        V4["./db/pb_public/" → "/pb/pb_public/"]
-        V5["./db/pb_hooks/" → "/pb/pb_hooks/"]
-        V6["./db/pb_migrations/" → "/pb/pb_migrations/"]
+        V1["/s7/ → /s8/"]
+        V2["/s9/ → /s10/"]
+        V3["/s11/ → /s12/"]
+        V4["/s13/ → /s14/"]
+        V5["/s15/ → /s16/"]
+        V6["/s17/ → /s18/"]
     end
     
     N --> V1
@@ -267,50 +267,6 @@ flowchart LR
     N -->|"/*"| ANG
     
     PB -->|"internal :8090"| N
-```
-
-### 🐋 7.2. Docker Compose (docker-compose.yml)
-
-```yaml
-version: '3.8'
-
-services:
-  nginx:
-    image: nginx:alpine
-    container_name: amigo-secreto-nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./frontend/dist/frontend/browser:/usr/share/nginx/html:ro
-      - ./server/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./server/logs:/var/log/nginx
-    depends_on:
-      - pocketbase
-    networks:
-      - amigo-secreto-net
-    restart: unless-stopped
-
-  pocketbase:
-    image: ghcr.io/muchobien/pocketbase:latest
-    container_name: amigo-secreto-pocketbase
-    environment:
-      - PB_SUPERUSER_EMAIL=${PB_SUPERUSER_EMAIL:-admin@admin.com}
-      - PB_SUPERUSER_PASSWORD=${PB_SUPERUSER_PASSWORD:-admin123}
-    volumes:
-      - ./db/pb_data:/pb/pb_data
-      - ./db/pb_public:/pb/pb_public
-      - ./db/pb_hooks:/pb/pb_hooks
-      - ./db/pb_migrations:/pb/pb_migrations
-    networks:
-      - amigo-secreto-net
-    restart: unless-stopped
-    # Expondo internamente apenas para o nginx
-    # Sem "ports" para não acessível diretamente do host
-
-networks:
-  amigo-secreto-net:
-    driver: bridge
-    name: amigo-secreto-network
 ```
 
 ### 📄 7.3. Nginx Configuration (server/nginx.conf)

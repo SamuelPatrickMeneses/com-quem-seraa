@@ -144,3 +144,160 @@ flowchart LR
 - **Deploy:** A aplicação completa (Angular + Nginx + Pocketbase) deve subir com `docker-compose up -d`.
 - **Portas Expostas:** Apenas a porta 80 do Nginx deve estar acessível ao host.
 - **Persistência:** Dados do Pocketbase (`pb_data`) e logs do Nginx (`server/logs`) devem persistir fora dos containers.
+
+## 🖥️ 9. Descrição Funcional das Telas
+
+> **Nota:** Esta seção descreve o comportamento e fluxo de cada tela, sem especificar cores, fontes ou posicionamento visual. O foco está na experiência do usuário e nas ações possíveis.
+
+### 9.1. Tela de Login (`/login`)
+
+**Acesso:** Rota pública. Usuários não autenticados são direcionados automaticamente para esta tela ao tentar acessar rotas protegidas. Usuários já autenticados que tentarem acessar esta rota são redirecionados para `/my-groups`.
+
+**Comportamento esperado:**
+- A tela apresenta um formulário com dois campos obrigatórios:
+  - **Email** (formato válido de e-mail)
+  - **Senha** (campo mascarado)
+- Um botão principal **"Entrar"** submete o formulário.
+- Um link ou botão secundário **"Criar conta"** redireciona para `/register`.
+- Opcionalmente, um link **"Esqueci minha senha"** pode ser exibido (fora de escopo no MVP, mas pode ser desabilitado com mensagem informativa).
+
+**Fluxos possíveis:**
+| Cenário | Ação do Sistema |
+| :--- | :--- |
+| ✅ Credenciais válidas | Autentica o usuário via Pocketbase, armazena o token de sessão, redireciona para `/my-groups`. |
+| ❌ Email não cadastrado | Exibe mensagem de erro: "Usuário não encontrado". |
+| ❌ Senha incorreta | Exibe mensagem de erro: "Senha inválida". Limpa o campo senha mantendo o email preenchido. |
+| ❌ Campos vazios | Desabilita o botão "Entrar" até que ambos os campos estejam preenchidos. Exibe validação em tempo real. |
+| ❌ Email mal formatado | Exibe mensagem de erro: "Digite um email válido". |
+
+**Feedback visual (semântico):**
+- Durante o envio do formulário, o botão "Entrar" deve mostrar um estado de "carregando" (spinner ou texto "Entrando...") e ficar desabilitado para evitar múltiplos envios.
+- Após erro, o campo correspondente deve ser destacado e receber foco automaticamente (quando aplicável).
+- Em caso de erro de rede/ servidor, exibir mensagem genérica: "Erro de conexão. Tente novamente mais tarde."
+
+**Transições:**
+- Login bem-sucedido → `/my-groups`
+- Clique em "Criar conta" → `/register`
+
+---
+
+### 9.2. Tela de Cadastro de Usuário (`/register`)
+
+**Acesso:** Rota pública. Acessível via link da tela de login ou diretamente pela URL. Usuários já autenticados são redirecionados para `/my-groups`.
+
+**Comportamento esperado:**
+- A tela apresenta um formulário com os seguintes campos obrigatórios:
+  - **Nome** (texto livre, mínimo 2 caracteres, máximo 100)
+  - **Email** (formato válido, não pode existir outro usuário com o mesmo email)
+  - **Senha** (mínimo 8 caracteres, campo mascarado)
+  - **Confirmar senha** (deve ser idêntico ao campo senha)
+- Um botão principal **"Cadastrar"** submete o formulário.
+- Um link ou botão secundário **"Já tenho conta"** redireciona para `/login`.
+
+**Regras de validação:**
+| Campo | Regra | Mensagem de erro |
+| :--- | :--- | :--- |
+| Nome | Obrigatório, 2-100 caracteres | "Digite seu nome completo" |
+| Email | Obrigatório, formato válido, único | "Email inválido" ou "Este email já está cadastrado" |
+| Senha | Obrigatório, mínimo 8 caracteres | "A senha deve ter pelo menos 8 caracteres" |
+| Confirmar Senha | Deve corresponder exatamente à Senha | "As senhas não coincidem" |
+
+**Fluxos possíveis:**
+| Cenário | Ação do Sistema |
+| :--- | :--- |
+| ✅ Dados válidos | Cria o usuário no Pocketbase, realiza login automático (ou redireciona para login com mensagem de sucesso), direciona para `/my-groups`. |
+| ❌ Email já cadastrado | Exibe mensagem de erro no campo email: "Este email já está cadastrado". Mantém os demais campos preenchidos (exceto senhas). |
+| ❌ Senhas não coincidem | Exibe mensagem de erro abaixo do campo "Confirmar senha". Limpa ambos os campos de senha. |
+| ❌ Campos vazios ou inválidos | Desabilita o botão "Cadastrar" até que todos os campos estejam válidos. Exibe validação em tempo real (após o primeiro toque/ blur). |
+
+**Feedback visual (semântico):**
+- Durante o envio, o botão "Cadastrar" deve mostrar estado de "carregando" ("Cadastrando...") e ficar desabilitado.
+- Validação em tempo real: campos inválidos são indicados imediatamente após o usuário sair do campo (evento blur).
+- Após sucesso no cadastro, opcionalmente exibir um toast/mensagem: "Conta criada com sucesso! Bem-vindo(a) ao Com Quem Será".
+
+**Transições:**
+- Cadastro bem-sucedido → `/my-groups`
+- Clique em "Já tenho conta" → `/login`
+
+---
+
+### 9.3. Tela Meus Grupos (`/my-groups`)
+
+**Acesso:** Rota protegida por autenticação (`authGuard`). É a tela inicial após login bem-sucedido. Usuários não autenticados são redirecionados para `/login`.
+
+**Layout Funcional:**
+- A tela é dividida em duas áreas principais:
+  1. **Cabeçalho:** Saudação ao usuário (ex: "Olá, [Nome]") e um botão "Criar novo grupo".
+  2. **Área de conteúdo:** Lista paginada de cards, cada um representando um grupo do qual o usuário participa ou é organizador.
+
+**Comportamento esperado:**
+
+#### 9.3.1. Lista de Grupos (Paginada)
+- Os grupos são carregados da API do Pocketbase, combinando:
+  - Grupos onde o usuário é `created_by` (organizador)
+  - Grupos onde o usuário possui um registro em `group_participant`
+- A lista deve ser paginada com:
+  - **Itens por página:** Configuração padrão (ex: 10 grupos por página)
+  - **Controles de navegação:** Botões "Anterior", "Próximo" e indicador de página atual
+  - **Total de registros:** Exibir "Mostrando X de Y grupos"
+- Enquanto os dados são carregados, exibir um indicador de carregamento (spinner ou skeleton cards)
+- Em caso de erro no carregamento, exibir mensagem amigável e botão "Tentar novamente"
+
+#### 9.3.2. Card do Grupo (Estrutura)
+Cada card deve conter as seguintes informações e ações:
+
+| Elemento | Descrição | Origem dos Dados |
+| :--- | :--- | :--- |
+| **Nome do grupo** | Título principal do card | `group.name` |
+| **Data de criação** | Exibir "Criado em dd/mm/aaaa" | `group.created_at` |
+| **Data do sorteio** | Se `has_been_drawn = true`, exibir "Sorteio realizado em dd/mm/aaaa". Caso contrário, exibir "Sorteio não realizado" ou similar. | `group.has_been_drawn` e `draw.drawn_at` (se disponível) |
+| **Número de participantes** | Exibir "X participantes" | `group.participants_count` ou cálculo via `group_participant` |
+| **Indicador de administrador** | Se o usuário logado é o `created_by` do grupo, exibir um selo/ícone "Admin" ou "Organizador" | Comparar `group.created_by` com `currentUser.id` |
+| **Botão de ação principal** | **"Acessar grupo"** → Redireciona para `/group/:groupId` | - |
+
+**Comportamento do Card:**
+- Ao clicar em qualquer área do card (exceto botões), redirecionar para o dashboard do grupo.
+- O card inteiro deve ter um efeito de hover (feedback visual de que é clicável).
+- Se o grupo já teve o sorteio realizado (`has_been_drawn = true`), o card pode ter um indicador visual diferente (ex: borda verde, ícone de presente).
+
+#### 9.3.3. Estado "Nenhum grupo encontrado"
+- Quando o usuário não participa de nenhum grupo e não criou nenhum grupo:
+  - Exibir mensagem amigável: "Você ainda não participa de nenhum grupo de amigo secreto."
+  - Exibir ilustração ou ícone temático (presente, envelope, etc.)
+  - Destacar o botão "Criar novo grupo" (pode ser visualmente enfatizado)
+
+#### 9.3.4. Botão "Criar novo grupo"
+- Posicionado no cabeçalho da tela, sempre visível.
+- Ao clicar, redireciona para `/create`.
+- Deve ser acessível via teclado e leitores de tela.
+
+**Fluxos possíveis:**
+| Cenário | Ação do Sistema |
+| :--- | :--- |
+| ✅ Carregamento bem-sucedido | Exibe os cards dos grupos paginados. |
+| ✅ Usuário clica em "Acessar grupo" | Redireciona para `/group/:groupId`. |
+| ✅ Usuário clica em "Criar novo grupo" | Redireciona para `/create`. |
+| ✅ Usuário navega entre páginas | Recarrega a lista com os grupos da página solicitada. Mantém o estado de scroll (opcional). |
+| ❌ Sessão expirada durante uso | Redireciona para `/login` com mensagem "Sua sessão expirou. Faça login novamente." |
+| ❌ Erro de rede ao carregar grupos | Exibe mensagem de erro e botão "Tentar novamente". |
+
+**Feedback visual (semântico):**
+- **Carregamento inicial:** Spinner centralizado ou skeleton cards (recomendado para melhor experiência).
+- **Mudança de página:** Desabilitar controles de paginação durante o carregamento, exibir spinner pequeno ou skeleton nos cards.
+- **Sem grupos:** Mensagem centralizada com botão de criação destacado.
+- **Card com admin:** Selo/ícone discreto mas perceptível (ex: "Admin" ou estrela/escudo).
+
+**Paginação (Detalhes Técnicos Comportamentais):**
+- A paginação deve ser baseada em **offset/limit** ou **cursor** (conforme suporte do Pocketbase).
+- Parâmetros de consulta na URL (opcional, mas recomendado para compartilhamento):
+  - `?page=1&limit=10`
+- Ao navegar para outra página, a URL deve ser atualizada para permitir voltar/avançar no histórico do navegador.
+- O número total de páginas é calculado com base no total de grupos ÷ limite por página.
+
+**Transições:**
+- Clique em "Criar novo grupo" → `/create`
+- Clique em "Acessar grupo" → `/group/:groupId`
+- Sessão expirada → `/login`
+- Logout (ação do usuário, via botão de sair) → `/login`
+
+---

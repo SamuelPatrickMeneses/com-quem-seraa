@@ -43,6 +43,7 @@ O "Com Quem Será" é um sistema de amigo secreto que resolve o problema de orga
 | US08 | Participante | Sair de um grupo antes do sorteio | Não participar mais da brincadeira | Should |
 | US09 | Organizador | Ver todos os pares gerados no sorteio | Validar que ninguém tirou a si mesmo | Should |
 | US10 | Usuário | Visualizar todos os grupos que participo | Ter uma visão geral das brincadeiras ativas | Must |
+| US11 | Usuário | Editar meu nome e senha | Manter meus dados atualizados e protegidos | Should |
 
 ## 🛡️ 5. Regras de Negócio (Constraints)
 - **RN01:** Um grupo deve ter no mínimo 3 participantes para que o sorteio seja realizado.
@@ -301,3 +302,358 @@ Cada card deve conter as seguintes informações e ações:
 - Logout (ação do usuário, via botão de sair) → `/login`
 
 ---
+
+### 9.4. Tela Criar Grupo (`/create`)
+
+**Acesso:** Rota protegida por autenticação (`authGuard`). Acessível via botão "Criar novo grupo" na tela `/my-groups` ou diretamente pela URL. Usuários não autenticados são redirecionados para `/login`.
+
+**Comportamento esperado:**
+- A tela apresenta um formulário com os seguintes elementos:
+  - **Campo: Nome do grupo** (obrigatório, texto livre, mínimo 3 caracteres, máximo 100 caracteres)
+  - **Checkbox: "Participar do grupo"** (opcional, texto sugestivo como "Quero participar deste grupo" ou "Incluir-me no grupo")
+  - **Botão principal: "Criar grupo"** (submete o formulário)
+  - **Link ou botão secundário: "Cancelar"** (retorna para `/my-groups`)
+
+**Regras de validação:**
+| Campo | Regra | Mensagem de erro |
+| :--- | :--- | :--- |
+| Nome do grupo | Obrigatório, 3-100 caracteres, não pode conter apenas espaços | "Digite um nome para o grupo (mínimo 3 caracteres)" |
+
+**Fluxo de criação (detalhado):**
+
+| Passo | Ação do Sistema |
+| :--- | :--- |
+| 1 | Usuário preenche o nome do grupo. |
+| 2 | Usuário decide se marca ou não o checkbox "Participar do grupo". |
+| 3 | Usuário clica em "Criar grupo". |
+| 4 | Sistema valida o nome do grupo. |
+| 5 | Sistema cria o registro na tabela `group` com: <br> - `name` = valor do campo <br> - `description` = null (ou vazio) <br> - `created_by` = `currentUser.id` <br> - `has_been_drawn` = false <br> - `participants_count` = 0 (inicial) |
+| 6 | **Se o checkbox "Participar do grupo" estiver marcado:** <br> Sistema cria um registro em `group_participant` com: <br> - `group_id` = ID do grupo recém-criado <br> - `giver_id` = null <br> - `receiver_id` = null <br> - `joined_at` = data atual <br> E incrementa `participants_count` do grupo para 1. |
+| 7 | **Se o checkbox NÃO estiver marcado:** <br> O grupo é criado sem participantes. O organizador (criador) não participa do sorteio. |
+| 8 | Sistema redireciona o usuário para a tela de dashboard do grupo (`/group/:groupId`). |
+| 9 | Opcionalmente, exibir mensagem de sucesso: "Grupo [nome] criado com sucesso!" |
+
+**Fluxos possíveis:**
+| Cenário | Ação do Sistema |
+| :--- | :--- |
+| ✅ Dados válidos + checkbox marcado | Cria o grupo, adiciona o criador como participante, redireciona para `/group/:groupId`. |
+| ✅ Dados válidos + checkbox desmarcado | Cria o grupo sem adicionar o criador como participante, redireciona para `/group/:groupId`. |
+| ❌ Nome do grupo já existe (opcional, se houver restrição de unicidade) | Exibe mensagem de erro: "Já existe um grupo com este nome. Escolha outro nome." |
+| ❌ Nome inválido (vazio ou muito curto) | Exibe mensagem de erro específica. Mantém o checkbox no estado escolhido. |
+| ❌ Erro de rede ou servidor | Exibe mensagem: "Erro ao criar grupo. Tente novamente." Mantém os dados preenchidos. |
+
+**Feedback visual (semântico):**
+- **Durante o envio:** Botão "Criar grupo" mostra estado de "carregando" ("Criando...") e fica desabilitado. O campo nome e o checkbox também ficam desabilitados.
+- **Validação em tempo real:** O campo nome é validado enquanto o usuário digita (após o primeiro caractere, ou apenas no blur). Exibir mensagem de erro abaixo do campo quando inválido.
+- **Checkbox:** Deve ter label clara e associada corretamente (acessibilidade). Valor padrão = desmarcado.
+- **Cancelar:** Botão secundário que retorna para `/my-groups` sem criar nada. Não exige confirmação.
+
+**Comportamento do checkbox em detalhe:**
+- **Texto sugerido:** "Incluir-me como participante do grupo" ou "Quero participar deste grupo"
+- **Tooltip/info (opcional):** "Se marcado, você será adicionado automaticamente ao grupo como participante. Caso contrário, você será apenas o organizador, mas não participará do sorteio."
+- **Impacto:** Apenas na criação do registro `group_participant`. Não afeta permissões de organizador (o criador sempre é organizador, independente de participar ou não).
+
+**Edge Cases:**
+| Situação | Comportamento |
+| :--- | :--- |
+| Usuário cria grupo sem participar | O organizador pode posteriormente se adicionar ao grupo? Sim, via link de convite ou botão "Participar" no dashboard (a ser definido). |
+| Usuário cria grupo com checkbox marcado | O organizador já entra como participante. Não pode se remover enquanto for o único organizador (regra RN07). |
+| Falha na criação do `group_participant` após criar o grupo | Sistema deve fazer rollback (deletar o grupo criado) ou tentar novamente. Exibir erro genérico. |
+
+**Transições:**
+- Clique em "Criar grupo" (sucesso) → `/group/:groupId`
+- Clique em "Cancelar" → `/my-groups`
+- Sessão expirada durante preenchimento → `/login` (após tentativa de submit)
+
+---
+
+### 9.5. Tela Dashboard do Grupo (`/group/:groupId`)
+
+**Acesso:** Rota protegida por autenticação (`authGuard`) e por `groupExistsGuard` (verifica se o grupo existe). Usuários não autenticados são redirecionados para `/login`. Usuários autenticados que não pertencem ao grupo (não são `created_by` nem possuem registro em `group_participant`) devem ser redirecionados para `/my-groups` com mensagem de erro.
+
+**Visões:** A tela possui comportamentos diferentes dependendo do papel do usuário no grupo:
+- **Visão do Criador (Organizador):** Usuário que é `created_by` do grupo.
+- **Visão do Participante Comum:** Usuário que possui registro em `group_participant` mas NÃO é o `created_by`.
+
+```mermaid
+flowchart TD
+    A[Usuário acessa /group/:groupId] --> B{Está autenticado?}
+    
+    B -->|Não| C[Redireciona para /login<br>com parâmetro returnUrl]
+    C --> D[Usuário faz login]
+    D --> E[Redireciona de volta para<br>/group/:groupId]
+    E --> B
+    
+    B -->|Sim| F{Usuário é membro<br>do grupo?}
+    
+    F -->|Sim - É created_by| G[Exibe Visão do Criador]
+    F -->|Sim - É participante| H[Exibe Visão do Participante]
+    
+    F -->|Não| I[Exibe Tela de Convite<br>para participar do grupo]
+    I --> J{Usuário aceita<br>participar?}
+    
+    J -->|Sim| K[Adiciona usuário ao grupo<br>como participante]
+    K --> H
+    
+    J -->|Não| L[Redireciona para /my-groups<br>ou permanece na tela de convite]
+```
+
+---
+
+#### 9.5.1. Visão do Criador (Organizador)
+
+**Layout Funcional:**
+- A tela exibe as seguintes seções/informações:
+  1. **Cabeçalho do grupo:** Nome do grupo, data de criação, indicador de status do sorteio (realizado ou não).
+  2. **Área de ações do organizador:** Botões para ações administrativas.
+  3. **Lista de participantes:** Tabela ou grid com todos os participantes do grupo.
+  4. **Área de compartilhamento:** Link de convite com botão para copiar.
+
+**Comportamento esperado:**
+
+##### 9.5.1.1. Status do Sorteio
+| Situação | Exibição |
+| :--- | :--- |
+| Sorteio NÃO realizado (`has_been_drawn = false`) | Badge/indicador "Sorteio pendente" (ex: amarelo/laranja). Exibir contagem regressiva ou mínimo de participantes. |
+| Sorteio realizado (`has_been_drawn = true`) | Badge/indicador "Sorteio realizado" (ex: verde). Exibir data do sorteio. |
+
+##### 9.5.1.2. Ações do Organizador (Pré-sorteio)
+
+| Ação | Condição | Comportamento |
+| :--- | :--- | :--- |
+| **"Tornar-se membro"** | Criador NÃO está na lista de participantes (`group_participant` não existe para este user no grupo) | Adiciona o criador como participante. Cria registro `group_participant` com `giver_id` = null, `receiver_id` = null. Incrementa `participants_count`. Exibe mensagem de sucesso. |
+| **"Deixar de ser membro"** | Criador ESTÁ na lista de participantes E grupo tem mais de 1 participante (não é o único) | Remove o criador da lista de participantes. Deleta registro `group_participant`. Decrementa `participants_count`. Exibe mensagem de sucesso. |
+| **"Deixar de ser membro" (bloqueado)** | Criador é o ÚNICO participante do grupo | Botão desabilitado com tooltip: "Você é o único participante. Adicione mais pessoas antes de sair." |
+| **"Copiar link de convite"** | Sempre disponível | Copia o URL de convite para a área de transferência. Exibir feedback "Link copiado!". |
+| **"Realizar sorteio"** | Mínimo 3 participantes E sorteio NÃO realizado | Executa o algoritmo de sorteio (via API custom). Preenche `giver_id` e `receiver_id` para todos os participantes. Marca `has_been_drawn = true`. Redireciona para `/group/:groupId/admin` (ou exibe resultados na mesma tela). |
+| **"Realizar sorteio" (bloqueado)** | Menos de 3 participantes | Botão desabilitado com tooltip: "É necessário no mínimo 3 participantes para realizar o sorteio." |
+| **"Realizar sorteio" (bloqueado)** | Sorteio já realizado | Botão oculto ou desabilitado com tooltip: "O sorteio deste grupo já foi realizado." |
+| **"Excluir grupo"** | Sorteio NÃO realizado | Abre modal de confirmação: "Tem certeza que deseja excluir o grupo [nome]? Esta ação não pode ser desfeita." Após confirmação, deleta o grupo e todos os `group_participant` associados. Redireciona para `/my-groups`. |
+| **"Excluir grupo" (bloqueado)** | Sorteio já realizado | Botão oculto ou desabilitado com tooltip: "Grupos com sorteio realizado não podem ser excluídos." |
+
+##### 9.5.1.3. Ações do Organizador (Pós-sorteio)
+
+| Ação | Comportamento |
+| :--- | :--- |
+| **"Ver resultado do sorteio"** | Redireciona para `/group/:groupId/admin` (painel administrativo com todos os pares). |
+| **"Copiar link de convite"** | Disponível mas convites não devem funcionar mais (ou exibir aviso: "Sorteio já realizado, novos participantes não podem entrar"). |
+| **"Excluir grupo"** | Desabilitado (ou oculto). |
+
+##### 9.5.1.4. Lista de Participantes
+
+| Elemento | Descrição |
+| :--- | :--- |
+| **Nome do participante** | Nome do usuário (campo `name` da tabela `user`). |
+| **Indicador de organizador** | Se o participante é o `created_by`, exibir selo "Organizador" ou ícone de coroa/estrela. |
+| **Botão "Remover"** | Apenas para participantes que NÃO são o organizador. Disponível apenas ANTES do sorteio. Após sorteio, ocultar ou desabilitar. |
+| **Ação de remover** | Remove o participante do grupo. Deleta registro `group_participant`. Decrementa `participants_count`. Exibe mensagem: "[Nome] foi removido do grupo." |
+
+**Comportamento da remoção:**
+| Cenário | Ação do Sistema |
+| :--- | :--- |
+| ✅ Remoção bem-sucedida | Atualiza a lista de participantes. Se o grupo ficar com menos de 3 participantes, o botão "Realizar sorteio" é desabilitado. |
+| ❌ Tentativa de remover organizador | Botão de remover NÃO é exibido para o organizador. (Protegido pela interface). |
+
+##### 9.5.1.5. Link de Convite
+
+| Elemento | Comportamento |
+| :--- | :--- |
+| **URL de convite** | Exibir o link completo ou um campo com o link (ex: `http://localhost/join?code=xxx`). |
+| **Botão "Copiar"** | Copia o link para a área de transferência. Exibir feedback visual "Copiado!". |
+| **Gerar novo código** | Opcional (MVP pode não ter). Se implementado, invalidar código antigo e gerar novo. |
+
+---
+
+#### 9.5.2. Visão do Participante Comum
+
+**Layout Funcional:**
+- A tela exibe as seguintes seções/informações:
+  1. **Cabeçalho do grupo:** Nome do grupo, data de criação, indicador de status do sorteio.
+  2. **Área de ações do participante:** Botões para ações disponíveis.
+  3. **Lista de participantes:** Visualização limitada (apenas nomes, sem ações de remoção).
+  4. **Revelação do amigo secreto** (exibido diretamente na tela, se sorteio já realizado).
+
+**Comportamento esperado:**
+
+##### 9.5.2.1. Status do Sorteio (para participante)
+
+| Situação | Exibição e Ações |
+| :--- | :--- |
+| Sorteio NÃO realizado (`has_been_drawn = false`) | Badge "Aguardando sorteio". Botão "Sair do grupo" disponível. Área de revelação do amigo secreto oculta ou exibe "Aguardando sorteio...". |
+| Sorteio realizado (`has_been_drawn = true`) | Badge "Sorteio realizado!". Área de revelação do amigo secreto **exibe o nome da pessoa que o participante deve presentear**. Botão "Sair do grupo" **NÃO é exibido** (participante não pode sair após sorteio). |
+
+##### 9.5.2.2. Ações do Participante
+
+| Ação | Condição | Comportamento |
+| :--- | :--- | :--- |
+| **"Sair do grupo"** | Sorteio NÃO realizado | Abre modal de confirmação: "Tem certeza que deseja sair do grupo [nome]?" Após confirmação, deleta o registro `group_participant` do usuário. Decrementa `participants_count`. Redireciona para `/my-groups`. |
+| **"Sair do grupo"** | Sorteio já realizado | **Botão NÃO é exibido** (ou oculto). Participante não pode sair após o sorteio ser realizado. |
+| **"Copiar link de convite"** | Apenas se o participante quiser convidar outros (opcional) | Copia o link de convite. Se sorteio já realizado, exibir aviso: "O sorteio já foi realizado. Novos participantes não podem entrar." |
+
+##### 9.5.2.3. Revelação do Amigo Secreto (Área de Destaque)
+
+**Pré-sorteio (sorteio não realizado):**
+| Elemento | Comportamento |
+| :--- | :--- |
+| **Título** | "Seu amigo secreto" |
+| **Conteúdo** | Exibir mensagem: "❓ O sorteio ainda não foi realizado. Aguarde o organizador realizar o sorteio." |
+| **Ação** | Nenhuma. Botão ou área desabilitada/placeholder. |
+
+**Pós-sorteio (sorteio realizado):**
+| Elemento | Comportamento |
+| :--- | :--- |
+| **Título** | "🎁 Seu amigo secreto é..." |
+| **Conteúdo** | Exibir o **nome** do usuário presente no campo `receiver_id` (buscando o `name` na tabela `user` via expand). |
+| **Apresentação** | Nome em destaque (visualmente proeminente, tamanho maior). |
+| **Mensagem adicional** | "Não conte para ninguém! 🤫" (opcional, mas recomendado para tom lúdico). |
+| **Ação** | Nenhuma ação adicional. Apenas visualização informativa. |
+
+---
+
+### 9.7. Tela de Perfil do Usuário (`/profile`)
+
+**Acesso:** Rota protegida por autenticação (`authGuard`). Acessível via um link ou botão no cabeçalho/avatar do usuário em qualquer tela (ex: ícone de perfil no canto superior direito). Usuários não autenticados são redirecionados para `/login` com `returnUrl=/profile`.
+
+**Layout Funcional:**
+- A tela é dividida em duas seções principais:
+  1. **Seção de Informações Pessoais:** Exibe dados do usuário com opção de edição.
+  2. **Seção de Segurança:** Permite alteração de senha.
+- Opcionalmente, pode haver uma seção de "Sair da conta" (botão de logout).
+
+**Comportamento esperado:**
+
+#### 9.7.1. Seção de Informações Pessoais
+
+| Elemento | Comportamento |
+| :--- | :--- |
+| **Email** | Exibido como texto apenas (campo não editável). O email é o identificador único e não pode ser alterado no MVP. |
+| **Nome** | Exibido em um campo de texto editável. Valor atual pré-preenchido. |
+| **Status de verificação** | Exibir "Email verificado" ou "Email não verificado" (baseado no campo `verified` do Pocketbase). Fora de escopo do MVP, apenas exibição informativa. |
+| **Botão "Salvar alterações"** | Submete a alteração do nome. |
+| **Botão "Cancelar"** | Reverte o campo nome para o valor original (sem fazer requisição). |
+
+**Regras de validação (Nome):**
+| Regra | Mensagem de erro |
+| :--- | :--- |
+| Obrigatório (não pode estar vazio) | "O nome é obrigatório." |
+| Mínimo 2 caracteres | "O nome deve ter pelo menos 2 caracteres." |
+| Máximo 100 caracteres | "O nome deve ter no máximo 100 caracteres." |
+| Não pode conter apenas espaços | "Digite um nome válido." |
+
+**Fluxos possíveis (alteração de nome):**
+| Cenário | Ação do Sistema |
+| :--- | :--- |
+| ✅ Nome válido | Atualiza o campo `name` do usuário no Pocketbase. Exibe mensagem de sucesso: "Nome atualizado com sucesso!" |
+| ❌ Nome inválido | Exibe mensagem de erro específica. Não envia requisição. Mantém o campo com o valor digitado (para correção). |
+| ❌ Erro de rede/servidor | Exibe mensagem: "Erro ao atualizar nome. Tente novamente." Mantém o valor digitado. |
+| ❌ Sessão expirada durante edição | Redireciona para `/login` com `returnUrl=/profile`. |
+
+**Feedback visual (semântico):**
+- Durante o envio, o botão "Salvar alterações" deve mostrar estado de "carregando" ("Salvando...") e ficar desabilitado.
+- Validação em tempo real: campo nome é validado enquanto o usuário digita (após o primeiro caractere ou no blur).
+- Após sucesso, o campo pode manter o novo valor e o botão volta ao estado normal.
+
+---
+
+#### 9.7.2. Seção de Segurança (Alteração de Senha)
+
+**Layout Funcional:**
+- A seção deve conter um formulário com três campos:
+  1. **Senha atual** (campo mascarado, obrigatório)
+  2. **Nova senha** (campo mascarado, obrigatório)
+  3. **Confirmar nova senha** (campo mascarado, obrigatório)
+- **Botão "Alterar senha"** (submete a alteração)
+- **Botão "Cancelar"** (limpa os campos do formulário)
+
+**Regras de validação:**
+| Campo | Regra | Mensagem de erro |
+| :--- | :--- | :--- |
+| Senha atual | Obrigatório | "Digite sua senha atual." |
+| Nova senha | Obrigatório, mínimo 8 caracteres | "A nova senha deve ter pelo menos 8 caracteres." |
+| Confirmar nova senha | Deve corresponder exatamente à Nova senha | "As senhas não coincidem." |
+
+**Fluxos possíveis (alteração de senha):**
+| Cenário | Ação do Sistema |
+| :--- | :--- |
+| ✅ Dados válidos | Atualiza a senha do usuário no Pocketbase. Exibe mensagem de sucesso: "Senha alterada com sucesso!" Limpa os campos do formulário. |
+| ❌ Senha atual incorreta | Exibe mensagem de erro: "Senha atual incorreta." Limpa apenas o campo "Senha atual". Mantém os campos "Nova senha" e "Confirmar nova senha". |
+| ❌ Nova senha igual à senha atual | Exibe mensagem de erro: "A nova senha deve ser diferente da senha atual." |
+| ❌ Campos inválidos (validação) | Exibe mensagem de erro específica. Não envia requisição. |
+| ❌ Erro de rede/servidor | Exibe mensagem: "Erro ao alterar senha. Tente novamente." Mantém os campos preenchidos (exceto senha atual, por segurança). |
+| ❌ Sessão expirada durante edição | Redireciona para `/login` com `returnUrl=/profile`. |
+
+**Feedback visual (semântico):**
+- Durante o envio, o botão "Alterar senha" deve mostrar estado de "carregando" ("Alterando...") e ficar desabilitado.
+- Validação em tempo real: campos de nova senha e confirmação são validados enquanto o usuário digita.
+- Após sucesso, os campos são limpos e o botão volta ao estado normal.
+- O campo "Senha atual" deve ser limpo após erro (por segurança), mas os campos de nova senha podem ser mantidos para correção.
+
+**Considerações de Segurança:**
+- A alteração de senha deve ser feita via API do Pocketbase que exige a senha atual para validação.
+- Após alteração bem-sucedida, o usuário NÃO deve ser deslogado (a sessão permanece ativa).
+- Recomendação: exibir aviso "Você precisará fazer login novamente na próxima vez que sair" (opcional).
+
+---
+
+#### 9.7.3. Seção de Logout (opcional)
+
+| Elemento | Comportamento |
+| :--- | :--- |
+| **Botão "Sair da conta"** | Realiza logout do usuário. Limpa o token de sessão local. Redireciona para `/login`. |
+
+**Comportamento:**
+- O botão deve estar visualmente separado das outras seções (ex: rodapé da tela ou linha divisória).
+- Ao clicar, não é necessário modal de confirmação (mas pode ser implementado como boa prática).
+- Após logout, o usuário é redirecionado para `/login`.
+
+---
+
+#### 9.7.4. Estados e Carregamento
+
+**Carregamento inicial:**
+| Situação | Comportamento |
+| :--- | :--- |
+| Carregando dados do usuário | Exibir spinner ou skeleton loading no lugar das informações. |
+| Erro ao carregar dados | Exibir mensagem: "Erro ao carregar informações do perfil. Tente novamente." Botão "Tentar novamente". |
+| Usuário não autenticado | Redirecionar para `/login` com `returnUrl=/profile`. |
+
+**Feedback de ações:**
+| Ação | Feedback de Sucesso | Feedback de Erro |
+| :--- | :--- | :--- |
+| Alterar nome | Toast/mensagem: "Nome atualizado!" | Mensagem inline no campo ou toast de erro |
+| Alterar senha | Toast/mensagem: "Senha alterada com sucesso!" | Mensagem inline no campo ou toast de erro |
+| Logout | Redirecionamento imediato (sem mensagem) | - |
+
+---
+
+#### 9.7.5. Diagrama de Fluxo da Tela de Perfil
+
+```mermaid
+flowchart TD
+    A[Acessa /profile] --> B{Usuário autenticado?}
+    
+    B -->|Não| C[Redireciona para /login<br>com returnUrl=/profile]
+    C --> D[Após login, volta para /profile]
+    D --> B
+    
+    B -->|Sim| E[Carregar dados do usuário]
+    E --> F[Exibir formulários]
+    
+    F --> G{Usuário altera nome?}
+    G -->|Sim| H[Validar nome]
+    H -->|Válido| I[Atualizar no Pocketbase]
+    H -->|Inválido| J[Exibir erro]
+    I --> K[Exibir sucesso]
+    
+    F --> L{Usuário altera senha?}
+    L -->|Sim| M[Validar campos]
+    M -->|Válido| N[Enviar para API do Pocketbase]
+    M -->|Inválido| O[Exibir erro]
+    N -->|Senha atual correta| P[Atualizar senha]
+    N -->|Senha atual incorreta| Q[Exibir erro]
+    P --> R[Exibir sucesso, limpar campos]
+    
+    F --> S{Usuário clica em Sair?}
+    S -->|Sim| T[Realizar logout]
+    T --> U[Redirecionar para /login]
+```

@@ -44,7 +44,7 @@ erDiagram
         string created_by "default: @request.auth.id"
         datetime created_at "default: NOW()"
         boolean has_been_drawn "default: false"
-        int paticipants_count "default: 0"
+        int participants_count "default: 0"
     }
     
     user {
@@ -58,7 +58,7 @@ erDiagram
     }
     
     
-    group_paticipant {
+    group_participant {
         string id PK
         string giver_id FK "NULL"
         string receiver_id FK "NULL"
@@ -111,7 +111,7 @@ export interface Group {
   created_by: string;   // user.id
   created_at: string;   // ISO date
   has_been_drawn: boolean;
-  paticipants_count: number;
+  participants_count: number;
   expand?: {
     created_by?: User;
     participants_via_group_id?: GroupParticipant[];
@@ -135,6 +135,14 @@ export interface GroupParticipant {
 }
 
 export type JoinGroupDTO = Omit<GroupParticipant, 'id' | 'joined_at' | 'giver_id' | 'receiver_id'>;
+
+// DTO para atualização de perfil
+export interface UpdateProfileDTO {
+  name?: string;
+  password?: string;
+  passwordConfirm?: string;
+  oldPassword?: string; // Necessário para troca de senha no Pocketbase
+}
 
 // Estado global da aplicação (gerenciado com RxJS)
 export interface AppState {
@@ -204,11 +212,12 @@ projeto/
 | `/group/:groupId` | `features/group-dashboard/group-dashboard.page.ts` | `authGuard`, `groupExistsGuard` |
 | `/group/:groupId/reveal` | `features/reveal/reveal.page.ts` | `authGuard`, `groupExistsGuard`, `drawAvailableGuard` |
 | `/group/:groupId/admin` | `features/admin/admin-dashboard.page.ts` | `authGuard`, `groupExistsGuard`, `isOrganizerGuard` |
+| `/profile` | `features/profile/profile.page.ts` | `authGuard` |
 
 ### 🧠 5.3. Core Services (Singleton)
 | Service | Arquivo | Responsabilidade Macro |
 | :--- | :--- | :--- |
-| `AuthService` | `core/services/auth.service.ts` | Gerenciar sessão Pocketbase, login, logout, registro, expor `currentUser$` (BehaviorSubject). |
+| `AuthService` | `core/services/auth.service.ts` | Gerenciar sessão Pocketbase, login, logout, registro, editar perfil (nome/senha), expor `currentUser$` (BehaviorSubject). |
 | `GroupService` | `core/services/group.service.ts` | CRUD de grupos, buscar grupo por ID, listar grupos do usuário (via `group_participant`), estado do grupo atual. |
 | `ParticipantService` | `core/services/participant.service.ts` | CRUD em `group_participant`: entrar no grupo (`giver_id`/`receiver_id` = null), sair do grupo, listar participantes de um grupo. |
 | `DrawService` | `core/services/draw.service.ts` | Lógica do sorteio: algoritmo de Fisher-Yates que gera um ciclo válido (sem auto-sorteio) e atualiza em lote os `giver_id`/`receiver_id`. Verifica se o sorteio já foi realizado. |

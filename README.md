@@ -1,7 +1,9 @@
 # 🎁 Com Quem Será (Amigo Secreto)
 
 🔗 **Link em Produção:** *Pendente*
-👨‍💻 **Autores:** Samuel Patrick Meneses
+👨‍💻 **Autores:**
+- Samuel Patrick Meneses
+- Alan Gabriel Dos Santos Kuiawa
 
 ## 🎯 1. Visão Geral
 Web app para organizar sorteios de Amigo Secreto de forma justa e anônima, permitindo a criação de grupos, convite de participantes e revelação individual segura.
@@ -18,8 +20,15 @@ Toda a especificação do sistema está versionada na pasta `/docs`:
 * **Backend (BaaS):** Pocketbase (API + Auth + SQLite)
 
 ## 🚀 4. Quick Start (Como Executar)
-# Instalar as dependências
-npm install
-
-# Rodar o servidor de desenvolvimento
-ng serve
+1. **Configurar variáveis de ambiente:**
+   ```bash
+   cp example.env .env
+   ```
+2. **Instalar as dependências:**
+   ```bash
+   npm install
+   ```
+3. **Rodar o servidor de desenvolvimento:**
+   ```bash
+   npm run dev:web
+   ```

@@ -4,7 +4,7 @@
 
 **Projeto:** Com Quem Será (Amigo Secreto)
 **Versão:** 1.0.0  
-**Status:** ⚪ Aguardando Geração de Especificações.
+**Status:** 🟡 Em Desenvolvimento (Implementando Infraestrutura).
 
 ## 🤖 1. Orquestração e Contexto de IA (MCP)
 > Configuração dos servidores Model Context Protocol para a IDE Agêntica.
@@ -157,47 +157,31 @@ export interface AppState {
 
 ## 🏗️ 5. Scaffolding Macro (Arquitetura Frontend)
 
-### 📂 5.1. Estrutura de Pastas Base
+### 📂 5.1. Estrutura de Pastas (Monorepo)
 ```
 projeto/
-├── frontend/                    # Aplicação Angular
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── core/
-│   │   │   │   ├── services/
-│   │   │   │   │   ├── auth.service.ts
-│   │   │   │   │   ├── group.service.ts
-│   │   │   │   │   ├── participant.service.ts
-│   │   │   │   │   ├── draw.service.ts
-│   │   │   │   │   └── state.service.ts
-│   │   │   │   ├── models/
-│   │   │   │   ├── guards/
-│   │   │   │   └── interceptors/
-│   │   │   ├── features/
-│   │   │   │   ├── auth/
-│   │   │   │   ├── create-group/
-│   │   │   │   ├── join-group/
-│   │   │   │   ├── my-groups/
-│   │   │   │   ├── group-dashboard/
-│   │   │   │   ├── reveal/
-│   │   │   │   └── admin/
-│   │   │   ├── shared/
-│   │   │   └── app.routes.ts
-│   │   ├── styles.css
-│   │   └── main.ts
-│   ├── Dockerfile              # Build da imagem Angular com Nginx
-│   ├── nginx.conf              # Configuração do Nginx (proxy reverso)
-│   └── angular.json
+├── apps/
+│   ├── web/                     # Aplicação Angular (antigo frontend/)
+│   │   ├── src/
+│   │   │   ├── app/
+│   │   │   │   ├── core/
+│   │   │   │   ├── features/
+│   │   │   │   └── shared/
+│   │   ├── Dockerfile
+│   │   ├── nginx.conf
+│   │   └── angular.json
+│   └── api/                     # Futura API / Backend
 ├── server/                     # Volumes do Nginx (logs e configuração)
 │   ├── logs/
 │   └── conf.d/
 ├── db/                         # Volumes do Pocketbase (dados, logs, uploads)
-│   ├── pb_data/               # Banco SQLite e metadados
-│   ├── pb_public/             # Arquivos públicos estáticos
-│   ├── pb_hooks/              # Hooks JavaScript (API custom)
-│   └── pb_migrations/         # Migrações de schema
+│   ├── pb_data/
+│   ├── pb_public/
+│   ├── pb_hooks/
+│   └── pb_migrations/
+├── package.json                # Maestro do Monorepo (NPM Workspaces)
 ├── docker-compose.yml
-└── .env                        # Variáveis de ambiente (opcional)
+└── .env
 ```
 
 ### 🚦 5.2. Mapa de Rotas e Páginas (Features)
@@ -334,7 +318,7 @@ server {
 }
 ```
 
-### 🏗️ 7.4. Frontend Dockerfile (frontend/Dockerfile - Multi-stage)
+### 🏗️ 7.4. Frontend Dockerfile (apps/web/Dockerfile - Multi-stage)
 
 ```dockerfile
 # Stage 1: Build Angular
@@ -358,28 +342,22 @@ CMD ["nginx", "-g", "daemon off;"]
 ```
 projeto/
 ├── .env                        # Variáveis de ambiente
-│   # Exemplo:
-│   # PB_SUPERUSER_EMAIL=admin@amigosecreto.com
-│   # PB_SUPERUSER_PASSWORD=senhaSegura123
-│
 ├── docker-compose.yml
-│
-├── frontend/
-│   ├── Dockerfile
-│   ├── nginx.conf              # Copiado para dentro do container
-│   └── ... (código Angular)
-│
+├── package.json                # Workspaces config
+├── apps/
+│   ├── web/
+│   │   ├── Dockerfile
+│   │   ├── nginx.conf
+│   │   └── ... (código Angular)
+│   └── api/
 ├── server/                     # Persistentes do Nginx
-│   ├── logs/                   # Logs de acesso e erro
-│   └── nginx.conf              # Configuração principal (montada)
-│
+│   ├── logs/
+│   └── nginx.conf
 └── db/                         # Persistentes do Pocketbase
-    ├── pb_data/                # Banco SQLite + metadados
-    │   └── data.db
-    ├── pb_public/              # Arquivos públicos (uploads)
-    ├── pb_hooks/               # Hooks JavaScript
-    │   └── draw_group.pb.js    # Endpoint custom de sorteio
-    └── pb_migrations/          # Migrações automáticas
+    ├── pb_data/
+    ├── pb_public/
+    ├── pb_hooks/
+    └── pb_migrations/
 ```
 
 ### 🔧 7.6. Comandos de Operação
@@ -413,20 +391,21 @@ projeto/
 ### 📦 7.9. Build e Deploy (Pipeline Manual)
 
 ```bash
-# 1. Build da aplicação Angular
-cd frontend
-npm run build -- --configuration production
-cd ..
+# 1. Configurar variáveis de ambiente
+cp example.env .env
 
-# 2. (Opcional) Copiar configuração custom do Nginx
-cp frontend/nginx.conf server/nginx.conf
+# 2. Build da aplicação Angular (via Workspace)
+npm run build -w apps/web -- --configuration production
 
-# 3. Subir os containers
+# 3. (Opcional) Copiar configuração custom do Nginx
+cp apps/web/nginx.conf server/nginx.conf
+
+# 4. Subir os containers
 docker-compose up -d --build
 
-# 4. Verificar status
+# 5. Verificar status
 docker-compose ps
 
-# 5. Acompanhar logs iniciais
+# 6. Acompanhar logs iniciais
 docker-compose logs -f
 ```

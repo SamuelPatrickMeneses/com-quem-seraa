@@ -102,6 +102,7 @@ O "Com Quem Será" é um sistema de amigo secreto que resolve o problema de orga
 | **Servidor Web / Proxy** | Nginx | Alpine (latest) | Servir SPA e proxy reverso para API |
 | **Rede Virtual** | Bridge Network (Docker) | - | Isolamento e comunicação entre containers |
 | **Volumes Persistentes** | Bind mounts | - | Logs (`./server/`) e dados (`./db/`) |
+| **Workspace Manager** | NPM Workspaces | ^10.x | Orquestração de subprojetos (Monorepo) |
 
 ### 8.4. Ambiente de Desenvolvimento
 | Categoria | Tecnologia | Finalidade |
@@ -143,6 +144,7 @@ flowchart LR
 - **Estado Global:** RxJS (BehaviorSubjects para estado reativo compartilhado).
 - **Build:** Produção deve gerar artefatos estáticos otimizados via `ng build --configuration production`.
 - **Deploy:** A aplicação completa (Angular + Nginx + Pocketbase) deve subir com `docker-compose up -d`.
+- **Organização:** Arquitetura Monorepo utilizando a pasta `apps/` para aplicações.
 - **Portas Expostas:** Apenas a porta 80 do Nginx deve estar acessível ao host.
 - **Persistência:** Dados do Pocketbase (`pb_data`) e logs do Nginx (`server/logs`) devem persistir fora dos containers.
 

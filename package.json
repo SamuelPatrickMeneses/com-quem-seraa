@@ -1,0 +1,15 @@
+{
+  "name": "com-quem-seraa-monorepo",
+  "version": "1.0.0",
+  "description": "Monorepo do projeto da disciplina",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run start -w apps/web"
+  },
+  "keywords": ["angular", "supabase", "monorepo"],
+  "author": "Sua Equipe",
+  "license": "MIT"
+}

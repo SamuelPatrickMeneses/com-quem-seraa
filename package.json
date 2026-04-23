@@ -9,7 +9,16 @@
   "scripts": {
     "dev:web": "npm run start -w apps/web"
   },
-  "keywords": ["angular", "supabase", "monorepo"],
+  "keywords": [
+    "angular",
+    "supabase",
+    "monorepo"
+  ],
   "author": "Sua Equipe",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.2.4",
+    "postcss": "^8.5.10",
+    "tailwindcss": "^4.2.4"
+  }
 }

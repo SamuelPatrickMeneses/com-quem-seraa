@@ -409,3 +409,9 @@ docker-compose ps
 # 6. Acompanhar logs iniciais
 docker-compose logs -f
 ```
+
+## Biblioteca de Componentes Escolhida
+
+A equipe optou por utilizar o DaisyUI.
+
+A decisão foi baseada na velocidade de desenvolvimento, já que a biblioteca fornece componentes prontos integrados ao Tailwind, permitindo a criação de interfaces modernas com menos esforço e configuração.

@@ -1,3 +1,16 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "daisyui";
+
+
+:root {
+  --color-primary: #C62828;
+  --color-secondary: #064E3B;
+  --color-accent: #D4AF37;
+  --color-neutral: #FDFCFB;
+
+  --color-base-100: #ffffff;
+  --color-info: #3ABFF8;
+  --color-success: #36D399;
+  --color-warning: #FBBD23;
+  --color-error: #F87272;
+}

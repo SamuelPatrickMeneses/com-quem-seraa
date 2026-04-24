@@ -18,7 +18,11 @@
   "license": "MIT",
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.4",
+    "daisyui": "^5.5.19"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.5.0",
     "postcss": "^8.5.10",
-    "tailwindcss": "^4.2.4"
+    "tailwindcss": "^3.4.19"
   }
 }

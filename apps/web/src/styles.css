@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: var(--p);
+  --color-secondary: var(--s);
+  --color-accent: var(--a);
+  --color-neutral: var(--n);
+
+  --color-base-100: var(--b1);
+  --color-info: var(--in);
+  --color-success: var(--su);
+  --color-warning: var(--wa);
+  --color-error: var(--er);
+}

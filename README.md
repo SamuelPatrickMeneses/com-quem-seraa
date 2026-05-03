@@ -21,6 +21,7 @@ Toda a especificação do sistema está versionada na pasta `/docs`:
 
 ## 🚀 4. Quick Start (Como Executar)
 1. **Configurar variáveis de ambiente:**
+   Copie o arquivo de exemplo e configure suas credenciais. Para detalhes sobre cada variável, veja o [SDD](./docs/sdd.md#🔐-8-variáveis-de-ambiente).
    ```bash
    cp example.env .env
    ```

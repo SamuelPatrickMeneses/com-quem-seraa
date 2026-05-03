@@ -407,8 +407,19 @@ docker-compose up -d --build
 docker-compose ps
 
 # 6. Acompanhar logs iniciais
-docker-compose logs -f
-```
+## 🔐 8. Variáveis de Ambiente
+
+O projeto utiliza um arquivo `.env` para gerenciar configurações e segredos. Um modelo pode ser encontrado em `example.env`.
+
+| Variável | Descrição | Valor Padrão/Exemplo |
+| :--- | :--- | :--- |
+| `PB_SUPERUSER_EMAIL` | E-mail para login no painel administrativo do PocketBase. | `admin@amigosecreto.com` |
+| `PB_SUPERUSER_PASSWORD` | Senha para login no painel administrativo do PocketBase. | `senhaSegura123` |
+| `APP_ENV` | Define o ambiente da aplicação (`dev` ou `prod`). Se for `dev`, o script de seed é executado para limpar e popular o banco com dados de teste. | `dev` |
+
+### ⚠️ Importante
+- O arquivo `.env` **não deve ser versionado** (já incluído no `.gitignore`).
+- Em produção, certifique-se de usar senhas fortes.
 
 ## Biblioteca de Componentes Escolhida
 

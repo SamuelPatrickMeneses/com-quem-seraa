@@ -1,0 +1,41 @@
+<div class="dashboard-container">
+  <nav class="navbar">
+    <div class="nav-brand">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="brand-icon"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
+      <span>Com Quem Será</span>
+    </div>
+    <div class="nav-user" *ngIf="user">
+      <span class="user-name">{{ user.name || user.email }}</span>
+      <button (click)="logout()" class="btn-logout">Sair</button>
+    </div>
+  </nav>
+
+  <main class="content">
+    <header class="page-header">
+      <h1>Olá, {{ user?.name?.split(' ')[0] || 'Participante' }}! 👋</h1>
+      <p>Bem-vindo ao seu painel de trocas de presentes.</p>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Sorteios Ativos</span>
+        <span class="stat-value">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Presentes Enviados</span>
+        <span class="stat-value">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Próximo Evento</span>
+        <span class="stat-value">--</span>
+      </div>
+    </div>
+
+    <section class="empty-state">
+      <div class="empty-icon">🎁</div>
+      <h2>Nenhum sorteio encontrado</h2>
+      <p>Você ainda não está participando de nenhum Amigo Secreto.</p>
+      <button class="btn-primary-action">Criar Novo Sorteio</button>
+    </section>
+  </main>
+</div>

@@ -2,7 +2,7 @@
 
 onBootstrap((e) => {
     console.log("Seed: Hook onBootstrap disparado.");
-    
+
     // IMPORTANTE: Permitir a inicialização do PocketBase antes de qualquer acesso ao DB
     e.next();
 

@@ -1,0 +1,79 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="icon-wrapper">
+      <!-- Gift Icon SVG -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
+    </div>
+
+    <h1 class="title">Com Quem Será</h1>
+    <p class="description">Crie conexões reais e momentos mágicos através da troca de presentes.</p>
+
+    <div *ngIf="errorMessage" class="alert-error">
+      {{ errorMessage }}
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <!-- Name -->
+      <div class="form-group">
+        <label class="label-text">Nome Completo</label>
+        <div class="input-container">
+          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" placeholder="Seu nome" class="input-field" formControlName="name" />
+        </div>
+        <div *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched" class="error-text">
+          Nome é obrigatório
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label class="label-text">E-mail</label>
+        <div class="input-container">
+          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10z"/><path d="m22 7-10 7L2 7"/></svg>
+          <input type="email" placeholder="nome@exemplo.com" class="input-field" formControlName="email" />
+        </div>
+        <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" class="error-text">
+          <span *ngIf="registerForm.get('email')?.errors?.['required']">E-mail é obrigatório</span>
+          <span *ngIf="registerForm.get('email')?.errors?.['email']">E-mail inválido</span>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label class="label-text">Senha</label>
+        <div class="input-container">
+          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" placeholder="********" class="input-field" formControlName="password" />
+        </div>
+        <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" class="error-text">
+          <span *ngIf="registerForm.get('password')?.errors?.['required']">Senha é obrigatória</span>
+          <span *ngIf="registerForm.get('password')?.errors?.['minlength']">Mínimo 8 caracteres</span>
+        </div>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="form-group">
+        <label class="label-text">Confirmar Senha</label>
+        <div class="input-container">
+          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" placeholder="********" class="input-field" formControlName="confirmPassword" />
+        </div>
+        <div *ngIf="registerForm.get('confirmPassword')?.touched" class="error-text">
+          <span *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">Confirme sua senha</span>
+          <span *ngIf="registerForm.hasError('passwordMismatch') && !registerForm.get('confirmPassword')?.errors?.['required']">As senhas não coincidem</span>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn-primary" [disabled]="registerForm.invalid || loading">
+        <div *ngIf="loading" class="loading-spinner"></div>
+        <span>{{ loading ? 'Cadastrando...' : 'Cadastrar' }}</span>
+        <svg *ngIf="!loading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </form>
+
+    <div class="footer-link">
+      Ainda não tem uma conta? <span class="link-text">Cadastre-se agora</span>
+    </div>
+  </div>
+</div>

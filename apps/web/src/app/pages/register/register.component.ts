@@ -54,7 +54,7 @@ export class RegisterComponent {
       });
 
       await this.pb.collection('users').requestVerification(email);
-      // this.router.navigate(['/dashboard']);
+      this.router.navigate(['/dashboard']);
     } catch (err: any) {
       this.errorMessage = err?.message || 'An error occurred during registration. Please try again.';
     } finally {

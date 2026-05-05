@@ -34,15 +34,18 @@ services:
     environment:
       - APP_ENV=${APP_ENV:-prod}
       - NGINX_ENVSUBST_FILTER=APP_ENV
+      - DOCKER_BUILD_CONDITION=${DOCKER_BUILD_CONDITION-service_completed_successfully}
+    env_file:
+      - .env
     volumes:
       - ./apps/web/dist/frontend/browser:/usr/share/nginx/html:ro
       - ./server/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./server/logs:/var/log/nginx
     depends_on:
       pocketbase:
-        condition: service_healthy
+        condition: service_started
       build:
-        condition: ${DOCKER_BUILD_CONDITION:-service_completed_successfully}
+        condition: $DOCKER_BUILD_CONDITION
     networks:
       - amigo-secreto-network
 

@@ -10,7 +10,9 @@
     "dev:web": "npm run start -w apps/web",
     "dev:web:test": "npm run test -w apps/web",
     "dev:web:build": "npm run build -w apps/web",
-    "dev:web:watch": "npm run watch -w apps/web"
+    "dev:web:watch": "npm run watch -w apps/web",
+    "docker:up": "docker compose up",
+    "docker:down": "docker compose down"
   },
   "keywords": [
     "angular",

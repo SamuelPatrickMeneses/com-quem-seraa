@@ -26,8 +26,14 @@ server {
         proxy_read_timeout 60s;
     }
 
-    # Proxy para admin UI do Pocketbase (opcional, apenas desenvolvimento)
+    # Proxy para admin UI do Pocketbase (apenas em desenvolvimento)
     location ^~ /_/ {
+        # Bloqueio se não for ambiente de desenvolvimento
+        set $env_mode "${APP_ENV}";
+        if ($env_mode != "dev") {
+            return 403;
+        }
+
         proxy_pass http://pocketbase:8090/_/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;

@@ -2,12 +2,13 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { NgIf } from '@angular/common';
-import PocketBase from 'pocketbase';
+import { AuthService } from '../../core/services/auth.service';
+import { LucideAngularModule, Gift, Mail, Lock, ArrowRight } from 'lucide-angular';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIf, RouterLink],
+  imports: [ReactiveFormsModule, NgIf, RouterLink, LucideAngularModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -16,9 +17,14 @@ export class LoginComponent {
   loading = false;
   errorMessage = '';
 
+  readonly GiftIcon = Gift;
+  readonly MailIcon = Mail;
+  readonly LockIcon = Lock;
+  readonly ArrowRightIcon = ArrowRight;
+
   private fb = inject(FormBuilder);
   private router = inject(Router);
-  private pb = new PocketBase('http://127.0.0.1:80');
+  private authService = inject(AuthService);
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -36,8 +42,8 @@ export class LoginComponent {
     const { email, password } = this.loginForm.value;
 
     try {
-      await this.pb.collection('users').authWithPassword(email, password);
-      this.router.navigate(['/dashboard']);
+      await this.authService.login(email, password);
+      this.router.navigate(['/my-groups']);
     } catch (err: any) {
       this.errorMessage = err?.message || 'E-mail ou senha incorretos.';
     } finally {

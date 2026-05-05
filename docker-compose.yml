@@ -1,12 +1,13 @@
 services:
 
   build:
-    image: node:lts-alpine
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
     volumes:
       - .:/app
-    working_dir: /app
-    command: sh -c "npm install && npm run dev:web:build"
-    #command: sh -c "npm install && npm run dev:webwatch"    # switch to dev mode
+    environment:
+      - APP_ENV=${APP_ENV:-prod}
 
   pocketbase:
     build:
@@ -23,9 +24,6 @@ services:
       - .env
     networks:
       - amigo-secreto-network
-    depends_on:
-      build:
-        condition: service_completed_successfully # comment to dev mode
 
   nginx:
     image: nginx:alpine
@@ -33,12 +31,18 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+    environment:
+      - APP_ENV=${APP_ENV:-prod}
+      - NGINX_ENVSUBST_FILTER=APP_ENV
     volumes:
       - ./apps/web/dist/frontend/browser:/usr/share/nginx/html:ro
-      - ./server/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./server/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./server/logs:/var/log/nginx
     depends_on:
-      - pocketbase
+      pocketbase:
+        condition: service_healthy
+      build:
+        condition: ${DOCKER_BUILD_CONDITION:-service_completed_successfully}
     networks:
       - amigo-secreto-network
 

@@ -2,15 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --color-primary: var(--p);
-  --color-secondary: var(--s);
-  --color-accent: var(--a);
-  --color-neutral: var(--n);
+@layer base {
+  html, body {
+    @apply bg-surface text-neutral font-body;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-  --color-base-100: var(--b1);
-  --color-info: var(--in);
-  --color-success: var(--su);
-  --color-warning: var(--wa);
-  --color-error: var(--er);
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+  }
+}
+
+@layer components {
+  /* No-line rule for inputs */
+  .input {
+    @apply border-none bg-surface-low focus:bg-surface-lowest transition-all duration-300;
+  }
+
+  /* Glassmorphism utility */
+  .glass-premium {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-glass;
+  }
+}
+
+:root {
+  --color-primary: #a20513;
+  --color-secondary: #2b6954;
+  --color-accent: #735c00;
 }

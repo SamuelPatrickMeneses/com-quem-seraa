@@ -1,79 +1,102 @@
-<div class="auth-container">
-  <div class="auth-card">
-    <div class="icon-wrapper">
-      <!-- Gift Icon SVG -->
-      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
+<div class="min-h-screen bg-surface flex items-center justify-center p-4 relative overflow-hidden">
+  <!-- Asymmetric Background Elements -->
+  <div class="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+  <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
+
+  <div class="glass-premium w-full max-w-md p-8 sm:p-12 rounded-[2.5rem] relative z-10">
+    <div class="flex flex-col items-center mb-10">
+      <div class="w-20 h-20 bg-gradient-to-br from-secondary to-secondary-focus text-white rounded-3xl shadow-lg flex items-center justify-center mb-6 transform rotate-3 hover:rotate-0 transition-transform duration-500">
+        <lucide-icon [img]="UserPlusIcon" size="40" class="text-white"></lucide-icon>
+      </div>
+      <h1 class="text-4xl font-extrabold text-neutral text-center mb-3">Criar Conta</h1>
+      <p class="text-center text-neutral/60 font-medium leading-relaxed">
+        Junte-se ao <span class="text-secondary font-bold">Com Quem Será</span> e comece a criar momentos mágicos.
+      </p>
     </div>
 
-    <h1 class="title">Com Quem Será</h1>
-    <p class="description">Crie conexões reais e momentos mágicos através da troca de presentes.</p>
-
-    <div *ngIf="errorMessage" class="alert-error">
-      {{ errorMessage }}
+    <div *ngIf="errorMessage" class="alert bg-error/10 border-none text-error mb-8 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+      <lucide-icon [img]="MailIcon" size="20"></lucide-icon>
+      <span class="font-semibold">{{ errorMessage }}</span>
     </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-5">
       <!-- Name -->
-      <div class="form-group">
-        <label class="label-text">Nome Completo</label>
-        <div class="input-container">
-          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input type="text" placeholder="Seu nome" class="input-field" formControlName="name" />
+      <div class="form-control">
+        <label class="label mb-1 p-0">
+          <span class="label-text font-bold text-neutral/70 ml-1">Nome Completo</span>
+        </label>
+        <div class="relative group">
+          <lucide-icon [img]="UserIcon" size="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral/30 group-focus-within:text-secondary transition-colors"></lucide-icon>
+          <input type="text" placeholder="Seu nome" class="input w-full pl-12 h-14 rounded-2xl" formControlName="name" />
         </div>
-        <div *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched" class="error-text">
-          Nome é obrigatório
+        <div class="min-h-[1.2rem] mt-1">
+          <label class="label p-0" *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
+            <span class="label-text-alt text-error font-bold flex items-center gap-1">Nome é obrigatório</span>
+          </label>
         </div>
       </div>
 
       <!-- Email -->
-      <div class="form-group">
-        <label class="label-text">E-mail</label>
-        <div class="input-container">
-          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10z"/><path d="m22 7-10 7L2 7"/></svg>
-          <input type="email" placeholder="nome@exemplo.com" class="input-field" formControlName="email" />
+      <div class="form-control">
+        <label class="label mb-1 p-0">
+          <span class="label-text font-bold text-neutral/70 ml-1">E-mail</span>
+        </label>
+        <div class="relative group">
+          <lucide-icon [img]="MailIcon" size="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral/30 group-focus-within:text-secondary transition-colors"></lucide-icon>
+          <input type="email" placeholder="nome@exemplo.com" class="input w-full pl-12 h-14 rounded-2xl" formControlName="email" />
         </div>
-        <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" class="error-text">
-          <span *ngIf="registerForm.get('email')?.errors?.['required']">E-mail é obrigatório</span>
-          <span *ngIf="registerForm.get('email')?.errors?.['email']">E-mail inválido</span>
-        </div>
-      </div>
-
-      <!-- Password -->
-      <div class="form-group">
-        <label class="label-text">Senha</label>
-        <div class="input-container">
-          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input type="password" placeholder="********" class="input-field" formControlName="password" />
-        </div>
-        <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" class="error-text">
-          <span *ngIf="registerForm.get('password')?.errors?.['required']">Senha é obrigatória</span>
-          <span *ngIf="registerForm.get('password')?.errors?.['minlength']">Mínimo 8 caracteres</span>
+        <div class="min-h-[1.2rem] mt-1">
+          <label class="label p-0" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+            <span class="label-text-alt text-error font-bold flex items-center gap-1">{{ registerForm.get('email')?.errors?.['required'] ? 'E-mail é obrigatório' : 'E-mail inválido' }}</span>
+          </label>
         </div>
       </div>
 
-      <!-- Confirm Password -->
-      <div class="form-group">
-        <label class="label-text">Confirmar Senha</label>
-        <div class="input-container">
-          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input type="password" placeholder="********" class="input-field" formControlName="confirmPassword" />
+      <!-- Password Group -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Password -->
+        <div class="form-control">
+          <label class="label mb-1 p-0">
+            <span class="label-text font-bold text-neutral/70 ml-1">Senha</span>
+          </label>
+          <div class="relative group">
+            <lucide-icon [img]="LockIcon" size="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral/30 group-focus-within:text-secondary transition-colors"></lucide-icon>
+            <input type="password" placeholder="********" class="input w-full pl-12 h-14 rounded-2xl" formControlName="password" />
+          </div>
         </div>
-        <div *ngIf="registerForm.get('confirmPassword')?.touched" class="error-text">
-          <span *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">Confirme sua senha</span>
-          <span *ngIf="registerForm.hasError('passwordMismatch') && !registerForm.get('confirmPassword')?.errors?.['required']">As senhas não coincidem</span>
+
+        <!-- Confirm Password -->
+        <div class="form-control">
+          <label class="label mb-1 p-0">
+            <span class="label-text font-bold text-neutral/70 ml-1">Confirmar</span>
+          </label>
+          <div class="relative group">
+            <lucide-icon [img]="LockIcon" size="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral/30 group-focus-within:text-secondary transition-colors"></lucide-icon>
+            <input type="password" placeholder="********" class="input w-full pl-12 h-14 rounded-2xl" formControlName="confirmPassword" />
+          </div>
         </div>
+      </div>
+      
+      <div class="min-h-[1.2rem]">
+        <label class="label p-0" *ngIf="(registerForm.get('password')?.touched || registerForm.get('confirmPassword')?.touched)">
+          <span class="label-text-alt text-error font-bold" *ngIf="registerForm.get('password')?.errors?.['minlength']">Mínimo 8 caracteres</span>
+          <span class="label-text-alt text-error font-bold" *ngIf="registerForm.hasError('passwordMismatch') && !registerForm.get('confirmPassword')?.errors?.['required']">As senhas não coincidem</span>
+        </label>
       </div>
 
       <!-- Submit Button -->
-      <button type="submit" class="btn-primary" [disabled]="registerForm.invalid || loading">
-        <div *ngIf="loading" class="loading-spinner"></div>
-        <span>{{ loading ? 'Cadastrando...' : 'Cadastrar' }}</span>
-        <svg *ngIf="!loading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      <button type="submit" 
+              class="btn border-none bg-gradient-to-r from-secondary to-secondary-focus hover:from-secondary-focus hover:to-secondary text-white w-full h-14 rounded-2xl shadow-ambient hover:shadow-lg disabled:bg-none disabled:bg-neutral/5 disabled:text-neutral/20 transition-all duration-300 transform hover:-translate-y-0.5" 
+              [disabled]="registerForm.invalid || loading">
+        <span *ngIf="loading" class="loading loading-spinner"></span>
+        <span class="font-bold tracking-wide uppercase text-sm">{{ loading ? 'Cadastrando...' : 'Criar Conta Agora' }}</span>
+        <lucide-icon *ngIf="!loading" [img]="UserPlusIcon" size="18"></lucide-icon>
       </button>
     </form>
 
-    <div class="footer-link">
-      Já tem uma conta? <a routerLink="/login" class="link-text">Entre agora</a>
-    </div>
+    <p class="text-center text-sm font-medium text-neutral/60 mt-10">
+      Já tem uma conta?
+      <a routerLink="/login" class="text-secondary font-bold hover:underline underline-offset-4 decoration-2">Faça login</a>
+    </p>
   </div>
 </div>

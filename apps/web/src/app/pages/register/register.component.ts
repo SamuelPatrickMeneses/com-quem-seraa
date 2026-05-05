@@ -2,7 +2,8 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { NgIf } from '@angular/common';
-import PocketBase from 'pocketbase';
+import { AuthService } from '../../core/services/auth.service';
+import { LucideAngularModule, User, Mail, Lock, UserPlus } from 'lucide-angular';
 
 export function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password');
@@ -15,7 +16,8 @@ export function passwordMatchValidator(control: AbstractControl): ValidationErro
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, NgIf, RouterLink],
+  standalone: true,
+  imports: [ReactiveFormsModule, NgIf, RouterLink, LucideAngularModule],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
@@ -24,9 +26,14 @@ export class RegisterComponent {
   loading = false;
   errorMessage = '';
 
+  readonly UserIcon = User;
+  readonly MailIcon = Mail;
+  readonly LockIcon = Lock;
+  readonly UserPlusIcon = UserPlus;
+
   private fb = inject(FormBuilder);
   private router = inject(Router);
-  private pb = new PocketBase('http://127.0.0.1:80');
+  private authService = inject(AuthService);
 
   constructor() {
     this.registerForm = this.fb.group({
@@ -46,17 +53,16 @@ export class RegisterComponent {
     const { name, email, password, confirmPassword } = this.registerForm.value;
 
     try {
-      await this.pb.collection('users').create({
+      await this.authService.register({
         name,
         email,
         password,
         passwordConfirm: confirmPassword
       });
 
-      await this.pb.collection('users').requestVerification(email);
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/my-groups']);
     } catch (err: any) {
-      this.errorMessage = err?.message || 'An error occurred during registration. Please try again.';
+      this.errorMessage = err?.message || 'Erro ao realizar o registro. Tente novamente.';
     } finally {
       this.loading = false;
     }

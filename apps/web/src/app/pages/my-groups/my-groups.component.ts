@@ -8,8 +8,7 @@ import { LucideAngularModule, Gift, LogOut, Plus, Home, User, Settings, UserPlus
   selector: 'app-my-groups',
   standalone: true,
   imports: [NgIf, UpperCasePipe, LucideAngularModule],
-  templateUrl: './my-groups.component.html',
-  styleUrl: './my-groups.component.css'
+  templateUrl: './my-groups.component.html'
 })
 export class MyGroupsComponent implements OnInit {
   readonly GiftIcon = Gift;

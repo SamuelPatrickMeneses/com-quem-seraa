@@ -19,6 +19,7 @@
 * **Core:** Angular 19 (Standalone / Signals).
 * **BaaS & Auth:** Pocketbase SDK (`npm install pocketbase`).
 * **Estilização & UI:** Tailwind CSS (com plugin forms), Lucide Angular (Ícones).
+* **Regra de Estilização:** Todo componente deve usar **exclusivamente** classes utilitárias Tailwind no template HTML. **Nenhum componente pode possuir arquivo CSS próprio** (`styleUrl` / `styleUrls`). Estilos globais e customizações devem ser centralizados em `src/styles.css`.
 * **Utilitários:** RxJS (já incluso no Angular), `date-fns` (para manipulação de datas, opcional).
 * **HTTP:** Pocketbase SDK (wrapper sobre fetch).
 * **Infraestrutura:** Docker, Docker Compose, Nginx (servidor web e proxy reverso).

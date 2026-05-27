@@ -9,8 +9,7 @@ import { LucideAngularModule, Gift, Mail, Lock, ArrowRight } from 'lucide-angula
   selector: 'app-login',
   standalone: true,
   imports: [ReactiveFormsModule, NgIf, RouterLink, LucideAngularModule],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  templateUrl: './login.component.html'
 })
 export class LoginComponent {
   loginForm: FormGroup;

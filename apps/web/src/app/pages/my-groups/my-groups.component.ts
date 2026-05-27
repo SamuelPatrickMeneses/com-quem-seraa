@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { NgIf, NgFor, UpperCasePipe } from '@angular/common';
+import { NgIf, UpperCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { LucideAngularModule, Gift, LogOut, Plus, Home, User, Settings, UserPlus } from 'lucide-angular';
@@ -7,7 +7,7 @@ import { LucideAngularModule, Gift, LogOut, Plus, Home, User, Settings, UserPlus
 @Component({
   selector: 'app-my-groups',
   standalone: true,
-  imports: [NgIf, NgFor, UpperCasePipe, LucideAngularModule],
+  imports: [NgIf, UpperCasePipe, LucideAngularModule],
   templateUrl: './my-groups.component.html',
   styleUrl: './my-groups.component.css'
 })

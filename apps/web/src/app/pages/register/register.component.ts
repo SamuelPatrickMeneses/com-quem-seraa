@@ -18,8 +18,7 @@ export function passwordMatchValidator(control: AbstractControl): ValidationErro
   selector: 'app-register',
   standalone: true,
   imports: [ReactiveFormsModule, NgIf, RouterLink, LucideAngularModule],
-  templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
+  templateUrl: './register.component.html'
 })
 export class RegisterComponent {
   registerForm: FormGroup;

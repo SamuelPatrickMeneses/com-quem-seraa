@@ -56,7 +56,7 @@
         </div>
         <div>
           <p class="text-sm font-black text-neutral/40 uppercase tracking-widest">Meus Grupos</p>
-          <p class="text-4xl font-black text-neutral">0</p>
+          <p class="text-4xl font-black text-neutral">{{ groups.length }}</p>
         </div>
       </div>
 
@@ -81,22 +81,67 @@
       </div>
     </div>
 
-    <!-- Empty State -->
-    <div class="relative group">
-      <div class="absolute -inset-1 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-[3rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-      <div class="relative bg-surface-lowest p-16 md:p-24 rounded-[3rem] shadow-ambient flex flex-col items-center text-center">
-        <div class="w-32 h-32 bg-surface-low rounded-[2.5rem] flex items-center justify-center mb-10 transform group-hover:rotate-6 transition-transform duration-500">
-          <lucide-icon [img]="GiftIcon" size="64" class="text-primary/20"></lucide-icon>
-        </div>
-        <h2 class="text-3xl font-black text-neutral mb-4 tracking-tight">O palco está vazio</h2>
-        <p class="text-neutral/40 text-lg font-medium max-w-sm mb-12 leading-relaxed">
-          Nenhuma celebração em curso. Que tal inaugurar um novo Amigo Secreto agora?
-        </p>
-        <button class="btn btn-primary btn-lg h-16 px-10 rounded-2xl gap-3 shadow-ambient border-none bg-gradient-to-r from-primary to-primary-focus transform hover:-translate-y-1 transition-all">
-          <lucide-icon [img]="PlusIcon" size="20"></lucide-icon>
-          <span class="font-black uppercase tracking-widest text-sm">Criar Celebração</span>
-        </button>
+    <!-- Groups Area -->
+    @if (isLoading) {
+      <div class="flex justify-center p-12">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
       </div>
-    </div>
+    } @else if (groups.length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (group of groups; track group.id) {
+          <div class="bg-white p-6 rounded-[2rem] shadow-ambient hover:shadow-lg transition-all border border-neutral/5 flex flex-col group cursor-pointer relative overflow-hidden">
+            <div class="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+            
+            <div class="flex items-center gap-4 mb-6 relative">
+              <div class="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
+                <lucide-icon [img]="GiftIcon" size="20"></lucide-icon>
+              </div>
+              <div>
+                <h3 class="text-xl font-black text-neutral">{{ group.name }}</h3>
+                <p class="text-xs font-bold text-neutral/40">Criado em {{ group.created | date:'dd/MM/yyyy' }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 mb-6">
+              <div class="px-3 py-1 bg-surface-low rounded-full flex items-center gap-2 text-xs font-bold text-neutral/60">
+                <lucide-icon [img]="UsersIcon" size="14"></lucide-icon>
+                {{ group.participants_count }} participantes
+              </div>
+              @if (group.has_been_drawn) {
+                <div class="px-3 py-1 bg-success/10 text-success rounded-full text-xs font-bold">
+                  Sorteado
+                </div>
+              } @else {
+                <div class="px-3 py-1 bg-warning/10 text-warning rounded-full text-xs font-bold">
+                  Pendente
+                </div>
+              }
+            </div>
+
+            <button class="btn btn-outline btn-primary w-full rounded-xl gap-2 mt-auto">
+              Acessar Grupo
+            </button>
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- Empty State -->
+      <div class="relative group">
+        <div class="absolute -inset-1 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-[3rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+        <div class="relative bg-surface-lowest p-16 md:p-24 rounded-[3rem] shadow-ambient flex flex-col items-center text-center">
+          <div class="w-32 h-32 bg-surface-low rounded-[2.5rem] flex items-center justify-center mb-10 transform group-hover:rotate-6 transition-transform duration-500">
+            <lucide-icon [img]="GiftIcon" size="64" class="text-primary/20"></lucide-icon>
+          </div>
+          <h2 class="text-3xl font-black text-neutral mb-4 tracking-tight">O palco está vazio</h2>
+          <p class="text-neutral/40 text-lg font-medium max-w-sm mb-12 leading-relaxed">
+            Nenhuma celebração em curso. Que tal inaugurar um novo Amigo Secreto agora?
+          </p>
+          <button class="btn btn-primary btn-lg h-16 px-10 rounded-2xl gap-3 shadow-ambient border-none bg-gradient-to-r from-primary to-primary-focus transform hover:-translate-y-1 transition-all">
+            <lucide-icon [img]="PlusIcon" size="20"></lucide-icon>
+            <span class="font-black uppercase tracking-widest text-sm">Criar Celebração</span>
+          </button>
+        </div>
+      </div>
+    }
   </main>
 </div>

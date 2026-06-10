@@ -11,9 +11,10 @@
     "dev:web:test": "npm run test -w apps/web",
     "dev:web:build": "npm run build -w apps/web",
     "dev:web:watch": "npm run watch -w apps/web",
-    "docker:up": "docker compose up",
+    "docker:up": "docker compose --profile dev up",
     "docker:down": "docker compose down",
-    "docker:test": "docker compose --profile test up --abort-on-container-exit --exit-code-from test"
+    "docker:test": "docker compose --profile test up --abort-on-container-exit --exit-code-from test",
+    "setup:env": "cp -n example.env .env || true"
   },
   "keywords": [
     "angular",

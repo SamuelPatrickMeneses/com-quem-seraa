@@ -21,15 +21,16 @@ Toda a especificação do sistema está versionada na pasta `/docs`:
 
 ## 🚀 4. Quick Start (Como Executar)
 1. **Configurar variáveis de ambiente:**
-   Copie o arquivo de exemplo e configure suas credenciais. Para detalhes sobre cada variável, veja o [SDD](./docs/sdd.md#🔐-8-variáveis-de-ambiente).
    ```bash
-   cp example.env .env
+   npm run setup:env
    ```
-2. **Instalar as dependências:**
-   ```bash
-   npm install
-   ```
-3. **Rodar o servidor de desenvolvimento:**
+   Edite o `.env` gerado conforme necessário. Para detalhes sobre cada variável, veja o [SDD](./docs/sdd.md#🔐-8-variáveis-de-ambiente).
+2. **Rodar o servidor de desenvolvimento:**
    ```bash
    npm run dev:web
    ```
+3. **(Opcional) Executar testes:**
+   ```bash
+   npm run docker:test
+   ```
+   Os testes rodam em container Docker com Selenium Firefox. Requer Docker Compose instalado.

@@ -79,11 +79,17 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
+            "builderMode": "detect",
+            "main": "src/test.ts",
+            "watch": false,
+            "include": ["src/**/*.spec.ts"],
             "polyfills": [
+              "src/disable-zonejs-trace.ts",
               "zone.js",
               "zone.js/testing"
             ],
             "tsConfig": "tsconfig.spec.json",
+            "karmaConfig": "karma.conf.js",
             "assets": [
               {
                 "glob": "**/*",

@@ -13,5 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup environment
+        run: cp example.env .env
+
       - name: Run tests
         run: docker compose --profile test up --abort-on-container-exit --exit-code-from test

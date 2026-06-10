@@ -24,6 +24,8 @@ services:
       target: test
     profiles:
       - test
+    volumes:
+      - ./apps/web/src:/app/apps/web/src
     environment:
       - APP_ENV=dev
       - SELENIUM_HOST=selenium-firefox

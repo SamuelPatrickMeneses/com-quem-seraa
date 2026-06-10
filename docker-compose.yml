@@ -4,8 +4,12 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      target: builder
     volumes:
       - .:/app
+    profiles:
+      - dev
+      - prod
     environment:
       - APP_ENV=${APP_ENV:-prod}
     healthcheck:
@@ -15,12 +19,51 @@ services:
       retries: 12
       start_period: 30s
 
+  test:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: test
+    profiles:
+      - test
+    volumes:
+      - .:/app
+    environment:
+      - APP_ENV=dev
+      - SELENIUM_HOST=selenium-firefox
+      - SELENIUM_PORT=4444
+      - KARMA_HOSTNAME=test
+      - KARMA_BROWSER=SeleniumFirefox
+    depends_on:
+      selenium-firefox:
+        condition: service_started
+      pocketbase:
+        condition: service_started
+    networks:
+      - amigo-secreto-network
+
+  selenium-firefox:
+    image: selenium/standalone-firefox:latest
+    container_name: selenium-firefox
+    profiles:
+      - test
+    shm_size: 2gb
+    restart: unless-stopped
+    environment:
+      - SE_NODE_MAX_SESSIONS=5
+    networks:
+      - amigo-secreto-network
+
   pocketbase:
     build:
       context: ./db
       dockerfile: Dockerfile
     container_name: pocketbase
     restart: unless-stopped
+    profiles:
+      - dev
+      - prod
+      - test
     volumes:
       - pocketbase_data:/app/pb_data
       - ./db/pb_public:/app/pb_public
@@ -35,6 +78,9 @@ services:
     image: nginx:alpine
     container_name: nginx
     restart: unless-stopped
+    profiles:
+      - dev
+      - prod
     ports:
       - "80:80"
     environment:

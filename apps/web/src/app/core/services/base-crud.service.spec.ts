@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { BaseCrudService } from './base-crud.service';
 import { PocketBaseClient } from '../../infrastructure/pocketbase/pocketbase.client';
+import SessionAuthStore from '../../infrastructure/pocketbase/session.auth.store';
+import InMemoryAuthStore from '../../infrastructure/pocketbase/inMemory.auth.store';
 
 interface TestModel {
   id: string;
@@ -39,6 +41,7 @@ describe('BaseCrudService', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: PocketBaseClient, useValue: mockPbClient },
+        {provider: SessionAuthStore, useValue: new InMemoryAuthStore()},
       ],
     });
 

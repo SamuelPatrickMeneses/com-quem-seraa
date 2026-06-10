@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LoginComponent } from './login.component';
+import SessionAuthStore from '../../infrastructure/pocketbase/session.auth.store';
+import InMemoryAuthStore from '../../infrastructure/pocketbase/inMemory.auth.store';
+import {provideRouter} from '@angular/router';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -8,7 +11,11 @@ describe('LoginComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LoginComponent]
+      imports: [LoginComponent],
+      providers: [
+        provideRouter([]),
+        {provider: SessionAuthStore, useValue: new InMemoryAuthStore()},
+      ]
     })
     .compileComponents();
 

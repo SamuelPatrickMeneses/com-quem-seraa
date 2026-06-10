@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MyGroupsComponent } from './my-groups.component';
 import { AuthService } from '../../core/services/auth.service';
-import { Router } from '@angular/router';
+import { provideRouter } from '@angular/router';
+import SessionAuthStore from '../../infrastructure/pocketbase/session.auth.store';
+import InMemoryAuthStore from '../../infrastructure/pocketbase/inMemory.auth.store';
 
 describe('MyGroupsComponent', () => {
   let component: MyGroupsComponent;
@@ -11,8 +13,9 @@ describe('MyGroupsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [MyGroupsComponent],
       providers: [
+        provideRouter([]),
         { provide: AuthService, useValue: { user: null, logout: jasmine.createSpy('logout') } },
-        { provide: Router, useValue: { navigate: jasmine.createSpy('navigate') } },
+        {provider: SessionAuthStore, useValue: new InMemoryAuthStore()},
       ],
     }).compileComponents();
 

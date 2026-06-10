@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { GroupService } from './group.service';
 import { PocketBaseClient } from '../../infrastructure/pocketbase/pocketbase.client';
+import SessionAuthStore from '../../infrastructure/pocketbase/session.auth.store';
+import InMemoryAuthStore from '../../infrastructure/pocketbase/inMemory.auth.store';
 
 describe('GroupService', () => {
   let service: GroupService;
@@ -50,6 +52,7 @@ describe('GroupService', () => {
       providers: [
         GroupService,
         { provide: PocketBaseClient, useValue: mockPbClient },
+        {provider: SessionAuthStore, useValue: new InMemoryAuthStore()},
       ],
     });
 

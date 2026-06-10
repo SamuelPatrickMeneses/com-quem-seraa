@@ -322,21 +322,41 @@ server {
 ### 🏗️ 7.4. Frontend Dockerfile (apps/web/Dockerfile - Multi-stage)
 
 ```dockerfile
-# Stage 1: Build Angular
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build -- --configuration production
+FROM node:lts-alpine AS builder
 
-# Stage 2: Nginx com os arquivos buildados
-FROM nginx:alpine
-COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+USER node
+
+WORKDIR /app
+
+COPY --chown=node:node ../.. .
+
+ENV APP_ENV=prod
+CMD sh -c "npm install && if [ \"$APP_ENV\" = \"dev\" ]; then npm run dev:web:watch; else npm run dev:web:build; fi"
+
+FROM builder AS test
+
+USER root
+RUN apk add --no-cache curl
+USER node
+
+ENV APP_ENV=dev
+ENV KARMA_BROWSER=SeleniumFirefox
+ENV SELENIUM_HOST=selenium-firefox
+ENV SELENIUM_PORT=4444
+ENV KARMA_HOSTNAME=test
+CMD npm install && \
+  echo 'Aguardando selenium-firefox ficar pronto...' && \
+  for i in $(seq 1 30); do \
+    curl -s http://selenium-firefox:4444/wd/hub/status > /dev/null 2>&1 && \
+    echo 'Selenium pronto!' && break; \
+    echo "Tentativa $i/30..."; sleep 2; \
+  done && \
+  npm run dev:web:test -- --browsers=SeleniumFirefox --no-watch --source-map=false
 ```
+
+O Dockerfile possui dois targets:
+- **`builder`**: usado pelos profiles `dev` e `prod`. Compila o Angular SPA.
+- **`test`**: estende `builder` e adiciona curl (para healthcheck do Selenium). Executa os testes com Karma + Selenium Firefox.
 
 ### 📁 7.5. Estrutura de Arquivos de Infraestrutura
 
@@ -365,12 +385,14 @@ projeto/
 
 | Comando | Descrição |
 | :--- | :--- |
-| `docker-compose up -d` | Iniciar todos os containers em background |
-| `docker-compose down` | Parar e remover containers |
-| `docker-compose logs -f nginx` | Ver logs do Nginx em tempo real |
-| `docker-compose logs -f pocketbase` | Ver logs do Pocketbase em tempo real |
-| `docker-compose exec pocketbase ls -la /pb/pb_data` | Inspecionar volume de dados |
-| `docker-compose restart nginx` | Reiniciar apenas o Nginx |
+| `docker compose up -d` | Iniciar todos os containers em background |
+| `docker compose down` | Parar e remover containers |
+| `docker compose logs -f nginx` | Ver logs do Nginx em tempo real |
+| `docker compose logs -f pocketbase` | Ver logs do Pocketbase em tempo real |
+| `docker compose exec pocketbase ls -la /pb/pb_data` | Inspecionar volume de dados |
+| `docker compose restart nginx` | Reiniciar apenas o Nginx |
+| `npm run docker:test` | Executar testes Karma via Selenium Firefox em Docker |
+| `docker compose --profile test up --abort-on-container-exit --exit-code-from test` | (equivalente ao script acima) |
 
 ### 🌐 7.7. URLs de Acesso
 
@@ -408,6 +430,106 @@ docker-compose up -d --build
 docker-compose ps
 
 # 6. Acompanhar logs iniciais
+```
+
+### 🧪 7.10. Infraestrutura de Testes
+
+Os testes unitários e de integração dos componentes Angular rodam dentro de um container Docker via **Karma** com **Selenium Grid (Firefox)**, utilizando o **esbuild bundler** do Angular 19.
+
+#### Arquitetura do Test Runner
+
+```
+test container (Karma :9876) ←── selenium-firefox container (WebDriver :4444)
+         │                             │
+         └── amigo-secreto-network ────┘
+```
+
+- Karma escuta em `test:9876` (hostname definido via `KARMA_HOSTNAME=test`).
+- Selenium Firefox conecta-se ao Karma via WebDriver e executa os specs no browser.
+- O container `test` depende de `selenium-firefox` e `pocketbase` (start顺序).
+
+#### Configuração do Karma (`apps/web/karma.conf.js`)
+
+```javascript
+const browser = process.env['KARMA_BROWSER'] || 'FirefoxHeadless';
+const karmaHostname = process.env['KARMA_HOSTNAME'] || 'localhost';
+
+// Selenium WebDriver launcher (usado em CI/Docker)
+if (browser === 'SeleniumFirefox') {
+  customLaunchers.SeleniumFirefox = {
+    base: 'WebDriver',
+    config: {
+      hostname: process.env['SELENIUM_HOST'],
+      port: Number(process.env['SELENIUM_PORT']),
+      path: '/wd/hub',
+    },
+    browserName: 'firefox',
+    'wd-no-defaults': true,
+    forceW3C: true,           // necessário para Selenium Grid moderno
+  };
+}
+
+module.exports = function (config) {
+  config.set({
+    frameworks: ['jasmine'],
+    plugins: [/* karma-jasmine, karma-spec-reporter, karma-webdriver-launcher */],
+    reporters: ['spec'],        // saída clara por teste (pass/fail)
+    browsers: [browser],
+    customLaunchers,
+    hostname: karmaHostname,
+    singleRun: true,            // encerra após execução completa
+  });
+};
+```
+
+#### Configuração do Angular (`angular.json` - test section)
+
+```jsonc
+"test": {
+  "builder": "@angular-devkit/build-angular:application",  // esbuild (não Webpack)
+  "options": {
+    "builderMode": "detect",    // força o uso do esbuild builder path
+    "watch": false,             // sem watch mode em CI
+    "polyfills": [
+      "zone.js",
+      "zone.js/testing",
+      "src/disable-zonejs-trace.ts"   // suprime long stack traces do zone.js
+    ],
+    "include": ["src/**/*.spec.ts"],  // descoberta de spec files
+    "tsConfig": "tsconfig.spec.json"
+  }
+}
+```
+
+#### Entrypoint de Teste (`apps/web/src/test.ts`)
+
+```typescript
+import 'zone.js';
+import 'zone.js/testing';
+import { getTestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
+
+getTestBed().initTestEnvironment(
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting()
+);
+```
+
+#### Volume Mounts
+
+Os containers `build` e `test` **não** utilizam volume bind da raiz do projeto (`.:/app`). O código-fonte é copiado para a imagem via `COPY` no Dockerfile. O `node_modules` é criado na camada writável do container durante o `npm install` no CMD, evitando conflitos de permissão (UID do host vs. UID do container).
+
+Volumes específicos (ex: `pocketbase_data`, `./db/pb_migrations`) são montados apenas onde necessário.
+
+#### Padrão para Spec Files
+
+- Specs usam `new InMemoryAuthStore()` em vez de `TestBed.inject(InMemoryAuthStore)` para evitar erro "Cannot configure test module".
+- Componentes com `<router-outlet>` ou `RouterLink` devem prover roteamento via `provideRouter(routes)` no `TestBed.configureTestingModule`.
+- Testes de navegação assíncrona usam `fakeAsync` + `tick()` com `TestBed.inject(Router)` para forçar a inicialização do roteador.
+
 ## 🔐 8. Variáveis de Ambiente
 
 O projeto utiliza um arquivo `.env` para gerenciar configurações e segredos. Um modelo pode ser encontrado em `example.env`.

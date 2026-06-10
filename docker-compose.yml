@@ -8,6 +8,12 @@ services:
       - .:/app
     environment:
       - APP_ENV=${APP_ENV:-prod}
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /app/apps/web/dist/frontend/browser/index.html"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   pocketbase:
     build:
@@ -34,7 +40,7 @@ services:
     environment:
       - APP_ENV=${APP_ENV:-prod}
       - NGINX_ENVSUBST_FILTER=APP_ENV
-      - DOCKER_BUILD_CONDITION=${DOCKER_BUILD_CONDITION-service_completed_successfully}
+      - DOCKER_BUILD_CONDITION=${DOCKER_BUILD_CONDITION:-service_completed_successfully}
     env_file:
       - .env
     volumes:

@@ -5,8 +5,6 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
       target: builder
-    volumes:
-      - .:/app
     profiles:
       - dev
       - prod
@@ -26,8 +24,6 @@ services:
       target: test
     profiles:
       - test
-    volumes:
-      - .:/app
     environment:
       - APP_ENV=dev
       - SELENIUM_HOST=selenium-firefox

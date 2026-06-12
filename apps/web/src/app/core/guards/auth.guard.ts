@@ -13,9 +13,7 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  // Redireciona para o login se não estiver autenticado
-  router.navigate(['/login']);
-  return false;
+  return router.createUrlTree(['/login']);
 };
 
 /**
@@ -29,7 +27,5 @@ export const guestGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  // Redireciona para o dashboard se já estiver autenticado
-  router.navigate(['/my-groups']);
-  return false;
+  return router.createUrlTree(['/my-groups']);
 };

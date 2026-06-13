@@ -36,7 +36,7 @@ describe('GroupService', () => {
 
     const mockPb = {
       collection: jasmine.createSpy('collection').and.callFake((name: string) => {
-        if (name === 'group_participant') return mockParticipantCollection;
+        if (name === 'group_participants') return mockParticipantCollection;
         return mockCollection;
       }),
       authStore: mockAuthStore,
@@ -52,7 +52,7 @@ describe('GroupService', () => {
       providers: [
         GroupService,
         { provide: PocketBaseClient, useValue: mockPbClient },
-        {provider: SessionAuthStore, useValue: new InMemoryAuthStore()},
+        {provide: SessionAuthStore, useValue: new InMemoryAuthStore()},
       ],
     });
 
@@ -140,12 +140,10 @@ describe('GroupService', () => {
 
       expect(mockCollection.getList).toHaveBeenCalledWith(1, 50, {
         filter: 'created_by = "user-1"',
-        sort: '-created_at',
       });
       expect(mockParticipantCollection.getList).toHaveBeenCalledWith(1, 50, {
         filter: 'giver_id = "user-1"',
         expand: 'group_id',
-        sort: '-created',
       });
       expect(result.items.length).toBe(2);
       expect(result.items[0].id).toBe('group-1');

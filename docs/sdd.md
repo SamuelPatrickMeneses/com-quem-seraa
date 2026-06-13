@@ -530,6 +530,57 @@ Volumes específicos (ex: `pocketbase_data`, `./db/pb_migrations`) são montados
 - Componentes com `<router-outlet>` ou `RouterLink` devem prover roteamento via `provideRouter(routes)` no `TestBed.configureTestingModule`.
 - Testes de navegação assíncrona usam `fakeAsync` + `tick()` com `TestBed.inject(Router)` para forçar a inicialização do roteador.
 
+## 🧪 7.11. Endpoint de Teste
+
+Para garantir a consistência dos testes de integração, o PocketBase expõe um endpoint que **limpa e recarrega os dados de teste (reseed)**, **disponível apenas quando `APP_ENV=dev`**.
+
+### Rota
+
+| Método | Rota | Condição |
+|--------|------|----------|
+| `GET` | `/api/test/reseed` | `APP_ENV=dev` |
+
+### Comportamento
+
+1. Remove **todos** os registros das coleções `group_participants`, `groups`, `users`
+2. Recria os seguintes dados de teste do zero:
+
+| Tabela | Registros |
+|--------|-----------|
+| `users` | `ana@exemplo.com`, `beto@exemplo.com`, `caio@exemplo.com` (senha: `1234567890`, todos `verified: true`) |
+| `groups` | 1 grupo "Amigo Secreto 2024" criado por `ana@exemplo.com` |
+| `group_participants` | 3 registros associando cada user ao grupo |
+
+> ⚠️ **Importante:** O nome `reseed` reflete que o endpoint **não apenas limpa**, mas também **recarrega** os dados de teste. Esse é o único propósito do endpoint — restaurar o estado inicial conhecido para os testes de integração.
+
+### Definição
+
+O endpoint é registrado via hook em `db/pb_hooks/seed.pb.js`:
+
+```javascript
+routerAdd("GET", "/api/test/reseed", (e) => {
+  $app.db().newQuery("DELETE FROM group_participants").execute()
+  $app.db().newQuery("DELETE FROM groups").execute()
+  $app.db().newQuery("DELETE FROM users").execute()
+  // ... recria os dados de teste do zero
+  return e.json(200, {message: "Seed: dados de teste recarregados com sucesso!"});
+});
+```
+
+### Proxy do Karma para testes de integração
+
+Em testes que utilizam `SeleniumFirefox`, as requisições reais ao PocketBase são roteadas via proxy do Karma. A configuração em `karma.conf.js`:
+
+```javascript
+proxies: {
+  '/api/': 'http://pocketbase:8090/api/'
+}
+```
+
+Isso permite que o navegador (selenium-firefox) acesse o backend através do servidor do Karma (`http://test:9876/api/...` → `http://pocketbase:8090/api/...`), sem necessidade de expor portas do PocketBase diretamente ao container de teste.
+
+---
+
 ## 🔐 8. Variáveis de Ambiente
 
 O projeto utiliza um arquivo `.env` para gerenciar configurações e segredos. Um modelo pode ser encontrado em `example.env`.

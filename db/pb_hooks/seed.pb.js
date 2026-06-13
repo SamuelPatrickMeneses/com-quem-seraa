@@ -76,29 +76,25 @@ onBootstrap((e) => {
 
 const env = (typeof $os !== "undefined" && $os.getenv) ? $os.getenv("APP_ENV") : "";
 if (env === "dev") {
-    routerAdd("GET", "/api/test/clear", (e) => {
-        
+    routerAdd("GET", "/api/test/reseed", (e) => {
         try {
-            // Tenta acessar variáveis de ambiente de forma resiliente
             $app.db().newQuery("DELETE FROM group_participants").execute()
             $app.db().newQuery("DELETE FROM groups").execute()
             $app.db().newQuery("DELETE FROM users").execute()
+
             const usersCollection = $app.findCollectionByNameOrId("users");
             const groupsCollection = $app.findCollectionByNameOrId("groups");
             const participantsCollection = $app.findCollectionByNameOrId("group_participants");
 
             if (!groupsCollection || !participantsCollection) {
                 console.log("Seed: Coleções 'groups' ou 'group_participants' ainda não existem.");
-                return;
+                return e.json(500, {message: "Coleções necessárias não encontradas."});
             }
-
 
             const testUserEmails = ["ana@exemplo.com", "beto@exemplo.com", "caio@exemplo.com"];
             const userIds = [];
 
-
             for (const email of testUserEmails) {
-                // Se chegou aqui, o usuário não existe. Cria um novo.
                 const record = new Record(usersCollection);
                 record.set("email", email);
                 record.set("name", email.split("@")[0]);
@@ -108,7 +104,6 @@ if (env === "dev") {
                 userIds.push(record.id);
             }
 
-            // Verifica se já existe um grupo criado por esses usuários
             const groupRecord = new Record(groupsCollection);
             groupRecord.set("name", "Amigo Secreto 2024");
             groupRecord.set("created_by", userIds[0]);
@@ -122,9 +117,9 @@ if (env === "dev") {
                 $app.save(partRecord);
             }
 
-            return e.json(200, {message: "Seed: Sucesso na inserção dos dados de teste!"});
+            return e.json(200, {message: "Seed: dados de teste recarregados com sucesso!"});
         } catch (err) {
-            return e.json(500, {message: "Seed Erro Detalhado:", error: err});
+            return e.json(500, {message: "Seed: erro ao recarregar dados de teste.", error: String(err)});
         }
     });
 }

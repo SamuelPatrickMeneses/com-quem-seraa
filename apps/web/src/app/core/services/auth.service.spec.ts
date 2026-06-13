@@ -38,7 +38,7 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         { provide: PocketBaseClient, useValue: mockPbClient },
-        {provider: SessionAuthStore, useValue: new InMemoryAuthStore()},
+        {provide: SessionAuthStore, useValue: new InMemoryAuthStore()},
       ],
     });
 

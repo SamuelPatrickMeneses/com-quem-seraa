@@ -9,30 +9,32 @@
         <span class="text-2xl font-black text-neutral tracking-tight hidden sm:inline-block">Com Quem Será</span>
       </div>
 
-      <div class="flex items-center gap-4" *ngIf="user">
-        <div class="dropdown dropdown-end">
-          <div tabindex="0" role="button" class="group flex items-center gap-3 p-1 pr-4 rounded-full hover:bg-neutral/5 transition-colors cursor-pointer">
-            <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-sm ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
-              {{ user.name?.charAt(0) || user.email?.charAt(0) | uppercase }}
+      @if (user) {
+        <div class="flex items-center gap-4">
+          <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="group flex items-center gap-3 p-1 pr-4 rounded-full hover:bg-neutral/5 transition-colors cursor-pointer">
+              <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-sm ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
+                {{ user.name?.charAt(0) || user.email?.charAt(0) | uppercase }}
+              </div>
+              <div class="hidden md:block text-left">
+                <p class="text-xs font-black text-neutral/80 leading-none mb-0.5">{{ user.name?.split(' ')[0] || 'Usuário' }}</p>
+                <p class="text-[10px] font-bold text-neutral/40 leading-none">Minha Conta</p>
+              </div>
             </div>
-            <div class="hidden md:block text-left">
-              <p class="text-xs font-black text-neutral/80 leading-none mb-0.5">{{ user.name?.split(' ')[0] || 'Usuário' }}</p>
-              <p class="text-[10px] font-bold text-neutral/40 leading-none">Minha Conta</p>
-            </div>
+            <ul tabindex="0" class="mt-4 z-[1] p-3 shadow-ambient menu menu-sm dropdown-content bg-white/90 backdrop-blur-xl rounded-[1.5rem] w-64 border border-neutral/5">
+              <li class="px-4 py-3">
+                <p class="font-black text-neutral truncate">{{ user.name || user.email }}</p>
+                <p class="text-xs font-bold text-neutral/40 truncate">{{ user.email }}</p>
+              </li>
+              <div class="divider h-px bg-neutral/5 my-2"></div>
+              <li><a class="py-3 rounded-xl font-bold hover:bg-primary/5 hover:text-primary"><lucide-icon [img]="UserIcon" size="18"></lucide-icon> Meu Perfil</a></li>
+              <li><a class="py-3 rounded-xl font-bold hover:bg-primary/5 hover:text-primary"><lucide-icon [img]="SettingsIcon" size="18"></lucide-icon> Configurações</a></li>
+              <div class="divider h-px bg-neutral/5 my-2"></div>
+              <li><a (click)="logout()" class="py-3 rounded-xl font-bold text-error hover:bg-error/5"><lucide-icon [img]="LogOutIcon" size="18"></lucide-icon> Encerrar Sessão</a></li>
+            </ul>
           </div>
-          <ul tabindex="0" class="mt-4 z-[1] p-3 shadow-ambient menu menu-sm dropdown-content bg-white/90 backdrop-blur-xl rounded-[1.5rem] w-64 border border-neutral/5">
-            <li class="px-4 py-3">
-              <p class="font-black text-neutral truncate">{{ user.name || user.email }}</p>
-              <p class="text-xs font-bold text-neutral/40 truncate">{{ user.email }}</p>
-            </li>
-            <div class="divider h-px bg-neutral/5 my-2"></div>
-            <li><a class="py-3 rounded-xl font-bold hover:bg-primary/5 hover:text-primary"><lucide-icon [img]="UserIcon" size="18"></lucide-icon> Meu Perfil</a></li>
-            <li><a class="py-3 rounded-xl font-bold hover:bg-primary/5 hover:text-primary"><lucide-icon [img]="SettingsIcon" size="18"></lucide-icon> Configurações</a></li>
-            <div class="divider h-px bg-neutral/5 my-2"></div>
-            <li><a (click)="logout()" class="py-3 rounded-xl font-bold text-error hover:bg-error/5"><lucide-icon [img]="LogOutIcon" size="18"></lucide-icon> Encerrar Sessão</a></li>
-          </ul>
         </div>
-      </div>
+      }
     </div>
   </nav>
 
@@ -56,7 +58,7 @@
         </div>
         <div>
           <p class="text-sm font-black text-neutral/40 uppercase tracking-widest">Meus Grupos</p>
-          <p class="text-4xl font-black text-neutral">0</p>
+          <p class="text-4xl font-black text-neutral">{{ isLoading ? '...' : totalGroups }}</p>
         </div>
       </div>
 
@@ -81,22 +83,80 @@
       </div>
     </div>
 
-    <!-- Empty State -->
-    <div class="relative group">
-      <div class="absolute -inset-1 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-[3rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-      <div class="relative bg-surface-lowest p-16 md:p-24 rounded-[3rem] shadow-ambient flex flex-col items-center text-center">
-        <div class="w-32 h-32 bg-surface-low rounded-[2.5rem] flex items-center justify-center mb-10 transform group-hover:rotate-6 transition-transform duration-500">
-          <lucide-icon [img]="GiftIcon" size="64" class="text-primary/20"></lucide-icon>
-        </div>
-        <h2 class="text-3xl font-black text-neutral mb-4 tracking-tight">O palco está vazio</h2>
-        <p class="text-neutral/40 text-lg font-medium max-w-sm mb-12 leading-relaxed">
-          Nenhuma celebração em curso. Que tal inaugurar um novo Amigo Secreto agora?
-        </p>
-        <button class="btn btn-primary btn-lg h-16 px-10 rounded-2xl gap-3 shadow-ambient border-none bg-gradient-to-r from-primary to-primary-focus transform hover:-translate-y-1 transition-all">
-          <lucide-icon [img]="PlusIcon" size="20"></lucide-icon>
-          <span class="font-black uppercase tracking-widest text-sm">Criar Celebração</span>
-        </button>
+    <!-- Loading State -->
+    @if (isLoading) {
+      <div class="space-y-4">
+        @for (_ of [1,2,3]; track _) {
+          <div class="bg-surface-lowest p-6 rounded-[2rem] animate-pulse">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 bg-surface-low rounded-2xl"></div>
+              <div class="space-y-2 flex-1">
+                <div class="h-5 bg-surface-low rounded-full w-1/3"></div>
+                <div class="h-3 bg-surface-low rounded-full w-1/5"></div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="h-4 bg-surface-low rounded-full w-1/4"></div>
+              <div class="h-4 bg-surface-low rounded-full w-1/6"></div>
+            </div>
+          </div>
+        }
       </div>
-    </div>
+    }
+
+    <!-- Error State -->
+    @if (!isLoading && error) {
+      <div class="relative group">
+        <div class="absolute -inset-1 bg-gradient-to-r from-error/10 to-error/5 rounded-[3rem] blur opacity-25"></div>
+        <div class="relative bg-surface-lowest p-16 md:p-24 rounded-[3rem] shadow-ambient flex flex-col items-center text-center">
+          <div class="w-20 h-20 bg-error/10 rounded-[2rem] flex items-center justify-center mb-6">
+            <lucide-icon [img]="AlertCircleIcon" size="48" class="text-error"></lucide-icon>
+          </div>
+          <h2 class="text-2xl font-black text-neutral mb-3">Algo deu errado</h2>
+          <p class="text-neutral/40 text-lg font-medium max-w-sm mb-8 leading-relaxed">
+            {{ error }}
+          </p>
+          <button (click)="loadGroups()"
+                  class="btn btn-error btn-lg h-14 px-8 rounded-2xl gap-2 border-none shadow-ambient
+                         bg-gradient-to-r from-error to-error/80 hover:from-error/80 hover:to-error
+                         transform hover:-translate-y-1 transition-all text-white font-black">
+            <lucide-icon [img]="RefreshCwIcon" size="18"></lucide-icon>
+            <span class="uppercase tracking-widest text-sm">Tentar novamente</span>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Groups List -->
+    @if (!isLoading && !error && groups.length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        @for (group of groups; track group.id) {
+          <app-group-card
+            [group]="group"
+            [isAdmin]="group.created_by === user?.id"
+          />
+        }
+      </div>
+    }
+
+    <!-- Empty State -->
+    @if (!isLoading && !error && groups.length === 0) {
+      <div class="relative group">
+        <div class="absolute -inset-1 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-[3rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+        <div class="relative bg-surface-lowest p-16 md:p-24 rounded-[3rem] shadow-ambient flex flex-col items-center text-center">
+          <div class="w-32 h-32 bg-surface-low rounded-[2.5rem] flex items-center justify-center mb-10 transform group-hover:rotate-6 transition-transform duration-500">
+            <lucide-icon [img]="GiftIcon" size="64" class="text-primary/20"></lucide-icon>
+          </div>
+          <h2 class="text-3xl font-black text-neutral mb-4 tracking-tight">O palco está vazio</h2>
+          <p class="text-neutral/40 text-lg font-medium max-w-sm mb-12 leading-relaxed">
+            Nenhuma celebração em curso. Que tal inaugurar um novo Amigo Secreto agora?
+          </p>
+          <button class="btn btn-primary btn-lg h-16 px-10 rounded-2xl gap-3 shadow-ambient border-none bg-gradient-to-r from-primary to-primary-focus transform hover:-translate-y-1 transition-all">
+            <lucide-icon [img]="PlusIcon" size="20"></lucide-icon>
+            <span class="font-black uppercase tracking-widest text-sm">Criar Celebração</span>
+          </button>
+        </div>
+      </div>
+    }
   </main>
 </div>

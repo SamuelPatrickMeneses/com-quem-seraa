@@ -8,6 +8,9 @@ services:
     profiles:
       - dev
       - prod
+    volumes:
+      - ./apps/web/src:/app/apps/web/src
+      - ./apps/web/dist/frontend/browser:/app/apps/web/dist/frontend/browser
     environment:
       - APP_ENV=${APP_ENV:-prod}
     healthcheck:

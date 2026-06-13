@@ -14,7 +14,7 @@ describe('RegisterComponent', () => {
       imports: [RegisterComponent],
       providers: [
         provideRouter([]),
-        {provider: SessionAuthStore, useValue: new InMemoryAuthStore()},
+        {provide: SessionAuthStore, useValue: new InMemoryAuthStore()},
       ]
 
     })

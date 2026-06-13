@@ -41,7 +41,7 @@ describe('BaseCrudService', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: PocketBaseClient, useValue: mockPbClient },
-        {provider: SessionAuthStore, useValue: new InMemoryAuthStore()},
+        {provide: SessionAuthStore, useValue: new InMemoryAuthStore()},
       ],
     });
 

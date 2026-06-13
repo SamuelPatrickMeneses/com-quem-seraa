@@ -14,10 +14,12 @@
       </p>
     </div>
 
-    <div *ngIf="errorMessage" class="alert bg-error/10 border-none text-error mb-8 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
-      <lucide-icon [img]="MailIcon" size="20"></lucide-icon>
-      <span class="font-semibold">{{ errorMessage }}</span>
-    </div>
+    @if (errorMessage) {
+      <div class="alert bg-error/10 border-none text-error mb-8 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+        <lucide-icon [img]="MailIcon" size="20"></lucide-icon>
+        <span class="font-semibold">{{ errorMessage }}</span>
+      </div>
+    }
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
       <!-- Email -->
@@ -30,12 +32,14 @@
           <input type="email" placeholder="seu@email.com" class="input w-full pl-12 h-14 rounded-2xl" formControlName="email" />
         </div>
         <div class="min-h-[1.5rem] mt-1">
-          <label class="label p-0" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
-            <span class="label-text-alt text-error font-bold flex items-center gap-1">
-              <span class="w-1 h-1 bg-error rounded-full"></span>
-              {{ loginForm.get('email')?.errors?.['required'] ? 'E-mail é obrigatório' : 'E-mail inválido' }}
-            </span>
-          </label>
+          @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+            <label class="label p-0">
+              <span class="label-text-alt text-error font-bold flex items-center gap-1">
+                <span class="w-1 h-1 bg-error rounded-full"></span>
+                {{ loginForm.get('email')?.errors?.['required'] ? 'E-mail é obrigatório' : 'E-mail inválido' }}
+              </span>
+            </label>
+          }
         </div>
       </div>
 
@@ -52,12 +56,14 @@
           <input type="password" placeholder="********" class="input w-full pl-12 h-14 rounded-2xl" formControlName="password" />
         </div>
         <div class="min-h-[1.5rem] mt-1">
-          <label class="label p-0" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-            <span class="label-text-alt text-error font-bold flex items-center gap-1">
-              <span class="w-1 h-1 bg-error rounded-full"></span>
-              Senha é obrigatória
-            </span>
-          </label>
+          @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+            <label class="label p-0">
+              <span class="label-text-alt text-error font-bold flex items-center gap-1">
+                <span class="w-1 h-1 bg-error rounded-full"></span>
+                Senha é obrigatória
+              </span>
+            </label>
+          }
         </div>
       </div>
 
@@ -65,9 +71,13 @@
       <button type="submit" 
               class="btn border-none bg-gradient-to-r from-primary to-primary-focus hover:from-primary-focus hover:to-primary text-white w-full h-14 rounded-2xl shadow-ambient hover:shadow-lg disabled:bg-none disabled:bg-neutral/5 disabled:text-neutral/20 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0" 
               [disabled]="loginForm.invalid || loading">
-        <span *ngIf="loading" class="loading loading-spinner"></span>
+        @if (loading) {
+          <span class="loading loading-spinner"></span>
+        }
         <span class="font-bold tracking-wide uppercase text-sm">{{ loading ? 'Entrando...' : 'Acessar Conta' }}</span>
-        <lucide-icon *ngIf="!loading" [img]="ArrowRightIcon" size="18"></lucide-icon>
+        @if (!loading) {
+          <lucide-icon [img]="ArrowRightIcon" size="18"></lucide-icon>
+        }
       </button>
     </form>
 

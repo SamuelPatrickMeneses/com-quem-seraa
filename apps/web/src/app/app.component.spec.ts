@@ -8,7 +8,9 @@ describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
-      providers: [provideRouter(routes)],
+      providers: [
+        provideRouter(routes),
+      ],
     }).compileComponents();
   });
 
@@ -24,15 +26,15 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('frontend');
   });
 
-  //it('should render title', fakeAsync(() => {
-  //  const fixture = TestBed.createComponent(AppComponent);
-  //  TestBed.inject(Router);
-  //  fixture.detectChanges();
-  //  tick();
-  //  fixture.detectChanges();
-  //  tick();
-  //  fixture.detectChanges();
-  //  const compiled = fixture.nativeElement as HTMLElement;
-  //  expect(compiled.textContent).toContain(' A elegância de presentear com magia e conexão.');
-  //}));
+  it('should render the login page when not authenticated', fakeAsync(() => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const router = TestBed.inject(Router);
+
+    router.navigate(['/']);
+    tick();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('p')?.textContent).toContain('A elegância de presentear com magia e conexão.');
+  }));
 });

@@ -14,7 +14,7 @@ describe('LoginComponent', () => {
       imports: [LoginComponent],
       providers: [
         provideRouter([]),
-        {provider: SessionAuthStore, useValue: new InMemoryAuthStore()},
+        {provide: SessionAuthStore, useValue: new InMemoryAuthStore()},
       ]
     })
     .compileComponents();

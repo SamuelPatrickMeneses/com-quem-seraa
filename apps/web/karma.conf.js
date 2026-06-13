@@ -2,6 +2,8 @@ const browser = process.env['KARMA_BROWSER'] || 'FirefoxHeadless';
 const seleniumHost = process.env['SELENIUM_HOST'] || 'localhost';
 const seleniumPort = process.env['SELENIUM_PORT'] || '4444';
 const karmaHostname = process.env['KARMA_HOSTNAME'] || 'localhost';
+const pocketbaseHost = process.env['POCKETBASE_HOST'] || 'pocketbase';
+const pocketbasePort = process.env['POCKETBASE_PORT'] || '8090';
 
 const plugins = [
   require('karma-jasmine'),
@@ -49,7 +51,14 @@ module.exports = function (config) {
     browsers: [browser],
     customLaunchers,
     hostname: karmaHostname,
+    proxies: {
+      '/api/': `http://${pocketbaseHost}:${pocketbasePort}/api/`
+    },
     singleRun: true,
     restartOnFileChange: true,
+    browserConsoleLogOptions: {
+      terminal: true,
+      level: 'debug'
+    }
   });
 };

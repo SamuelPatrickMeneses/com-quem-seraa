@@ -14,10 +14,12 @@
       </p>
     </div>
 
-    <div *ngIf="errorMessage" class="alert bg-error/10 border-none text-error mb-8 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
-      <lucide-icon [img]="MailIcon" size="20"></lucide-icon>
-      <span class="font-semibold">{{ errorMessage }}</span>
-    </div>
+    @if (errorMessage) {
+      <div class="alert bg-error/10 border-none text-error mb-8 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+        <lucide-icon [img]="MailIcon" size="20"></lucide-icon>
+        <span class="font-semibold">{{ errorMessage }}</span>
+      </div>
+    }
 
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-5">
       <!-- Name -->
@@ -30,9 +32,11 @@
           <input type="text" placeholder="Seu nome" class="input w-full pl-12 h-14 rounded-2xl" formControlName="name" />
         </div>
         <div class="min-h-[1.2rem] mt-1">
-          <label class="label p-0" *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
-            <span class="label-text-alt text-error font-bold flex items-center gap-1">Nome é obrigatório</span>
-          </label>
+          @if (registerForm.get('name')?.invalid && registerForm.get('name')?.touched) {
+            <label class="label p-0">
+              <span class="label-text-alt text-error font-bold flex items-center gap-1">Nome é obrigatório</span>
+            </label>
+          }
         </div>
       </div>
 
@@ -46,9 +50,11 @@
           <input type="email" placeholder="nome@exemplo.com" class="input w-full pl-12 h-14 rounded-2xl" formControlName="email" />
         </div>
         <div class="min-h-[1.2rem] mt-1">
-          <label class="label p-0" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
-            <span class="label-text-alt text-error font-bold flex items-center gap-1">{{ registerForm.get('email')?.errors?.['required'] ? 'E-mail é obrigatório' : 'E-mail inválido' }}</span>
-          </label>
+          @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+            <label class="label p-0">
+              <span class="label-text-alt text-error font-bold flex items-center gap-1">{{ registerForm.get('email')?.errors?.['required'] ? 'E-mail é obrigatório' : 'E-mail inválido' }}</span>
+            </label>
+          }
         </div>
       </div>
 
@@ -78,19 +84,29 @@
       </div>
       
       <div class="min-h-[1.2rem]">
-        <label class="label p-0" *ngIf="(registerForm.get('password')?.touched || registerForm.get('confirmPassword')?.touched)">
-          <span class="label-text-alt text-error font-bold" *ngIf="registerForm.get('password')?.errors?.['minlength']">Mínimo 8 caracteres</span>
-          <span class="label-text-alt text-error font-bold" *ngIf="registerForm.hasError('passwordMismatch') && !registerForm.get('confirmPassword')?.errors?.['required']">As senhas não coincidem</span>
-        </label>
+        @if (registerForm.get('password')?.touched || registerForm.get('confirmPassword')?.touched) {
+          <label class="label p-0">
+            @if (registerForm.get('password')?.errors?.['minlength']) {
+              <span class="label-text-alt text-error font-bold">Mínimo 8 caracteres</span>
+            }
+            @if (registerForm.hasError('passwordMismatch') && !registerForm.get('confirmPassword')?.errors?.['required']) {
+              <span class="label-text-alt text-error font-bold">As senhas não coincidem</span>
+            }
+          </label>
+        }
       </div>
 
       <!-- Submit Button -->
       <button type="submit" 
               class="btn border-none bg-gradient-to-r from-secondary to-secondary-focus hover:from-secondary-focus hover:to-secondary text-white w-full h-14 rounded-2xl shadow-ambient hover:shadow-lg disabled:bg-none disabled:bg-neutral/5 disabled:text-neutral/20 transition-all duration-300 transform hover:-translate-y-0.5" 
               [disabled]="registerForm.invalid || loading">
-        <span *ngIf="loading" class="loading loading-spinner"></span>
+        @if (loading) {
+          <span class="loading loading-spinner"></span>
+        }
         <span class="font-bold tracking-wide uppercase text-sm">{{ loading ? 'Cadastrando...' : 'Criar Conta Agora' }}</span>
-        <lucide-icon *ngIf="!loading" [img]="UserPlusIcon" size="18"></lucide-icon>
+        @if (!loading) {
+          <lucide-icon [img]="UserPlusIcon" size="18"></lucide-icon>
+        }
       </button>
     </form>
 

@@ -22,6 +22,12 @@ Antes de sugerir, criar ou alterar qualquer linha de código, você **deve** obr
 - Implemente o código garantindo cobertura de testes (se especificado no SDD).
 - Ao finalizar, faça um double-check comparando o resultado final com os critérios de aceitação do `docs/prd.md`.
 
+## 🧪 Diretrizes de Testes
+- **Sempre** execute os testes via Docker: `npm run docker:test` (alias para `docker compose --profile test up --abort-on-container-exit --exit-code-from test`).
+- **Nunca** execute `ng test` diretamente no host — os testes de integração dependem dos containers Pocketbase e Selenium Firefox.
+- Testes unitários puros (que não dependem de containers) podem ser executados com `ng test` apenas se não houver os containers rodando, mas por padrão use Docker.
+- O comando `npm run docker:test` constrói as imagens, sobe os containers (Pocketbase + Selenium + Test Runner), executa os specs e encerra tudo automaticamente.
+
 ## 🛠️ Diretrizes de Resposta
 - Seja direto, técnico e foque na qualidade do código.
 - Se uma especificação estiver incompleta nos documentos, pergunte ao usuário em vez de tentar adivinhar a regra de negócio.

@@ -18,13 +18,11 @@ export class GroupService extends BaseCrudService<Group> {
 
     const groupsCreated = this.getList(page, perPage, {
       filter: `created_by = "${user.id}"`,
-      sort: '-created_at'
     });
 
-    const groupsParticipating = this.pbClient.instance.collection('group_participant').getList<(Group & RecordModel)>(page, perPage, {
+    const groupsParticipating = this.pbClient.instance.collection('group_participants').getList<(Group & RecordModel)>(page, perPage, {
       filter: `giver_id = "${user.id}"`,
       expand: 'group_id',
-      sort: '-created'
     });
 
     const [createdResult, participatingResult] = await Promise.all([groupsCreated, groupsParticipating]);
@@ -39,6 +37,12 @@ export class GroupService extends BaseCrudService<Group> {
         allGroups.push(g);
       }
     }
+
+    allGroups.sort((a: any, b: any) => {
+      const dateA = new Date(a.created || 0).getTime();
+      const dateB = new Date(b.created || 0).getTime();
+      return dateB - dateA;
+    });
 
     return {
       items: allGroups,

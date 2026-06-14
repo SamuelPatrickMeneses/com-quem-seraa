@@ -28,6 +28,12 @@ Antes de sugerir, criar ou alterar qualquer linha de código, você **deve** obr
 - Testes unitários puros (que não dependem de containers) podem ser executados com `ng test` apenas se não houver os containers rodando, mas por padrão use Docker.
 - O comando `npm run docker:test` constrói as imagens, sobe os containers (Pocketbase + Selenium + Test Runner), executa os specs e encerra tudo automaticamente.
 
+## 🚫 Controle de Commit e Branch
+- **Nunca** execute `git commit` sem autorização explícita do usuário.
+- Sempre apresente a mensagem de commit proposta e aguarde confirmação antes de executar.
+- **Nunca** execute `git push` sem autorização explícita do usuário.
+- **Nunca** troque de branch (`git checkout`, `git switch`, `git merge`) sem autorização explícita do usuário.
+
 ## 🛠️ Diretrizes de Resposta
 - Seja direto, técnico e foque na qualidade do código.
 - Se uma especificação estiver incompleta nos documentos, pergunte ao usuário em vez de tentar adivinhar a regra de negócio.

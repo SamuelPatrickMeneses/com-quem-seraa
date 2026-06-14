@@ -1,40 +1,61 @@
 import { Component, Input } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
-import { LucideAngularModule, Gift, Users, ShieldCheck, ArrowRight } from 'lucide-angular';
+import { LucideAngularModule, Gift, Users, ShieldCheck, ArrowRight, CheckCircle2, Clock, Sparkles } from 'lucide-angular';
 import type { Group } from '../../../core/models/group.model';
 
 @Component({
   selector: 'app-group-card',
   standalone: true,
-  imports: [RouterLink, DatePipe, LucideAngularModule],
+  imports: [NgClass, RouterLink, LucideAngularModule],
   template: `
     <a [routerLink]="['/group', group.id]"
-       class="group block bg-surface-lowest p-6 rounded-[2rem] shadow-ambient
+       class="group relative block bg-surface-lowest p-6 rounded-[2rem] shadow-ambient
               hover:shadow-lg hover:-translate-y-1 transition-all duration-300
-              border border-neutral/5 hover:border-primary/10">
-      <div class="flex items-start justify-between mb-4">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center
-                      group-hover:bg-primary group-hover:text-white transition-colors duration-300">
-            <lucide-icon [img]="GiftIcon" size="24"></lucide-icon>
-          </div>
-          <div>
-            <h3 class="text-lg font-black text-neutral">{{ group.name }}</h3>
-            <p class="text-xs font-bold text-neutral/40">
-              Criado em {{ group.created_at | date:"dd/MM/yyyy" }}
-            </p>
-          </div>
-        </div>
-        @if (isAdmin) {
-          <div class="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full
-                      group-hover:bg-primary group-hover:text-white transition-colors duration-300">
-            <lucide-icon [img]="ShieldCheckIcon" size="12" class="inline -mt-0.5 mr-1"></lucide-icon>
-            Admin
-          </div>
-        }
+              border border-neutral/5 hover:border-primary/10 overflow-hidden">
+      <!-- Status Bar -->
+      <div class="absolute top-0 left-0 right-0 h-1"
+           [ngClass]="{
+             'bg-secondary': status === 'SORTEADO',
+             'bg-primary': status === 'ATIVO',
+             'bg-neutral/20': status === 'PENDENTE'
+           }">
       </div>
 
+      <!-- Top Row: Badges -->
+      <div class="flex items-center justify-between mb-5 mt-2">
+        <div class="flex items-center gap-2">
+          @if (status === 'SORTEADO') {
+            <div class="px-3 py-1 bg-secondary/10 text-secondary text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1">
+              <lucide-icon [img]="CheckCircle2Icon" size="12"></lucide-icon>
+              Sorteado
+            </div>
+          } @else if (status === 'ATIVO') {
+            <div class="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1">
+              <lucide-icon [img]="SparklesIcon" size="12"></lucide-icon>
+              Ativo
+            </div>
+          } @else {
+            <div class="px-3 py-1 bg-neutral/10 text-neutral/50 text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1">
+              <lucide-icon [img]="ClockIcon" size="12"></lucide-icon>
+              Pendente
+            </div>
+          }
+        </div>
+        <div class="flex items-center gap-2">
+          @if (isAdmin) {
+            <div class="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1">
+              <lucide-icon [img]="ShieldCheckIcon" size="12"></lucide-icon>
+              Admin
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Group Name -->
+      <h3 class="text-xl font-black text-neutral mb-5">{{ group.name }}</h3>
+
+      <!-- Bottom Row -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2 text-neutral/50">
           <lucide-icon [img]="UsersIcon" size="16"></lucide-icon>
@@ -57,4 +78,13 @@ export class GroupCardComponent {
   readonly UsersIcon = Users;
   readonly ShieldCheckIcon = ShieldCheck;
   readonly ArrowRightIcon = ArrowRight;
+  readonly CheckCircle2Icon = CheckCircle2;
+  readonly ClockIcon = Clock;
+  readonly SparklesIcon = Sparkles;
+
+  get status(): 'ATIVO' | 'PENDENTE' | 'SORTEADO' {
+    if (this.group.has_been_drawn) return 'SORTEADO';
+    if (this.group.participants_count >= 3) return 'ATIVO';
+    return 'PENDENTE';
+  }
 }

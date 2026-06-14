@@ -72,4 +72,31 @@ describe('GroupCardComponent', () => {
     const link = fixture.nativeElement.querySelector('a');
     expect(link?.getAttribute('href')).toBe('/group/abc123');
   });
+
+  it('should show SORTEADO badge when drawn', () => {
+    fixture = TestBed.createComponent(GroupCardComponent);
+    fixture.componentRef.setInput('group', { ...mockGroup, has_been_drawn: true });
+    fixture.componentRef.setInput('isAdmin', false);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Sorteado');
+  });
+
+  it('should show ATIVO badge when not drawn with 3+ participants', () => {
+    fixture = TestBed.createComponent(GroupCardComponent);
+    fixture.componentRef.setInput('group', { ...mockGroup, has_been_drawn: false, participants_count: 3 });
+    fixture.componentRef.setInput('isAdmin', false);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Ativo');
+  });
+
+  it('should show PENDENTE badge when not drawn with < 3 participants', () => {
+    fixture = TestBed.createComponent(GroupCardComponent);
+    fixture.componentRef.setInput('group', { ...mockGroup, has_been_drawn: false, participants_count: 2 });
+    fixture.componentRef.setInput('isAdmin', false);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Pendente');
+  });
 });

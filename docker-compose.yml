@@ -35,6 +35,7 @@ services:
       - SELENIUM_PORT=4444
       - KARMA_HOSTNAME=test
       - KARMA_BROWSER=SeleniumFirefox
+
     depends_on:
       selenium-firefox:
         condition: service_started

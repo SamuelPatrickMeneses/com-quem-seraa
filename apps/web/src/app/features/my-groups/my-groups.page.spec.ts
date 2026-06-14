@@ -1,7 +1,7 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { NgZone } from '@angular/core';
-import { MyGroupsComponent } from './my-groups.component';
+import { MyGroupsComponent } from './my-groups.page';
 import { AuthService } from '../../core/services/auth.service';
 import { GroupService } from '../../core/services/group.service';
 import { PocketBaseClient, POCKETBASE_URL } from '../../infrastructure/pocketbase/pocketbase.client';
@@ -66,7 +66,16 @@ describe('MyGroupsComponent (integração)', () => {
     const cards = fixture.nativeElement.querySelectorAll('app-group-card');
     expect(cards.length).toBe(1);
     expect(fixture.nativeElement.textContent).toContain('Amigo Secreto 2024');
-    expect(fixture.nativeElement.textContent).not.toContain('O palco está vazio');
+    expect(fixture.nativeElement.textContent).not.toContain('Nenhum grupo ainda');
+  });
+
+  it('should show "Criar Grupo" button', async () => {
+    await auth.login('ana@exemplo.com', '1234567890');
+    await createComponent();
+
+    const btns: Element[] = Array.from(fixture.nativeElement.querySelectorAll('[routerLink="/create"]'));
+    expect(btns.length).toBeGreaterThanOrEqual(1);
+    expect(btns.some((b) => b.textContent?.match(/Criar/i))).toBeTrue();
   });
 
   it('should show empty state when user has no groups', async () => {
@@ -81,8 +90,7 @@ describe('MyGroupsComponent (integração)', () => {
     await auth.login('semgrupo@teste.com', '12345678');
     await createComponent();
 
-    expect(fixture.nativeElement.textContent).toContain('O palco está vazio');
-    expect(fixture.nativeElement.textContent).toContain('0');
+    expect(fixture.nativeElement.textContent).toContain('Nenhum grupo ainda');
     expect(fixture.nativeElement.querySelectorAll('app-group-card').length).toBe(0);
   });
 });
@@ -110,6 +118,6 @@ describe('MyGroupsComponent (erro)', () => {
     expect(el.textContent).toContain('Algo deu errado');
     expect(el.textContent).toContain('Tentar novamente');
     expect(el.querySelectorAll('app-group-card').length).toBe(0);
-    expect(el.textContent).not.toContain('O palco está vazio');
+    expect(el.textContent).not.toContain('Nenhum grupo ainda');
   });
 });

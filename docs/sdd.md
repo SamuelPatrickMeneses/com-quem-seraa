@@ -197,7 +197,7 @@ projeto/
 | `/group/:groupId` | `features/group-dashboard/group-dashboard.page.ts` | `authGuard`, `groupExistsGuard` |
 | `/group/:groupId/reveal` | `features/reveal/reveal.page.ts` | `authGuard`, `groupExistsGuard`, `drawAvailableGuard` |
 | `/group/:groupId/admin` | `features/admin/admin-dashboard.page.ts` | `authGuard`, `groupExistsGuard`, `isOrganizerGuard` |
-| `/profile` | `features/profile/profile.page.ts` | `authGuard` |
+| `/profile` | `features/profile/profile.page.ts` (placeholder) | `authGuard` |
 
 ### 🧠 5.3. Core Services (Singleton)
 | Service | Arquivo | Responsabilidade Macro |
@@ -226,6 +226,39 @@ projeto/
   5. Atualiza em lote todos os `group_participant` com seus respectivos `giver_id`/`receiver_id`.
   6. Marca `group.has_been_drawn = true`.
   7. Retorna sucesso ou erro.
+
+## 📐 5.4. Diretrizes de Criação e Edição de Building Blocks
+
+Todo novo building block (componente, service, página, diretiva, pipe) deve:
+
+- **Sempre ser acompanhado de testes** — nenhum building block é considerado completo sem ao menos um `spec` cobrindo seu comportamento essencial.
+- **Preferir testes antes da implementação** — a especificação dos testes (red/green) deve guiar o desenvolvimento, garantindo que o código entregue apenas o que é necessário para satisfazer os critérios de aceitação.
+- **Ser gerado pelo Angular CLI sempre que possível** — `ng generate component`, `ng generate service` etc. produzem automaticamente o arquivo `.spec.ts` correspondente, além de registrar corretamente os metadados. O uso do CLI é recomendado antes de detalhar manualmente a implementação, reduzindo erro humano e padronizando a estrutura.
+- **Execução de testes via Docker:** Todos os testes devem ser executados com `npm run docker:test`, que sobe os containers Pocketbase + Selenium, executa os specs e encerra tudo automaticamente.
+- **Filtragem de testes específicos:** Filtragem via linha de comando **não está disponível no momento**. Use `fdescribe()`/`fit()`.
+
+### Componentes Compartilhados (Shared)
+
+| Componente | Descrição | Inputs |
+|---|---|---|
+| `BottomNavComponent` | Barra de navegação inferior fixa com ícones Lucide e `routerLinkActive` | `items: NavItem[]` (label, icon, route) |
+| `GroupCardComponent` | Card de grupo com badge de status (ATIVO/PENDENTE/SORTEADO), Admin badge, contagem de participantes | `group: Group`, `isAdmin: boolean` |
+
+### Novos Componentes (Stitch-aligned)
+
+- **ProfileComponent** (`/profile`): Placeholder com info do usuário e logout. Bottom nav integrado.
+- **BottomNavComponent**: 3 itens (Grupos/Criar/Perfil), ativo detectado via `routerLinkActive`.
+- **GroupCardComponent status badges**: 3 estados — SORTEADO (`has_been_drawn`), ATIVO (>= 3 participantes), PENDENTE (< 3 participantes).
+
+### Status Card Badges (GroupCardComponent)
+
+| Badge | Condição | Cor |
+|---|---|---|
+| SORTEADO | `has_been_drawn === true` | Secondary (verde) |
+| ATIVO | `!has_been_drawn && participants_count >= 3` | Primary (vermelho) |
+| PENDENTE | `!has_been_drawn && participants_count < 3` | Neutral (cinza) |
+
+---
 
 ## 🐳 7. Infraestrutura e Deploy
 
@@ -393,6 +426,7 @@ projeto/
 | `docker compose restart nginx` | Reiniciar apenas o Nginx |
 | `npm run docker:test` | Executar testes Karma via Selenium Firefox em Docker |
 | `docker compose --profile test up --abort-on-container-exit --exit-code-from test` | (equivalente ao script acima) |
+| `npm run docker:test '**/*nome*'` | ~~Executar apenas testes que correspondem ao padrão glob~~ **Indisponível** — use `fdescribe()`/`fit()` no spec |
 
 ### 🌐 7.7. URLs de Acesso
 
@@ -486,7 +520,7 @@ module.exports = function (config) {
 
 ```jsonc
 "test": {
-  "builder": "@angular-devkit/build-angular:application",  // esbuild (não Webpack)
+  "builder": "@angular-devkit/build-angular:karma",
   "options": {
     "builderMode": "detect",    // força o uso do esbuild builder path
     "watch": false,             // sem watch mode em CI
@@ -526,6 +560,8 @@ Volumes específicos (ex: `pocketbase_data`, `./db/pb_migrations`) são montados
 
 #### Padrão para Spec Files
 
+- **Preferir integração real ao PocketBase para fluxos padrão da aplicação:** Testes que cobrem comportamentos esperados (success cases, sem erros classe 500) **não devem mockar** `GroupService`, `ParticipantService`, `AuthService` nem o `PocketBaseClient`. Em vez disso, devem utilizar o endpoint `/api/test/reseed` para resetar os dados e realizar login real com os usuários de teste (`ana@exemplo.com`, `beto@exemplo.com`, `caio@exemplo.com`). Isso garante que o teste valide a integração completa entre frontend e backend, detectando problemas de regras de acesso, contratos de dados e comportamento real dos serviços.
+- **Mock apenas para cenários de erro:** Mocks são permitidos exclusivamente para simular falhas que o backend real não produz naturalmente (ex: erro de rede, timeout, resposta 500). Nesses casos, as dependências que interagem com o PocketBase (`GroupService`, `AuthService`, etc.) podem ser substituídas por mocks Jasmine.
 - Specs usam `new InMemoryAuthStore()` em vez de `TestBed.inject(InMemoryAuthStore)` para evitar erro "Cannot configure test module".
 - Componentes com `<router-outlet>` ou `RouterLink` devem prover roteamento via `provideRouter(routes)` no `TestBed.configureTestingModule`.
 - Testes de navegação assíncrona usam `fakeAsync` + `tick()` com `TestBed.inject(Router)` para forçar a inicialização do roteador.
@@ -600,3 +636,56 @@ O projeto utiliza um arquivo `.env` para gerenciar configurações e segredos. U
 A equipe optou por utilizar o DaisyUI.
 
 A decisão foi baseada na velocidade de desenvolvimento, já que a biblioteca fornece componentes prontos integrados ao Tailwind, permitindo a criação de interfaces modernas com menos esforço e configuração.
+
+---
+
+## 📝 9. Convenção de Commits
+
+### Formato
+
+```
+type: <assunto>
+files: <caminho-dos-arquivos>
+description: <descrição detalhada do que foi feito>
+```
+
+- `type` e `description` são obrigatórios.
+- `files` é opcional, mas recomendado quando o diff envolve múltiplos arquivos.
+
+Commits simples podem omitir `files:` e `description:`:
+
+```
+type: descrição curta
+```
+
+### Tipos
+
+| Tipo | Uso |
+| :--- | :--- |
+| `feat` | Nova funcionalidade |
+| `fix` | Correção de bug |
+| `docs` | Documentação |
+| `refactor` | Refatoração de código (sem mudança de comportamento) |
+| `ci` | Configuração de CI/CD |
+| `config` | Mudanças de configuração (Docker, env, etc.) |
+| `test` | Adição ou modificação de testes |
+| `revert` | Reversão de commit anterior |
+| `type` | Genérico (quando nenhum tipo específico se aplica) |
+
+### Exemplos
+
+```
+feat: implement PocketBase client and generic CRUD service
+```
+
+```
+fix: correct getMyGroups sort error
+files: apps/web/src/app/core/services/group.service.ts
+description: Fix sorting error caused by PocketBase v0.37.3 bug with the "created" field; add client-side sorting as fallback.
+```
+
+```
+type: folder structure
+files: db/pb_public/.gitkeep
+description: Add gitkeep to maintain empty directory in version control.
+```

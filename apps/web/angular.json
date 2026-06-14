@@ -83,7 +83,7 @@
             "main": "src/test.ts",
             "watch": false,
             "include": [
-              "src/**/*create-group*"
+              "src/**/*.spec.ts"
             ],
             "polyfills": [
               "src/disable-zonejs-trace.ts",

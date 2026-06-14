@@ -1,26 +1,25 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RegisterComponent } from './register.component';
-import SessionAuthStore from '../../infrastructure/pocketbase/session.auth.store';
-import InMemoryAuthStore from '../../infrastructure/pocketbase/inMemory.auth.store';
+import { LoginComponent } from './login.page';
+import SessionAuthStore from '../../../infrastructure/pocketbase/session.auth.store';
+import InMemoryAuthStore from '../../../infrastructure/pocketbase/inMemory.auth.store';
 import {provideRouter} from '@angular/router';
 
-describe('RegisterComponent', () => {
-  let component: RegisterComponent;
-  let fixture: ComponentFixture<RegisterComponent>;
+describe('LoginComponent', () => {
+  let component: LoginComponent;
+  let fixture: ComponentFixture<LoginComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RegisterComponent],
+      imports: [LoginComponent],
       providers: [
         provideRouter([]),
         {provide: SessionAuthStore, useValue: new InMemoryAuthStore()},
       ]
-
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(RegisterComponent);
+    fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

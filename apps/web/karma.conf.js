@@ -57,8 +57,8 @@ module.exports = function (config) {
     singleRun: true,
     restartOnFileChange: true,
     browserConsoleLogOptions: {
-      terminal: true,
-      level: 'debug'
+      terminal: false,
+      level: 'error'
     }
   });
 };

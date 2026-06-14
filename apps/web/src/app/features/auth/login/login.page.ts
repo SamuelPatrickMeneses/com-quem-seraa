@@ -1,14 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { LucideAngularModule, Gift, Mail, Lock, ArrowRight } from 'lucide-angular';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, LucideAngularModule],
-  templateUrl: './login.component.html'
+  templateUrl: './login.page.html'
 })
 export class LoginComponent {
   loginForm: FormGroup;

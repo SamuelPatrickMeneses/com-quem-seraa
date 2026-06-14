@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { LucideAngularModule, User, Mail, Lock, UserPlus } from 'lucide-angular';
 
 export function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -17,7 +17,7 @@ export function passwordMatchValidator(control: AbstractControl): ValidationErro
   selector: 'app-register',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, LucideAngularModule],
-  templateUrl: './register.component.html'
+  templateUrl: './register.page.html'
 })
 export class RegisterComponent {
   registerForm: FormGroup;

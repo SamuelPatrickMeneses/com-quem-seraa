@@ -1,32 +1,35 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { UpperCasePipe, DatePipe } from '@angular/common';
-import { Router } from '@angular/router';
+import { UpperCasePipe } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { GroupService } from '../../core/services/group.service';
 import { GroupCardComponent } from '../../shared/components/group-card/group-card.component';
-import { LucideAngularModule, Gift, LogOut, Plus, Home, User, Settings, UserPlus, RefreshCw, AlertCircle, Loader } from 'lucide-angular';
+import { BottomNavComponent, NavItem } from '../../shared/components/bottom-nav/bottom-nav.component';
+import { LucideAngularModule, Gift, LogOut, Plus, User, PlusCircle, Users, AlertCircle, RefreshCw } from 'lucide-angular';
 import type { Group } from '../../core/models/group.model';
 
 @Component({
   selector: 'app-my-groups',
   standalone: true,
   imports: [
-    UpperCasePipe, DatePipe,
-    LucideAngularModule, GroupCardComponent
+    UpperCasePipe, RouterLink,
+    LucideAngularModule, GroupCardComponent, BottomNavComponent
   ],
-  templateUrl: './my-groups.component.html'
+  templateUrl: './my-groups.page.html'
 })
 export class MyGroupsComponent implements OnInit {
   readonly GiftIcon = Gift;
   readonly LogOutIcon = LogOut;
   readonly PlusIcon = Plus;
-  readonly HomeIcon = Home;
   readonly UserIcon = User;
-  readonly SettingsIcon = Settings;
-  readonly UserPlusIcon = UserPlus;
-  readonly RefreshCwIcon = RefreshCw;
   readonly AlertCircleIcon = AlertCircle;
-  readonly LoaderIcon = Loader;
+  readonly RefreshCwIcon = RefreshCw;
+
+  readonly navItems: NavItem[] = [
+    { label: 'Grupos', icon: Users, route: '/my-groups' },
+    { label: 'Criar', icon: PlusCircle, route: '/create' },
+    { label: 'Perfil', icon: User, route: '/profile' },
+  ];
 
   private authService = inject(AuthService);
   private groupService = inject(GroupService);
@@ -40,6 +43,10 @@ export class MyGroupsComponent implements OnInit {
   currentPage = 1;
   perPage = 10;
 
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalGroups / this.perPage));
+  }
+
   ngOnInit() {
     this.user = this.authService.user;
     this.loadGroups();
@@ -52,13 +59,17 @@ export class MyGroupsComponent implements OnInit {
       const result = await this.groupService.getMyGroups(this.currentPage, this.perPage);
       this.groups = result.items;
       this.totalGroups = result.total;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error('Erro ao carregar grupos:', message);
+    } catch {
       this.error = 'Não foi possível carregar seus grupos. Verifique sua conexão.';
     } finally {
       this.isLoading = false;
     }
+  }
+
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.loadGroups();
   }
 
   logout() {

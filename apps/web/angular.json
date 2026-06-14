@@ -82,7 +82,9 @@
             "builderMode": "detect",
             "main": "src/test.ts",
             "watch": false,
-            "include": ["src/**/*.spec.ts"],
+            "include": [
+              "src/**/*create-group*"
+            ],
             "polyfills": [
               "src/disable-zonejs-trace.ts",
               "zone.js",

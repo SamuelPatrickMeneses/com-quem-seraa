@@ -1,0 +1,114 @@
+<div class="min-h-screen bg-surface flex items-center justify-center p-4 relative overflow-hidden pb-28">
+  <div class="absolute -top-24 -right-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+  <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
+
+  <div class="glass-premium w-full max-w-md p-8 sm:p-12 rounded-[2.5rem] relative z-10">
+    <!-- Back Button -->
+    <a routerLink="/my-groups" class="inline-flex items-center gap-2 text-neutral/40 hover:text-neutral transition-colors mb-8 font-bold text-sm">
+      <lucide-icon [img]="ArrowLeftIcon" size="18"></lucide-icon>
+      Voltar
+    </a>
+
+    <!-- Sparkles Decorative Icon -->
+    <div class="flex justify-center mb-2">
+      <lucide-icon [img]="SparklesIcon" size="28" class="text-primary/40"></lucide-icon>
+    </div>
+
+    <!-- Header -->
+    <div class="flex flex-col items-center mb-10">
+      <div class="w-20 h-20 bg-gradient-to-br from-primary to-primary-focus text-white rounded-3xl shadow-lg flex items-center justify-center mb-6 transform rotate-3 hover:rotate-0 transition-transform duration-500">
+        <lucide-icon [img]="GiftIcon" size="40" class="text-white"></lucide-icon>
+      </div>
+      <h1 class="text-4xl font-extrabold text-neutral text-center mb-3">Novo Evento</h1>
+      <p class="text-center text-neutral/60 font-medium leading-relaxed max-w-xs">
+        Comece uma nova tradição. Convide amigos e deixe o espírito cuidar do sorteio.
+      </p>
+    </div>
+
+    <!-- Error Message -->
+    @if (error) {
+      <div class="alert bg-error/10 border-none text-error mb-8 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+        <lucide-icon [img]="AlertCircleIcon" size="20"></lucide-icon>
+        <span class="font-semibold">{{ error }}</span>
+      </div>
+    }
+
+    <!-- Form -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-8">
+      <!-- Group Name -->
+      <div class="form-control">
+        <label class="label mb-1 p-0">
+          <span class="label-text font-bold text-neutral/70 ml-1">Nome do Grupo</span>
+        </label>
+        <div class="relative group">
+          <div class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral/30 group-focus-within:text-primary transition-colors">
+            <lucide-icon [img]="GiftIcon" size="18"></lucide-icon>
+          </div>
+          <input type="text"
+                 placeholder="Ex: Natal da Família 2024"
+                 class="input w-full pl-12 h-14 rounded-2xl"
+                 formControlName="name" />
+        </div>
+        <div class="min-h-[1.5rem] mt-1">
+          @if (form.get('name')?.invalid && form.get('name')?.touched) {
+            <label class="label p-0">
+              <span class="label-text-alt text-error font-bold flex items-center gap-1">
+                <span class="w-1 h-1 bg-error rounded-full"></span>
+                @if (form.get('name')?.errors?.['required']) {
+                  Digite um nome para o grupo
+                } @else if (form.get('name')?.errors?.['minlength']) {
+                  Mínimo de 3 caracteres
+                } @else if (form.get('name')?.errors?.['maxlength']) {
+                  Máximo de 100 caracteres
+                }
+              </span>
+            </label>
+          }
+        </div>
+      </div>
+
+      <!-- Join Group Checkbox -->
+      <div class="form-control">
+        <label class="cursor-pointer flex items-start gap-4 p-4 rounded-2xl bg-surface-low hover:bg-surface-low/80 transition-colors">
+          <input type="checkbox"
+                 class="checkbox checkbox-primary mt-0.5 rounded-lg"
+                 formControlName="joinGroup" />
+          <div>
+            <span class="font-bold text-neutral">Participar do grupo</span>
+            <p class="text-sm text-neutral/50 font-medium mt-0.5 leading-relaxed">
+              Marque esta opção se você também for presentear alguém neste grupo.
+            </p>
+          </div>
+        </label>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit"
+              class="btn border-none bg-gradient-to-r from-primary to-primary-focus hover:from-primary-focus hover:to-primary text-white w-full h-14 rounded-2xl shadow-ambient hover:shadow-lg disabled:bg-none disabled:bg-neutral/5 disabled:text-neutral/20 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
+              [disabled]="form.invalid || loading">
+        @if (loading) {
+          <span class="loading loading-spinner"></span>
+        }
+        <span class="font-bold tracking-wide uppercase text-sm">{{ loading ? 'Criando...' : 'Criar grupo' }}</span>
+        @if (!loading) {
+          <lucide-icon [img]="GiftIcon" size="18"></lucide-icon>
+        }
+      </button>
+
+      <!-- Cancel -->
+      <p class="text-center text-sm font-medium text-neutral/60">
+        <a routerLink="/my-groups" class="text-neutral/40 hover:text-neutral font-bold hover:underline underline-offset-4 decoration-2 transition-colors">
+          Cancelar
+        </a>
+      </p>
+    </form>
+
+    <!-- Party Popper Decorative Icon -->
+    <div class="flex justify-center mt-8">
+      <lucide-icon [img]="PartyPopperIcon" size="24" class="text-primary/30"></lucide-icon>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<app-bottom-nav [items]="navItems" />

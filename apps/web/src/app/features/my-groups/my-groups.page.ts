@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, input, effect } from '@angular/core';
 import { UpperCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -18,6 +18,8 @@ import type { Group } from '../../core/models/group.model';
   templateUrl: './my-groups.page.html'
 })
 export class MyGroupsComponent implements OnInit {
+  readonly groupId = input<string>('', { alias: 'groupId' });
+
   readonly GiftIcon = Gift;
   readonly LogOutIcon = LogOut;
   readonly PlusIcon = Plus;
@@ -36,15 +38,21 @@ export class MyGroupsComponent implements OnInit {
   private router = inject(Router);
 
   user: any = null;
-  groups: Group[] = [];
-  isLoading = true;
-  error: string | null = null;
-  totalGroups = 0;
-  currentPage = 1;
+  groups = signal<Group[]>([]);
+  isLoading = signal(true);
+  error = signal<string | null>(null);
+  totalGroups = signal(0);
+  currentPage = signal(1);
   perPage = 10;
 
-  get totalPages(): number {
-    return Math.max(1, Math.ceil(this.totalGroups / this.perPage));
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.totalGroups() / this.perPage))
+  );
+
+  constructor() {
+    effect(() => {
+      sessionStorage.setItem('my-groups-page', String(this.currentPage()));
+    });
   }
 
   ngOnInit() {
@@ -53,22 +61,22 @@ export class MyGroupsComponent implements OnInit {
   }
 
   async loadGroups() {
-    this.isLoading = true;
-    this.error = null;
+    this.isLoading.set(true);
+    this.error.set(null);
     try {
-      const result = await this.groupService.getMyGroups(this.currentPage, this.perPage);
-      this.groups = result.items;
-      this.totalGroups = result.total;
+      const result = await this.groupService.getMyGroups(this.currentPage(), this.perPage);
+      this.groups.set(result.items);
+      this.totalGroups.set(result.total);
     } catch {
-      this.error = 'Não foi possível carregar seus grupos. Verifique sua conexão.';
+      this.error.set('Não foi possível carregar seus grupos. Verifique sua conexão.');
     } finally {
-      this.isLoading = false;
+      this.isLoading.set(false);
     }
   }
 
   goToPage(page: number) {
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
+    if (page < 1 || page > this.totalPages()) return;
+    this.currentPage.set(page);
     this.loadGroups();
   }
 

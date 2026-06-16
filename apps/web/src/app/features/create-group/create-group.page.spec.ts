@@ -127,6 +127,6 @@ describe('CreateGroupComponent', () => {
 
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('Falha de rede');
-    expect(component.loading).toBeFalse();
+    expect(component.loading()).toBeFalse();
   });
 });

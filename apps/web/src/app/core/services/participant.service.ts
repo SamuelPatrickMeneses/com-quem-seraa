@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { BaseCrudService } from './base-crud.service';
-import { PocketBaseClient } from '../../infrastructure/pocketbase/pocketbase.client';
 import { GroupParticipant } from '../models/group-participant.model';
 import { RecordModel } from 'pocketbase';
 
@@ -8,8 +7,8 @@ import { RecordModel } from 'pocketbase';
   providedIn: 'root'
 })
 export class ParticipantService extends BaseCrudService<GroupParticipant> {
-  constructor(pbClient: PocketBaseClient) {
-    super(pbClient, 'group_participants');
+  constructor() {
+    super('group_participants');
   }
 
   async joinGroup(groupId: string) {

@@ -27,6 +27,7 @@ Antes de sugerir, criar ou alterar qualquer linha de código, você **deve** obr
 - **Nunca** execute `ng test` diretamente no host — os testes de integração dependem dos containers Pocketbase e Selenium Firefox.
 - Testes unitários puros (que não dependem de containers) podem ser executados com `ng test` apenas se não houver os containers rodando, mas por padrão use Docker.
 - O comando `npm run docker:test` constrói as imagens, sobe os containers (Pocketbase + Selenium + Test Runner), executa os specs e encerra tudo automaticamente.
+- **Ao finalizar qualquer implementação, execute obrigatoriamente `npm run docker:test` para validar que nenhum teste existente quebrou antes de considerar a tarefa concluída.**
 
 ## 🚫 Controle de Commit e Branch
 - **Nunca** execute `git commit` sem autorização explícita do usuário.

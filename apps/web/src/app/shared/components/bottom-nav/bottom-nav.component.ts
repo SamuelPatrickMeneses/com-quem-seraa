@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { LucideAngularModule, type LucideIconData } from 'lucide-angular';
 
@@ -15,7 +15,7 @@ export interface NavItem {
   template: `
     <nav class="fixed bottom-0 left-0 right-0 z-50 px-4 pb-[env(safe-area-inset-bottom,0px)]">
       <div class="bg-white/80 backdrop-blur-2xl border-t border-neutral/5 rounded-t-[2rem] shadow-2xl px-6 py-3 flex items-center justify-around">
-        @for (item of items; track item.route) {
+        @for (item of items(); track item.route) {
           <a [routerLink]="item.route"
              routerLinkActive="text-primary"
              [routerLinkActiveOptions]="{exact: true}"
@@ -29,5 +29,5 @@ export interface NavItem {
   `
 })
 export class BottomNavComponent {
-  @Input({ required: true }) items: NavItem[] = [];
+  readonly items = input.required<NavItem[]>();
 }

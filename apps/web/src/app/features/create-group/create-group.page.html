@@ -26,10 +26,10 @@
     </div>
 
     <!-- Error Message -->
-    @if (error) {
+    @if (error()) {
       <div class="alert bg-error/10 border-none text-error mb-8 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
         <lucide-icon [img]="AlertCircleIcon" size="20"></lucide-icon>
-        <span class="font-semibold">{{ error }}</span>
+        <span class="font-semibold">{{ error() }}</span>
       </div>
     }
 
@@ -85,12 +85,12 @@
       <!-- Submit -->
       <button type="submit"
               class="btn border-none bg-gradient-to-r from-primary to-primary-focus hover:from-primary-focus hover:to-primary text-white w-full h-14 rounded-2xl shadow-ambient hover:shadow-lg disabled:bg-none disabled:bg-neutral/5 disabled:text-neutral/20 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
-              [disabled]="form.invalid || loading">
-        @if (loading) {
+              [disabled]="form.invalid || loading()">
+        @if (loading()) {
           <span class="loading loading-spinner"></span>
         }
-        <span class="font-bold tracking-wide uppercase text-sm">{{ loading ? 'Criando...' : 'Criar grupo' }}</span>
-        @if (!loading) {
+        <span class="font-bold tracking-wide uppercase text-sm">{{ loading() ? 'Criando...' : 'Criar grupo' }}</span>
+        @if (!loading()) {
           <lucide-icon [img]="GiftIcon" size="18"></lucide-icon>
         }
       </button>

@@ -10,8 +10,8 @@ interface TestModel {
 }
 
 class ConcreteCrudService extends BaseCrudService<TestModel> {
-  constructor(pbClient: PocketBaseClient) {
-    super(pbClient, 'test_collection');
+  constructor() {
+    super('test_collection');
   }
 }
 
@@ -40,13 +40,13 @@ describe('BaseCrudService', () => {
 
     TestBed.configureTestingModule({
       providers: [
+        ConcreteCrudService,
         { provide: PocketBaseClient, useValue: mockPbClient },
         {provide: SessionAuthStore, useValue: new InMemoryAuthStore()},
       ],
     });
 
-    const pbClient = TestBed.inject(PocketBaseClient);
-    service = new ConcreteCrudService(pbClient);
+    service = TestBed.inject(ConcreteCrudService);
   });
 
   describe('getList', () => {

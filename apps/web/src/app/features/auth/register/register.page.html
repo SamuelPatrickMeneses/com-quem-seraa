@@ -1,118 +1,199 @@
-<div class="min-h-screen bg-surface flex items-center justify-center p-4 relative overflow-hidden">
-  <!-- Asymmetric Background Elements -->
-  <div class="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
-  <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
+<div class="min-h-screen bg-surface flex items-center justify-center p-4 relative overflow-hidden font-body">
+  <!-- Dynamic Blobs for Background -->
+  <div
+    class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] mix-blend-multiply animate-in fade-in duration-1000">
+  </div>
+  <div
+    class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 rounded-full blur-[120px] mix-blend-multiply animate-in fade-in duration-1000 delay-300">
+  </div>
 
-  <div class="glass-premium w-full max-w-md p-8 sm:p-12 rounded-[2.5rem] relative z-10">
-    <div class="flex flex-col items-center mb-10">
-      <div class="w-20 h-20 bg-gradient-to-br from-secondary to-secondary-focus text-white rounded-3xl shadow-lg flex items-center justify-center mb-6 transform rotate-3 hover:rotate-0 transition-transform duration-500">
-        <lucide-icon [img]="UserPlusIcon" size="40" class="text-white"></lucide-icon>
+  <!-- Main Container: Split Layout approach -->
+  <main
+    class="relative w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 bg-surface-lowest rounded-xxl overflow-hidden shadow-ambient animate-in fade-in zoom-in duration-700">
+
+    <!-- Brand/Visual Side (Hidden on Mobile) -->
+    <div class="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden group">
+      <!-- Generated Image as Background with overlay -->
+      <div class="absolute inset-0 w-full h-full">
+        <img src="images/register_hero.png" alt="Natal Premium"
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
       </div>
-      <h1 class="text-4xl font-extrabold text-neutral text-center mb-3">Criar Conta</h1>
-      <p class="text-center text-neutral/60 font-medium leading-relaxed">
-        Junte-se ao <span class="text-secondary font-bold">Com Quem Será</span> e comece a criar momentos mágicos.
-      </p>
+
+      <header class="relative z-10">
+        <div class="flex items-center gap-3">
+          <lucide-icon [img]="GiftIcon" class="text-primary w-10 h-10"></lucide-icon>
+          <span class="font-display font-extrabold text-2xl tracking-tighter text-white">Secret Santa</span>
+        </div>
+      </header>
+
+      <section class="relative z-10 max-w-md mt-auto">
+        <h2 class="font-display font-bold text-5xl text-white leading-[1.1] mb-6 tracking-tight">
+          Crie a magia do <span class="text-primary">Natal</span>.
+        </h2>
+        <p class="text-white/80 text-lg leading-relaxed font-normal">
+          Junte-se a milhares de pessoas e comece a organizar seus amigos secretos de forma inesquecível.
+        </p>
+      </section>
     </div>
 
-    @if (errorMessage()) {
-      <div class="alert bg-error/10 border-none text-error mb-8 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
-        <lucide-icon [img]="MailIcon" size="20"></lucide-icon>
-        <span class="font-semibold">{{ errorMessage() }}</span>
-      </div>
-    }
+    <!-- Form Side -->
+    <div
+      class="p-8 sm:p-12 lg:p-20 flex flex-col justify-center items-center lg:items-start bg-surface-lowest relative z-10">
+      <div class="w-full max-w-sm">
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-5">
-      <!-- Name -->
-      <div class="form-control">
-        <label class="label mb-1 p-0">
-          <span class="label-text font-bold text-neutral/70 ml-1">Nome Completo</span>
-        </label>
-        <div class="relative group">
-          <lucide-icon [img]="UserIcon" size="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral/30 group-focus-within:text-secondary transition-colors"></lucide-icon>
-          <input type="text" placeholder="Seu nome" class="input w-full pl-12 h-14 rounded-2xl" formControlName="name" />
-        </div>
-        <div class="min-h-[1.2rem] mt-1">
-          @if (registerForm.get('name')?.invalid && registerForm.get('name')?.touched) {
-            <label class="label p-0">
-              <span class="label-text-alt text-error font-bold flex items-center gap-1">Nome é obrigatório</span>
-            </label>
-          }
-        </div>
-      </div>
-
-      <!-- Email -->
-      <div class="form-control">
-        <label class="label mb-1 p-0">
-          <span class="label-text font-bold text-neutral/70 ml-1">E-mail</span>
-        </label>
-        <div class="relative group">
-          <lucide-icon [img]="MailIcon" size="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral/30 group-focus-within:text-secondary transition-colors"></lucide-icon>
-          <input type="email" placeholder="nome@exemplo.com" class="input w-full pl-12 h-14 rounded-2xl" formControlName="email" />
-        </div>
-        <div class="min-h-[1.2rem] mt-1">
-          @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
-            <label class="label p-0">
-              <span class="label-text-alt text-error font-bold flex items-center gap-1">{{ registerForm.get('email')?.errors?.['required'] ? 'E-mail é obrigatório' : 'E-mail inválido' }}</span>
-            </label>
-          }
-        </div>
-      </div>
-
-      <!-- Password Group -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <!-- Password -->
-        <div class="form-control">
-          <label class="label mb-1 p-0">
-            <span class="label-text font-bold text-neutral/70 ml-1">Senha</span>
-          </label>
-          <div class="relative group">
-            <lucide-icon [img]="LockIcon" size="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral/30 group-focus-within:text-secondary transition-colors"></lucide-icon>
-            <input type="password" placeholder="********" class="input w-full pl-12 h-14 rounded-2xl" formControlName="password" />
+        <!-- Mobile Logo -->
+        <div class="lg:hidden flex justify-center mb-10">
+          <div class="flex items-center gap-2">
+            <lucide-icon [img]="GiftIcon" class="text-primary w-8 h-8"></lucide-icon>
+            <span class="font-display font-extrabold text-xl tracking-tighter text-primary">Secret Santa</span>
           </div>
         </div>
 
-        <!-- Confirm Password -->
-        <div class="form-control">
-          <label class="label mb-1 p-0">
-            <span class="label-text font-bold text-neutral/70 ml-1">Confirmar</span>
-          </label>
-          <div class="relative group">
-            <lucide-icon [img]="LockIcon" size="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral/30 group-focus-within:text-secondary transition-colors"></lucide-icon>
-            <input type="password" placeholder="********" class="input w-full pl-12 h-14 rounded-2xl" formControlName="confirmPassword" />
-          </div>
+        <div class="mb-8 text-center lg:text-left">
+          <h3 class="font-display font-bold text-3xl text-neutral mb-2 tracking-tight">Criar Conta</h3>
+          <p class="text-neutral/70 font-body">Preencha seus dados para começar.</p>
         </div>
-      </div>
-      
-      <div class="min-h-[1.2rem]">
-        @if (registerForm.get('password')?.touched || registerForm.get('confirmPassword')?.touched) {
-          <label class="label p-0">
-            @if (registerForm.get('password')?.errors?.['minlength']) {
-              <span class="label-text-alt text-error font-bold">Mínimo 8 caracteres</span>
-            }
-            @if (registerForm.hasError('passwordMismatch') && !registerForm.get('confirmPassword')?.errors?.['required']) {
-              <span class="label-text-alt text-error font-bold">As senhas não coincidem</span>
-            }
-          </label>
-        }
-      </div>
 
-      <!-- Submit Button -->
-      <button type="submit" 
-              class="btn border-none bg-gradient-to-r from-secondary to-secondary-focus hover:from-secondary-focus hover:to-secondary text-white w-full h-14 rounded-2xl shadow-ambient hover:shadow-lg disabled:bg-none disabled:bg-neutral/5 disabled:text-neutral/20 transition-all duration-300 transform hover:-translate-y-0.5" 
-              [disabled]="registerForm.invalid || loading()">
-        @if (loading()) {
-          <span class="loading loading-spinner"></span>
+        @if (errorMessage()) {
+        <div
+          class="alert bg-error/10 border-none text-error mb-8 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+          <lucide-icon [img]="MailIcon" size="20"></lucide-icon>
+          <span class="font-semibold">{{ errorMessage() }}</span>
+        </div>
         }
-        <span class="font-bold tracking-wide uppercase text-sm">{{ loading() ? 'Cadastrando...' : 'Criar Conta Agora' }}</span>
-        @if (!loading()) {
-          <lucide-icon [img]="UserPlusIcon" size="18"></lucide-icon>
-        }
-      </button>
-    </form>
 
-    <p class="text-center text-sm font-medium text-neutral/60 mt-10">
-      Já tem uma conta?
-      <a routerLink="/login" class="text-secondary font-bold hover:underline underline-offset-4 decoration-2">Faça login</a>
-    </p>
-  </div>
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+          <!-- Name Field -->
+          <div class="space-y-1">
+            <label class="block text-sm font-bold text-neutral/70 ml-1 font-body" for="name">Nome Completo</label>
+            <div class="relative group">
+              <lucide-icon [img]="UserIcon"
+                class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral/40 group-focus-within:text-primary transition-colors"></lucide-icon>
+              <input id="name" type="text" placeholder="Seu nome"
+                class="w-full !pl-12 !pr-4 py-3 bg-surface-low rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-neutral placeholder:text-neutral/40 transition-all font-body outline-none"
+                formControlName="name" />
+            </div>
+            <div class="min-h-[1.5rem] mt-1">
+              @if (registerForm.get('name')?.invalid && registerForm.get('name')?.touched) {
+              <p class="text-xs text-error font-bold flex items-center gap-1 ml-1">
+                <span class="w-1 h-1 bg-error rounded-full"></span>
+                Nome é obrigatório
+              </p>
+              }
+            </div>
+          </div>
+
+          <!-- Email Field -->
+          <div class="space-y-1">
+            <label class="block text-sm font-bold text-neutral/70 ml-1 font-body" for="email">E-mail</label>
+            <div class="relative group">
+              <lucide-icon [img]="MailIcon"
+                class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral/40 group-focus-within:text-primary transition-colors"></lucide-icon>
+              <input id="email" type="email" placeholder="seu@email.com"
+                class="w-full !pl-12 !pr-4 py-3 bg-surface-low rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-neutral placeholder:text-neutral/40 transition-all font-body outline-none"
+                formControlName="email" />
+            </div>
+            <div class="min-h-[1.5rem] mt-1">
+              @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+              <p class="text-xs text-error font-bold flex items-center gap-1 ml-1">
+                <span class="w-1 h-1 bg-error rounded-full"></span>
+                {{ registerForm.get('email')?.errors?.['required'] ? 'E-mail é obrigatório' : 'E-mail inválido' }}
+              </p>
+              }
+            </div>
+          </div>
+
+          <!-- Password Field -->
+          <div class="space-y-1">
+            <label class="block text-sm font-bold text-neutral/70 ml-1 font-body" for="password">Senha</label>
+            <div class="relative group">
+              <lucide-icon [img]="LockIcon"
+                class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral/40 group-focus-within:text-primary transition-colors"></lucide-icon>
+              <input id="password" [type]="showPassword() ? 'text' : 'password'" placeholder="Mínimo 8 caracteres"
+                class="w-full !pl-12 !pr-12 py-3 bg-surface-low rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-neutral placeholder:text-neutral/40 transition-all font-body outline-none"
+                formControlName="password" />
+              <button type="button"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-neutral/40 hover:text-neutral transition-colors flex items-center justify-center"
+                (click)="togglePasswordVisibility()">
+                @if (showPassword()) {
+                <lucide-icon [img]="EyeOffIcon" class="w-5 h-5"></lucide-icon>
+                } @else {
+                <lucide-icon [img]="EyeIcon" class="w-5 h-5"></lucide-icon>
+                }
+              </button>
+            </div>
+          </div>
+
+          <!-- Confirm Password Field -->
+          <div class="space-y-1">
+            <label class="block text-sm font-bold text-neutral/70 ml-1 font-body" for="confirmPassword">Confirmar
+              Senha</label>
+            <div class="relative group">
+              <lucide-icon [img]="LockIcon"
+                class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral/40 group-focus-within:text-primary transition-colors"></lucide-icon>
+              <input id="confirmPassword" [type]="showConfirmPassword() ? 'text' : 'password'"
+                placeholder="Repita sua senha"
+                class="w-full !pl-12 !pr-12 py-3 bg-surface-low rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-neutral placeholder:text-neutral/40 transition-all font-body outline-none"
+                formControlName="confirmPassword" />
+              <button type="button"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-neutral/40 hover:text-neutral transition-colors flex items-center justify-center"
+                (click)="toggleConfirmPasswordVisibility()">
+                @if (showConfirmPassword()) {
+                <lucide-icon [img]="EyeOffIcon" class="w-5 h-5"></lucide-icon>
+                } @else {
+                <lucide-icon [img]="EyeIcon" class="w-5 h-5"></lucide-icon>
+                }
+              </button>
+            </div>
+          </div>
+
+          <div class="min-h-[1.5rem] mt-1">
+            @if (registerForm.get('password')?.touched || registerForm.get('confirmPassword')?.touched) {
+            @if (registerForm.get('password')?.errors?.['required'] ||
+            registerForm.get('confirmPassword')?.errors?.['required']) {
+            <p class="text-xs text-error font-bold flex items-center gap-1 ml-1">
+              <span class="w-1 h-1 bg-error rounded-full"></span>
+              Senha e confirmação são obrigatórias
+            </p>
+            } @else if (registerForm.get('password')?.errors?.['minlength']) {
+            <p class="text-xs text-error font-bold flex items-center gap-1 ml-1">
+              <span class="w-1 h-1 bg-error rounded-full"></span>
+              Senha deve ter no mínimo 8 caracteres
+            </p>
+            } @else if (registerForm.hasError('passwordMismatch')) {
+            <p class="text-xs text-error font-bold flex items-center gap-1 ml-1">
+              <span class="w-1 h-1 bg-error rounded-full"></span>
+              As senhas não coincidem
+            </p>
+            }
+            }
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit"
+            class="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-focus text-white py-4 rounded-xxl font-display font-bold text-lg shadow-ambient active:scale-[0.98] transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 mt-2"
+            [disabled]="registerForm.invalid || loading()">
+            @if (loading()) {
+            <span class="loading loading-spinner loading-sm"></span>
+            }
+            {{ loading() ? 'Criando Conta...' : 'Criar Conta' }}
+            @if (!loading()) {
+            <lucide-icon [img]="UserPlusIcon" size="20"></lucide-icon>
+            }
+          </button>
+        </form>
+
+        <div class="mt-8 text-center">
+          <p class="text-neutral/70 font-medium">
+            Já tem uma conta?
+            <a routerLink="/login"
+              class="text-primary font-bold hover:underline decoration-primary/30 underline-offset-4 transition-all">Faça
+              login</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </main>
 </div>

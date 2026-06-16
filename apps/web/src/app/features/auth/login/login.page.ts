@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { LucideAngularModule, Gift, Mail, Lock, ArrowRight } from 'lucide-angular';
+import { LucideAngularModule, Gift, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-angular';
 
 @Component({
   selector: 'app-login',
@@ -19,6 +19,10 @@ export class LoginComponent {
   readonly MailIcon = Mail;
   readonly LockIcon = Lock;
   readonly ArrowRightIcon = ArrowRight;
+  readonly EyeIcon = Eye;
+  readonly EyeOffIcon = EyeOff;
+
+  showPassword = signal(false);
 
   private fb = inject(FormBuilder);
   private router = inject(Router);
@@ -47,5 +51,9 @@ export class LoginComponent {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword.update(v => !v);
   }
 }

@@ -35,6 +35,6 @@ describe('AppComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('p')?.textContent).toContain('A elegância de presentear com magia e conexão.');
+    expect(compiled.querySelector('p')?.textContent).toContain('Organize seu amigo secreto de forma elegante e descomplicada.');
   }));
 });

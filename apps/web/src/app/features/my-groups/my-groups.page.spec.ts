@@ -38,12 +38,12 @@ describe('MyGroupsComponent (integração)', () => {
 
   function waitForStable(): Promise<void> {
     return new Promise(resolve => {
-      if (!component.isLoading) {
+      if (!component.isLoading()) {
         resolve();
         return;
       }
       const sub = ngZone.onStable.subscribe(() => {
-        if (!component.isLoading) {
+        if (!component.isLoading()) {
           sub.unsubscribe();
           resolve();
         }

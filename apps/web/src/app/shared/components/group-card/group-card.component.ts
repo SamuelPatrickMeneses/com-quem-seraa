@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule, Gift, Users, ShieldCheck, ArrowRight, CheckCircle2, Clock, Sparkles } from 'lucide-angular';
@@ -9,7 +9,7 @@ import type { Group } from '../../../core/models/group.model';
   standalone: true,
   imports: [NgClass, RouterLink, LucideAngularModule],
   template: `
-    <a [routerLink]="['/group', group.id]"
+    <a [routerLink]="['/group', group().id]"
        class="group relative block bg-surface-lowest p-6 rounded-[2rem] shadow-ambient
               hover:shadow-lg hover:-translate-y-1 transition-all duration-300
               border border-neutral/5 hover:border-primary/10 overflow-hidden">
@@ -43,7 +43,7 @@ import type { Group } from '../../../core/models/group.model';
           }
         </div>
         <div class="flex items-center gap-2">
-          @if (isAdmin) {
+          @if (isAdmin()) {
             <div class="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1">
               <lucide-icon [img]="ShieldCheckIcon" size="12"></lucide-icon>
               Admin
@@ -53,13 +53,13 @@ import type { Group } from '../../../core/models/group.model';
       </div>
 
       <!-- Group Name -->
-      <h3 class="text-xl font-black text-neutral mb-5">{{ group.name }}</h3>
+      <h3 class="text-xl font-black text-neutral mb-5">{{ group().name }}</h3>
 
       <!-- Bottom Row -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2 text-neutral/50">
           <lucide-icon [img]="UsersIcon" size="16"></lucide-icon>
-          <span class="text-sm font-bold">{{ group.participants_count }} participantes</span>
+          <span class="text-sm font-bold">{{ group().participants_count }} participantes</span>
         </div>
         <div class="text-primary font-black text-sm flex items-center gap-1
                     group-hover:gap-2 transition-all">
@@ -71,8 +71,8 @@ import type { Group } from '../../../core/models/group.model';
   `
 })
 export class GroupCardComponent {
-  @Input({ required: true }) group!: Group;
-  @Input({ required: true }) isAdmin = false;
+  readonly group = input.required<Group>();
+  readonly isAdmin = input(false);
 
   readonly GiftIcon = Gift;
   readonly UsersIcon = Users;
@@ -83,8 +83,8 @@ export class GroupCardComponent {
   readonly SparklesIcon = Sparkles;
 
   get status(): 'ATIVO' | 'PENDENTE' | 'SORTEADO' {
-    if (this.group.has_been_drawn) return 'SORTEADO';
-    if (this.group.participants_count >= 3) return 'ATIVO';
+    if (this.group().has_been_drawn) return 'SORTEADO';
+    if (this.group().participants_count >= 3) return 'ATIVO';
     return 'PENDENTE';
   }
 }

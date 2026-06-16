@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -12,8 +12,8 @@ import { LucideAngularModule, Gift, Mail, Lock, ArrowRight } from 'lucide-angula
 })
 export class LoginComponent {
   loginForm: FormGroup;
-  loading = false;
-  errorMessage = '';
+  loading = signal(false);
+  errorMessage = signal('');
 
   readonly GiftIcon = Gift;
   readonly MailIcon = Mail;
@@ -34,8 +34,8 @@ export class LoginComponent {
   async onSubmit() {
     if (this.loginForm.invalid) return;
 
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
     const { email, password } = this.loginForm.value;
 
@@ -43,9 +43,9 @@ export class LoginComponent {
       await this.authService.login(email, password);
       this.router.navigate(['/my-groups']);
     } catch (err: any) {
-      this.errorMessage = err?.message || 'E-mail ou senha incorretos.';
+      this.errorMessage.set(err?.message || 'E-mail ou senha incorretos.');
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 }

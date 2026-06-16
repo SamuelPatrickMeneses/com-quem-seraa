@@ -1,13 +1,12 @@
+import { inject } from '@angular/core';
 import { PocketBaseClient } from '../../infrastructure/pocketbase/pocketbase.client';
 import { RecordModel, RecordService } from 'pocketbase';
 
 export abstract class BaseCrudService<T> {
+  protected pbClient = inject(PocketBaseClient);
   protected collection: RecordService;
 
-  constructor(
-    protected pbClient: PocketBaseClient,
-    protected collectionName: string
-  ) {
+  constructor(protected collectionName: string) {
     this.collection = this.pbClient.instance.collection(this.collectionName);
   }
 

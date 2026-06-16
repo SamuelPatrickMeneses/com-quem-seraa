@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, Gift, ArrowLeft, Check, Loader, AlertCircle, Sparkles, PartyPopper, Users, PlusCircle, User } from 'lucide-angular';
@@ -34,8 +34,8 @@ export class CreateGroupComponent implements OnInit {
     { label: 'Perfil', icon: User, route: '/profile' },
   ];
 
-  loading = false;
-  error: string | null = null;
+  loading = signal(false);
+  error = signal<string | null>(null);
 
   form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
@@ -44,20 +44,20 @@ export class CreateGroupComponent implements OnInit {
 
   ngOnInit() {
     this.form.get('name')?.valueChanges.subscribe(() => {
-      this.error = null;
+      this.error.set(null);
     });
   }
 
   async onSubmit() {
     if (this.form.invalid) return;
 
-    this.loading = true;
-    this.error = null;
+    this.loading.set(true);
+    this.error.set(null);
 
     const user = this.authService.user;
     if (!user) {
-      this.error = 'Usuário não autenticado.';
-      this.loading = false;
+      this.error.set('Usuário não autenticado.');
+      this.loading.set(false);
       return;
     }
 
@@ -76,9 +76,9 @@ export class CreateGroupComponent implements OnInit {
       this.router.navigate(['/group', group.id]);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      this.error = message || 'Erro ao criar grupo. Tente novamente.';
+      this.error.set(message || 'Erro ao criar grupo. Tente novamente.');
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 }

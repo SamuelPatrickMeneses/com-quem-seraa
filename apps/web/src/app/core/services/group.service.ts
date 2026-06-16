@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { BaseCrudService } from './base-crud.service';
-import { PocketBaseClient } from '../../infrastructure/pocketbase/pocketbase.client';
 import { Group } from '../models/group.model';
 import { RecordModel } from 'pocketbase';
 
@@ -8,8 +7,8 @@ import { RecordModel } from 'pocketbase';
   providedIn: 'root'
 })
 export class GroupService extends BaseCrudService<Group> {
-  constructor(pbClient: PocketBaseClient) {
-    super(pbClient, 'groups');
+  constructor() {
+    super('groups');
   }
 
   async getMyGroups(page = 1, perPage = 50) {

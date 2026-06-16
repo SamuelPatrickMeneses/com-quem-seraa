@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import PocketBase from 'pocketbase';
 import { PocketBaseClient } from '../../infrastructure/pocketbase/pocketbase.client';
 
@@ -6,7 +6,7 @@ import { PocketBaseClient } from '../../infrastructure/pocketbase/pocketbase.cli
   providedIn: 'root'
 })
 export class AuthService {
-  constructor(private pbClient: PocketBaseClient) {}
+  private pbClient = inject(PocketBaseClient);
 
   /**
    * Retorna se o usuário está autenticado

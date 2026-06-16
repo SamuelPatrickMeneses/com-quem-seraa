@@ -56,7 +56,7 @@
     </div>
 
     <!-- Loading State -->
-    @if (isLoading) {
+    @if (isLoading()) {
       <div class="space-y-4">
         @for (_ of [1,2,3]; track _) {
           <div class="bg-surface-lowest p-6 rounded-[2rem] animate-pulse">
@@ -73,13 +73,13 @@
     }
 
     <!-- Error State -->
-    @if (!isLoading && error) {
+    @if (!isLoading() && error()) {
       <div class="bg-surface-lowest p-16 rounded-[3rem] shadow-ambient flex flex-col items-center text-center">
         <div class="w-16 h-16 bg-error/10 rounded-2xl flex items-center justify-center mb-4">
           <lucide-icon [img]="AlertCircleIcon" size="32" class="text-error"></lucide-icon>
         </div>
         <h2 class="text-xl font-black text-neutral mb-2">Algo deu errado</h2>
-        <p class="text-neutral/40 font-medium max-w-sm mb-6">{{ error }}</p>
+        <p class="text-neutral/40 font-medium max-w-sm mb-6">{{ error() }}</p>
         <button (click)="loadGroups()"
                 class="btn btn-error h-12 px-6 rounded-2xl border-none bg-gradient-to-r from-error to-error/80 text-white font-black gap-2">
           <lucide-icon [img]="RefreshCwIcon" size="16"></lucide-icon>
@@ -89,9 +89,9 @@
     }
 
     <!-- Groups List -->
-    @if (!isLoading && !error && groups.length > 0) {
+    @if (!isLoading() && !error() && groups().length > 0) {
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        @for (group of groups; track group.id) {
+        @for (group of groups(); track group.id) {
           <app-group-card
             [group]="group"
             [isAdmin]="group.created_by === user?.id"
@@ -100,23 +100,23 @@
       </div>
 
       <!-- Pagination -->
-      @if (totalPages > 1) {
+      @if (totalPages() > 1) {
         <div class="flex items-center justify-center gap-2 mt-8">
-          <button (click)="goToPage(currentPage - 1)"
-                  [disabled]="currentPage === 1"
+          <button (click)="goToPage(currentPage() - 1)"
+                  [disabled]="currentPage() === 1"
                   class="btn btn-ghost btn-sm rounded-xl disabled:opacity-20">
             <lucide-icon [img]="GiftIcon" size="16"></lucide-icon>
           </button>
-          @for (page of [].constructor(totalPages); track $index) {
+          @for (page of [].constructor(totalPages()); track $index) {
             <button (click)="goToPage($index + 1)"
                     class="btn btn-sm rounded-xl min-w-[2.5rem] font-black"
-                    [class.btn-primary]="$index + 1 === currentPage"
-                    [class.btn-ghost]="$index + 1 !== currentPage">
+                    [class.btn-primary]="$index + 1 === currentPage()"
+                    [class.btn-ghost]="$index + 1 !== currentPage()">
               {{ $index + 1 }}
             </button>
           }
-          <button (click)="goToPage(currentPage + 1)"
-                  [disabled]="currentPage === totalPages"
+          <button (click)="goToPage(currentPage() + 1)"
+                  [disabled]="currentPage() === totalPages()"
                   class="btn btn-ghost btn-sm rounded-xl disabled:opacity-20">
             <lucide-icon [img]="GiftIcon" size="16"></lucide-icon>
           </button>
@@ -125,7 +125,7 @@
     }
 
     <!-- Empty State -->
-    @if (!isLoading && !error && groups.length === 0) {
+    @if (!isLoading() && !error() && groups().length === 0) {
       <div class="bg-surface-lowest p-16 rounded-[3rem] shadow-ambient flex flex-col items-center text-center">
         <div class="w-24 h-24 bg-surface-low rounded-[2rem] flex items-center justify-center mb-6">
           <lucide-icon [img]="GiftIcon" size="48" class="text-primary/20"></lucide-icon>

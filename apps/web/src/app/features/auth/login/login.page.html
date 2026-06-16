@@ -1,94 +1,164 @@
-<div class="min-h-screen bg-surface flex items-center justify-center p-4 relative overflow-hidden">
-  <!-- Asymmetric Background Elements -->
-  <div class="absolute -top-24 -right-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
-  <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
+<div class="min-h-screen bg-surface flex items-center justify-center p-4 sm:p-6 overflow-x-hidden">
+  <!-- Ambient Background Elements -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-[10%] -left-[5%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full"></div>
+    <div class="absolute -bottom-[10%] -right-[5%] w-[40%] h-[40%] bg-secondary/20 blur-[120px] rounded-full"></div>
+  </div>
 
-  <div class="glass-premium w-full max-w-md p-8 sm:p-12 rounded-[2.5rem] relative z-10">
-    <div class="flex flex-col items-center mb-10">
-      <div class="w-20 h-20 bg-gradient-to-br from-primary to-primary-focus text-white rounded-3xl shadow-lg flex items-center justify-center mb-6 transform -rotate-3 hover:rotate-0 transition-transform duration-500">
-        <lucide-icon [img]="GiftIcon" size="40" class="text-white"></lucide-icon>
+  <!-- Main Container: Split Layout approach -->
+  <main
+    class="relative w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 bg-surface-lowest rounded-xxl overflow-hidden shadow-ambient animate-in fade-in zoom-in duration-700">
+
+    <!-- Brand/Visual Side (Hidden on Mobile) -->
+    <div class="hidden lg:flex flex-col justify-between p-12 bg-surface-low relative overflow-hidden">
+      <!-- Decorative Bleed Illustration -->
+      <div class="absolute top-10 -right-20 w-64 h-64 opacity-10 transform rotate-12 flex items-center justify-center">
+        <lucide-icon [img]="GiftIcon" class="text-primary w-full h-full"></lucide-icon>
       </div>
-      <h1 class="text-4xl font-extrabold text-neutral text-center mb-3">Com Quem Será</h1>
-      <p class="text-center text-neutral/60 font-medium leading-relaxed">
-        A elegância de presentear com <span class="text-primary/80">magia e conexão.</span>
-      </p>
+      <div
+        class="absolute bottom-10 -left-10 w-48 h-48 opacity-10 transform -rotate-12 flex items-center justify-center">
+        <lucide-icon [img]="GiftIcon" class="text-secondary w-full h-full"></lucide-icon>
+      </div>
+
+      <header class="relative z-10">
+        <div class="flex items-center gap-3">
+          <lucide-icon [img]="GiftIcon" class="text-primary w-10 h-10"></lucide-icon>
+          <h1 class="font-display font-extrabold text-2xl tracking-tighter text-primary">Secret Santa</h1>
+        </div>
+      </header>
+
+      <section class="relative z-10 max-w-md">
+        <h2 class="font-display font-bold text-5xl text-neutral leading-[1.1] mb-6 tracking-tight">
+          Onde a magia do <span class="text-primary">Natal</span> começa.
+        </h2>
+        <p class="text-neutral/70 text-lg leading-relaxed font-normal">
+          Organize seu amigo secreto de forma elegante e descomplicada. Crie grupos, sorteie nomes e mantenha o espírito
+          natalino vivo.
+        </p>
+      </section>
+
+      <footer class="relative z-10 flex items-center gap-4">
+        <div class="flex -space-x-3">
+          <div
+            class="w-10 h-10 rounded-full border-2 border-surface-lowest bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+            U1</div>
+          <div
+            class="w-10 h-10 rounded-full border-2 border-surface-lowest bg-secondary/20 flex items-center justify-center text-secondary font-bold text-xs">
+            U2</div>
+          <div
+            class="w-10 h-10 rounded-full border-2 border-surface-lowest bg-accent/20 flex items-center justify-center text-accent font-bold text-xs">
+            U3</div>
+        </div>
+        <p class="text-sm font-medium text-neutral/70">
+          +2.000 grupos criados este mês
+        </p>
+      </footer>
     </div>
 
-    @if (errorMessage()) {
-      <div class="alert bg-error/10 border-none text-error mb-8 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
-        <lucide-icon [img]="MailIcon" size="20"></lucide-icon>
-        <span class="font-semibold">{{ errorMessage() }}</span>
-      </div>
-    }
+    <!-- Form Side -->
+    <div
+      class="p-8 sm:p-12 lg:p-20 flex flex-col justify-center items-center lg:items-start bg-surface-lowest relative z-10">
+      <div class="w-full max-w-sm">
 
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
-      <!-- Email -->
-      <div class="form-control">
-        <label class="label mb-1">
-          <span class="label-text font-bold text-neutral/70 ml-1">E-mail</span>
-        </label>
-        <div class="relative group">
-          <lucide-icon [img]="MailIcon" size="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral/30 group-focus-within:text-primary transition-colors"></lucide-icon>
-          <input type="email" placeholder="seu@email.com" class="input w-full pl-12 h-14 rounded-2xl" formControlName="email" />
+        <!-- Mobile Logo -->
+        <div class="lg:hidden flex justify-center mb-10">
+          <div class="flex items-center gap-2">
+            <lucide-icon [img]="GiftIcon" class="text-primary w-8 h-8"></lucide-icon>
+            <span class="font-display font-extrabold text-xl tracking-tighter text-primary">Secret Santa</span>
+          </div>
         </div>
-        <div class="min-h-[1.5rem] mt-1">
-          @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
-            <label class="label p-0">
-              <span class="label-text-alt text-error font-bold flex items-center gap-1">
+
+        <div class="mb-10 text-center lg:text-left">
+          <h3 class="font-display font-bold text-3xl text-neutral mb-2 tracking-tight">Bem-vindo de volta</h3>
+          <p class="text-neutral/70 font-body">Entre para gerenciar seus amigos secretos.</p>
+        </div>
+
+        @if (errorMessage()) {
+        <div
+          class="alert bg-error/10 border-none text-error mb-8 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+          <lucide-icon [img]="MailIcon" size="20"></lucide-icon>
+          <span class="font-semibold">{{ errorMessage() }}</span>
+        </div>
+        }
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+          <!-- Email Field -->
+          <div class="space-y-2">
+            <label class="block text-sm font-bold text-neutral/70 ml-1 font-body" for="email">E-mail</label>
+            <div class="relative group">
+              <lucide-icon [img]="MailIcon"
+                class="absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral/40 group-focus-within:text-primary transition-colors"></lucide-icon>
+              <input id="email" type="email" placeholder="seu@email.com"
+                class="w-full !pl-10 !pr-4 py-4 bg-surface-low rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-neutral placeholder:text-neutral/40 transition-all font-body outline-none"
+                formControlName="email" />
+            </div>
+            <div class="min-h-[1.5rem] mt-1">
+              @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+              <p class="text-xs text-error font-bold flex items-center gap-1 ml-1">
                 <span class="w-1 h-1 bg-error rounded-full"></span>
                 {{ loginForm.get('email')?.errors?.['required'] ? 'E-mail é obrigatório' : 'E-mail inválido' }}
-              </span>
-            </label>
-          }
-        </div>
-      </div>
+              </p>
+              }
+            </div>
+          </div>
 
-      <!-- Password -->
-      <div class="form-control">
-        <div class="flex justify-between items-center mb-1">
-          <label class="label p-0">
-            <span class="label-text font-bold text-neutral/70 ml-1">Senha</span>
-          </label>
-          <a class="text-xs font-bold text-primary hover:text-primary-focus transition-colors cursor-pointer">Esqueceu a senha?</a>
-        </div>
-        <div class="relative group">
-          <lucide-icon [img]="LockIcon" size="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral/30 group-focus-within:text-primary transition-colors"></lucide-icon>
-          <input type="password" placeholder="********" class="input w-full pl-12 h-14 rounded-2xl" formControlName="password" />
-        </div>
-        <div class="min-h-[1.5rem] mt-1">
-          @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
-            <label class="label p-0">
-              <span class="label-text-alt text-error font-bold flex items-center gap-1">
+          <!-- Password Field -->
+          <div class="space-y-2">
+            <div class="flex justify-between items-center px-1">
+              <label class="text-sm font-bold text-neutral/70 font-body" for="password">Senha</label>
+              <a class="text-xs font-bold text-primary hover:text-primary-focus transition-colors cursor-pointer">Esqueceu
+                a senha?</a>
+            </div>
+            <div class="relative group">
+              <lucide-icon [img]="LockIcon"
+                class="absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral/40 group-focus-within:text-primary transition-colors"></lucide-icon>
+              <input id="password" [type]="showPassword() ? 'text' : 'password'" placeholder="••••••••"
+                class="w-full !pl-12 !pr-12 py-4 bg-surface-low rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-neutral placeholder:text-neutral/40 transition-all font-body outline-none"
+                formControlName="password" />
+              <button type="button"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-neutral/40 hover:text-neutral transition-colors flex items-center justify-center"
+                (click)="togglePasswordVisibility()">
+                @if (showPassword()) {
+                <lucide-icon [img]="EyeOffIcon" class="w-5 h-5"></lucide-icon>
+                } @else {
+                <lucide-icon [img]="EyeIcon" class="w-5 h-5"></lucide-icon>
+                }
+              </button>
+            </div>
+            <div class="min-h-[1.5rem] mt-1">
+              @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+              <p class="text-xs text-error font-bold flex items-center gap-1 ml-1">
                 <span class="w-1 h-1 bg-error rounded-full"></span>
                 Senha é obrigatória
-              </span>
-            </label>
-          }
+              </p>
+              }
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit"
+            class="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-focus text-white py-4 rounded-xxl font-display font-bold text-lg shadow-ambient active:scale-[0.98] transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+            [disabled]="loginForm.invalid || loading()">
+            @if (loading()) {
+            <span class="loading loading-spinner loading-sm"></span>
+            }
+            {{ loading() ? 'Entrando...' : 'Entrar' }}
+            @if (!loading()) {
+            <lucide-icon [img]="ArrowRightIcon" size="20"></lucide-icon>
+            }
+          </button>
+        </form>
+
+        <div class="mt-10 text-center">
+          <p class="text-neutral/70 font-medium">
+            Não tem uma conta?
+            <a routerLink="/register"
+              class="text-primary font-bold hover:underline decoration-primary/30 underline-offset-4 transition-all">Cadastre-se
+              agora</a>
+          </p>
         </div>
+
       </div>
-
-      <!-- Submit Button -->
-      <button type="submit" 
-              class="btn border-none bg-gradient-to-r from-primary to-primary-focus hover:from-primary-focus hover:to-primary text-white w-full h-14 rounded-2xl shadow-ambient hover:shadow-lg disabled:bg-none disabled:bg-neutral/5 disabled:text-neutral/20 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0" 
-              [disabled]="loginForm.invalid || loading()">
-        @if (loading()) {
-          <span class="loading loading-spinner"></span>
-        }
-        <span class="font-bold tracking-wide uppercase text-sm">{{ loading() ? 'Entrando...' : 'Acessar Conta' }}</span>
-        @if (!loading()) {
-          <lucide-icon [img]="ArrowRightIcon" size="18"></lucide-icon>
-        }
-      </button>
-    </form>
-
-    <div class="relative my-10">
-      <div class="absolute inset-0 flex items-center"><span class="w-full border-t border-neutral/5"></span></div>
-      <div class="relative flex justify-center text-xs uppercase"><span class="bg-transparent px-4 text-neutral/30 font-bold tracking-widest">ou</span></div>
     </div>
-
-    <p class="text-center text-sm font-medium text-neutral/60">
-      Ainda não faz parte?
-      <a routerLink="/register" class="text-primary font-bold hover:underline underline-offset-4 decoration-2">Crie sua conta</a>
-    </p>
-  </div>
+  </main>
 </div>

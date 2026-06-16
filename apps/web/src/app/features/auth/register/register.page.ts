@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { LucideAngularModule, User, Mail, Lock, UserPlus } from 'lucide-angular';
+import { LucideAngularModule, User, Mail, Lock, UserPlus, Eye, EyeOff, ArrowRight, Gift } from 'lucide-angular';
 
 export function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password');
@@ -23,11 +23,17 @@ export class RegisterComponent {
   registerForm: FormGroup;
   loading = signal(false);
   errorMessage = signal('');
+  showPassword = signal(false);
+  showConfirmPassword = signal(false);
 
   readonly UserIcon = User;
   readonly MailIcon = Mail;
   readonly LockIcon = Lock;
   readonly UserPlusIcon = UserPlus;
+  readonly EyeIcon = Eye;
+  readonly EyeOffIcon = EyeOff;
+  readonly ArrowRightIcon = ArrowRight;
+  readonly GiftIcon = Gift;
 
   private fb = inject(FormBuilder);
   private router = inject(Router);
@@ -40,6 +46,14 @@ export class RegisterComponent {
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', Validators.required]
     }, { validators: passwordMatchValidator });
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword.update(v => !v);
+  }
+
+  toggleConfirmPasswordVisibility() {
+    this.showConfirmPassword.update(v => !v);
   }
 
   async onSubmit() {

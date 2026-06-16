@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "command": {
+    "monorepo-workflow": {
+      "template": "You must follow the instructions in @.agent/skills/monorepo-workflow/SKILL.md.\nExecute the audit checklist and return a structured report.",
+      "description": "🏗️ Audita a fundação do monorepo: estrutura de pastas, workspaces NPM, Docker, documentação",
+      "agent": "build"
+    },
+    "angular-workflow": {
+      "template": "You must follow the instructions in @.agent/skills/angular-workflow/SKILL.md.\nExecute the audit checklist and return a structured report.",
+      "description": "🧱 Audita a arquitetura Angular: Feature-Driven (core/shared/features), standalone-only, Tailwind-only, rotas",
+      "agent": "build"
+    }
+  }
+}

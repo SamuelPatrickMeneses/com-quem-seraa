@@ -1,27 +1,30 @@
-<div class="min-h-screen bg-surface pb-28">
-  <!-- Navbar -->
-  <nav class="sticky top-0 z-50 px-4 md:px-8 py-4">
-    <div class="max-w-7xl mx-auto glass-premium rounded-[2rem] px-6 py-3 flex items-center justify-between">
+<div class="bg-surface text-neutral min-h-screen pb-24 md:pb-0">
+  <!-- TopAppBar -->
+  <nav class="fixed top-0 z-50 w-full bg-surface/80 backdrop-blur-xl shadow-ambient">
+    <div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
       <div class="flex items-center gap-3">
-        <div class="w-12 h-12 bg-gradient-to-br from-primary to-primary-focus text-white rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3">
-          <lucide-icon [img]="GiftIcon" size="24"></lucide-icon>
-        </div>
-        <div class="hidden sm:block">
-          <p class="text-xs font-black text-neutral/40 uppercase tracking-widest">Secret Santa</p>
-          <p class="text-lg font-black text-neutral tracking-tight -mt-1">Grupos</p>
-        </div>
+        <lucide-icon [img]="GiftIcon" size="24" class="text-primary"></lucide-icon>
+        <span class="font-display font-extrabold text-primary tracking-tighter text-xl">Secret Santa</span>
       </div>
 
-      @if (user) {
-        <div class="flex items-center gap-2">
+      <!-- Desktop Actions -->
+      <div class="hidden md:flex items-center gap-6">
+        <a routerLink="/create" class="flex items-center gap-2 bg-gradient-to-br from-primary to-primary-focus text-white px-6 py-2.5 rounded-xl font-display font-bold text-sm transition-transform active:scale-95 shadow-lg shadow-primary/10">
+          <lucide-icon [img]="PlusIcon" size="20"></lucide-icon>
+          Criar Novo Grupo
+        </a>
+
+        @if (user) {
+          <div class="h-8 w-px bg-neutral/10"></div>
+          
           <div class="dropdown dropdown-end">
-            <div tabindex="0" role="button" class="group flex items-center gap-3 p-1 pr-4 rounded-full hover:bg-neutral/5 transition-colors cursor-pointer">
-              <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-sm ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
-                {{ user.name?.charAt(0) || user.email?.charAt(0) | uppercase }}
+            <div tabindex="0" role="button" class="flex items-center gap-3 cursor-pointer group">
+              <div class="text-right">
+                <p class="text-xs font-bold font-display leading-none">{{ user.name?.split(' ')[0] || 'Usuário' }}</p>
+                <p class="text-[10px] text-neutral/50 uppercase tracking-widest mt-1">Organizador</p>
               </div>
-              <div class="hidden md:block text-left">
-                <p class="text-xs font-black text-neutral/80 leading-none mb-0.5">{{ user.name?.split(' ')[0] || 'Usuário' }}</p>
-                <p class="text-[10px] font-bold text-neutral/40 leading-none">Minha Conta</p>
+              <div class="w-10 h-10 rounded-full bg-surface-low overflow-hidden ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all text-primary font-black flex items-center justify-center">
+                {{ user.name?.charAt(0) || user.email?.charAt(0) | uppercase }}
               </div>
             </div>
             <ul tabindex="0" class="mt-4 z-[1] p-3 shadow-ambient menu menu-sm dropdown-content bg-white/90 backdrop-blur-xl rounded-[1.5rem] w-64 border border-neutral/5">
@@ -35,38 +38,44 @@
               <li><a (click)="logout()" class="py-3 rounded-xl font-bold text-error hover:bg-error/5"><lucide-icon [img]="LogOutIcon" size="18"></lucide-icon> Encerrar Sessão</a></li>
             </ul>
           </div>
-        </div>
-      }
+        }
+      </div>
+
+      <!-- Mobile Notification -->
+      <div class="md:hidden">
+        <lucide-icon [img]="AlertCircleIcon" class="text-neutral/50"></lucide-icon>
+      </div>
     </div>
   </nav>
 
-  <!-- Content -->
-  <main class="max-w-6xl mx-auto p-6 md:p-12">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-10">
-      <div>
-        <h1 class="text-4xl font-black text-neutral tracking-tight">Meus Grupos</h1>
-        <p class="text-neutral/50 font-medium mt-1">Gerencie seus sorteios festivos.</p>
+  <main class="pt-28 px-6 max-w-7xl mx-auto mb-20">
+    <!-- Dashboard Header -->
+    <header class="mb-12">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 class="font-display font-extrabold text-4xl md:text-5xl text-neutral tracking-tight mb-2">Seus Grupos</h1>
+          <p class="text-neutral/50 text-lg font-light leading-relaxed max-w-2xl">
+            Gerencie seus sorteios de fim de ano e acompanhe a entrega dos presentes com seus amigos e familiares.
+          </p>
+        </div>
+        <div class="flex gap-2">
+          <div class="bg-surface-low px-4 py-2 rounded-xl flex items-center gap-2 border border-neutral/5">
+            <lucide-icon [img]="GiftIcon" size="16" class="text-primary"></lucide-icon>
+            <span class="text-xs font-bold uppercase tracking-tighter">Temporada 2023</span>
+          </div>
+        </div>
       </div>
-      <a routerLink="/create"
-         class="btn btn-primary btn-lg h-14 px-6 rounded-2xl gap-2 border-none bg-gradient-to-r from-primary to-primary-focus shadow-ambient hover:shadow-lg transition-all font-black">
-        <lucide-icon [img]="PlusIcon" size="20"></lucide-icon>
-        <span class="hidden sm:inline uppercase tracking-widest text-sm">Criar Grupo</span>
-      </a>
-    </div>
+    </header>
 
     <!-- Loading State -->
     @if (isLoading()) {
-      <div class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         @for (_ of [1,2,3]; track _) {
-          <div class="bg-surface-lowest p-6 rounded-[2rem] animate-pulse">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="w-12 h-12 bg-surface-low rounded-2xl"></div>
-              <div class="space-y-2 flex-1">
-                <div class="h-5 bg-surface-low rounded-full w-1/3"></div>
-                <div class="h-3 bg-surface-low rounded-full w-1/5"></div>
-              </div>
-            </div>
+          <div class="bg-surface-lowest rounded-[2rem] p-8 shadow-ambient h-64 animate-pulse flex flex-col">
+             <div class="h-6 bg-surface-low rounded-full w-1/3 mb-6"></div>
+             <div class="h-8 bg-surface-low rounded-full w-2/3 mb-2"></div>
+             <div class="h-4 bg-surface-low rounded-full w-1/2 mb-8"></div>
+             <div class="h-14 bg-surface-low rounded-2xl w-full mt-auto"></div>
           </div>
         }
       </div>
@@ -74,50 +83,65 @@
 
     <!-- Error State -->
     @if (!isLoading() && error()) {
-      <div class="bg-surface-lowest p-16 rounded-[3rem] shadow-ambient flex flex-col items-center text-center">
+      <div class="bg-surface-lowest p-16 rounded-[3rem] shadow-ambient flex flex-col items-center text-center max-w-2xl mx-auto">
         <div class="w-16 h-16 bg-error/10 rounded-2xl flex items-center justify-center mb-4">
           <lucide-icon [img]="AlertCircleIcon" size="32" class="text-error"></lucide-icon>
         </div>
-        <h2 class="text-xl font-black text-neutral mb-2">Algo deu errado</h2>
-        <p class="text-neutral/40 font-medium max-w-sm mb-6">{{ error() }}</p>
+        <h2 class="text-xl font-display font-bold text-neutral mb-2">Algo deu errado</h2>
+        <p class="text-neutral/40 font-medium mb-6">{{ error() }}</p>
         <button (click)="loadGroups()"
-                class="btn btn-error h-12 px-6 rounded-2xl border-none bg-gradient-to-r from-error to-error/80 text-white font-black gap-2">
+                class="bg-gradient-to-br from-error to-error/80 text-white px-6 py-3 rounded-xl font-display font-bold text-sm transition-transform active:scale-95 shadow-lg shadow-error/10 flex items-center gap-2">
           <lucide-icon [img]="RefreshCwIcon" size="16"></lucide-icon>
-          <span class="uppercase tracking-widest text-xs">Tentar novamente</span>
+          TENTAR NOVAMENTE
         </button>
       </div>
     }
 
-    <!-- Groups List -->
+    <!-- Groups Grid -->
     @if (!isLoading() && !error() && groups().length > 0) {
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         @for (group of groups(); track group.id) {
           <app-group-card
             [group]="group"
             [isAdmin]="group.created_by === user?.id"
           />
         }
+
+        <!-- Add New Group Card -->
+        <a routerLink="/create" class="group bg-surface-low/50 border-2 border-dashed border-neutral/10 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center transition-all hover:bg-surface-low hover:border-primary/30 min-h-[300px]">
+          <div class="w-16 h-16 rounded-full bg-surface-lowest flex items-center justify-center mb-4 shadow-ambient group-hover:scale-110 transition-transform">
+            <lucide-icon [img]="PlusIcon" size="32" class="text-primary"></lucide-icon>
+          </div>
+          <h3 class="font-display font-bold text-xl text-neutral mb-2">Novo Grupo</h3>
+          <p class="text-neutral/50 text-xs max-w-[180px] leading-relaxed mb-6">Inicie uma nova tradição e convide seus amigos hoje mesmo.</p>
+          <span class="text-primary text-xs font-extrabold uppercase tracking-widest group-hover:underline">Começar Agora</span>
+        </a>
       </div>
 
       <!-- Pagination -->
       @if (totalPages() > 1) {
-        <div class="flex items-center justify-center gap-2 mt-8">
+        <div class="mt-16 flex items-center justify-center gap-2">
           <button (click)="goToPage(currentPage() - 1)"
                   [disabled]="currentPage() === 1"
-                  class="btn btn-ghost btn-sm rounded-xl disabled:opacity-20">
-            <lucide-icon [img]="GiftIcon" size="16"></lucide-icon>
+                  class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-low text-neutral/50 hover:bg-neutral/10 transition-colors disabled:opacity-30 disabled:hover:bg-surface-low">
+            <lucide-icon [img]="GiftIcon" size="16" class="rotate-180"></lucide-icon>
           </button>
+          
           @for (page of [].constructor(totalPages()); track $index) {
             <button (click)="goToPage($index + 1)"
-                    class="btn btn-sm rounded-xl min-w-[2.5rem] font-black"
-                    [class.btn-primary]="$index + 1 === currentPage()"
-                    [class.btn-ghost]="$index + 1 !== currentPage()">
+                    class="w-10 h-10 flex items-center justify-center rounded-xl font-bold text-xs transition-colors"
+                    [class.bg-primary]="currentPage() === $index + 1"
+                    [class.text-white]="currentPage() === $index + 1"
+                    [class.bg-surface-lowest]="currentPage() !== $index + 1"
+                    [class.text-neutral]="currentPage() !== $index + 1"
+                    [class.hover:bg-surface-low]="currentPage() !== $index + 1">
               {{ $index + 1 }}
             </button>
           }
+
           <button (click)="goToPage(currentPage() + 1)"
                   [disabled]="currentPage() === totalPages()"
-                  class="btn btn-ghost btn-sm rounded-xl disabled:opacity-20">
+                  class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-low text-neutral/50 hover:bg-neutral/10 transition-colors disabled:opacity-30 disabled:hover:bg-surface-low">
             <lucide-icon [img]="GiftIcon" size="16"></lucide-icon>
           </button>
         </div>
@@ -126,29 +150,27 @@
 
     <!-- Empty State -->
     @if (!isLoading() && !error() && groups().length === 0) {
-      <div class="bg-surface-lowest p-16 rounded-[3rem] shadow-ambient flex flex-col items-center text-center">
-        <div class="w-24 h-24 bg-surface-low rounded-[2rem] flex items-center justify-center mb-6">
-          <lucide-icon [img]="GiftIcon" size="48" class="text-primary/20"></lucide-icon>
+      <div class="bg-surface-lowest p-16 rounded-[3rem] shadow-ambient flex flex-col items-center text-center max-w-2xl mx-auto mt-12">
+        <div class="w-24 h-24 bg-surface-low rounded-full flex items-center justify-center mb-6 shadow-inner">
+          <lucide-icon [img]="GiftIcon" size="40" class="text-primary/30"></lucide-icon>
         </div>
-        <h2 class="text-2xl font-black text-neutral mb-2">Nenhum grupo ainda</h2>
-        <p class="text-neutral/40 font-medium max-w-sm mb-8">
-          Crie seu primeiro amigo secreto e convide seus amigos!
+        <h2 class="text-2xl font-display font-extrabold text-neutral mb-2">Nenhum grupo ainda</h2>
+        <p class="text-neutral/50 font-medium max-w-sm mb-8">
+          Crie seu primeiro amigo secreto e convide seus amigos para iniciar a tradição!
         </p>
         <a routerLink="/create"
-           class="btn btn-primary btn-lg h-14 px-8 rounded-2xl gap-3 border-none bg-gradient-to-r from-primary to-primary-focus shadow-ambient font-black">
+           class="bg-gradient-to-br from-primary to-primary-focus text-white px-8 py-4 rounded-2xl font-display font-bold transition-transform active:scale-95 shadow-lg shadow-primary/10 flex items-center gap-2">
           <lucide-icon [img]="PlusIcon" size="20"></lucide-icon>
-          <span class="uppercase tracking-widest text-sm">Criar Grupo</span>
+          CRIAR NOVO GRUPO
         </a>
       </div>
     }
   </main>
 
-  <!-- FAB -->
-  <a routerLink="/create"
-     class="fixed bottom-24 right-6 z-40 w-14 h-14 bg-gradient-to-br from-primary to-primary-focus text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform">
-    <lucide-icon [img]="PlusIcon" size="28"></lucide-icon>
-  </a>
-
   <!-- Bottom Nav -->
   <app-bottom-nav [items]="navItems" />
+
+  <!-- Simple Atmospheric Decoration -->
+  <div class="fixed top-0 right-0 -z-10 w-1/2 h-1/2 bg-gradient-to-bl from-primary/5 to-transparent blur-3xl opacity-50 pointer-events-none"></div>
+  <div class="fixed bottom-0 left-0 -z-10 w-1/3 h-1/3 bg-gradient-to-tr from-secondary/5 to-transparent blur-3xl opacity-30 pointer-events-none"></div>
 </div>

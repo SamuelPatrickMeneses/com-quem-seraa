@@ -14,23 +14,23 @@
           Criar Novo Grupo
         </a>
 
-        @if (user) {
+        @if (user()) {
           <div class="h-8 w-px bg-neutral/10"></div>
           
           <div class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="flex items-center gap-3 cursor-pointer group">
               <div class="text-right">
-                <p class="text-xs font-bold font-display leading-none">{{ user.name?.split(' ')[0] || 'Usuário' }}</p>
+                <p class="text-xs font-bold font-display leading-none">{{ user()?.name?.split(' ')[0] || 'Usuário' }}</p>
                 <p class="text-[10px] text-neutral/50 uppercase tracking-widest mt-1">Organizador</p>
               </div>
               <div class="w-10 h-10 rounded-full bg-surface-low overflow-hidden ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all text-primary font-black flex items-center justify-center">
-                {{ user.name?.charAt(0) || user.email?.charAt(0) | uppercase }}
+                {{ user()?.name?.charAt(0) || user()?.email?.charAt(0) | uppercase }}
               </div>
             </div>
             <ul tabindex="0" class="mt-4 z-[1] p-3 shadow-ambient menu menu-sm dropdown-content bg-white/90 backdrop-blur-xl rounded-[1.5rem] w-64 border border-neutral/5">
               <li class="px-4 py-3">
-                <p class="font-black text-neutral truncate">{{ user.name || user.email }}</p>
-                <p class="text-xs font-bold text-neutral/40 truncate">{{ user.email }}</p>
+                <p class="font-black text-neutral truncate">{{ user()?.name || user()?.email }}</p>
+                <p class="text-xs font-bold text-neutral/40 truncate">{{ user()?.email }}</p>
               </li>
               <div class="divider h-px bg-neutral/5 my-2"></div>
               <li><a routerLink="/profile" class="py-3 rounded-xl font-bold hover:bg-primary/5 hover:text-primary"><lucide-icon [img]="UserIcon" size="18"></lucide-icon> Meu Perfil</a></li>
@@ -43,10 +43,10 @@
 
       <!-- Mobile Profile -->
       <div class="md:hidden">
-        @if (user) {
+        @if (user()) {
           <a routerLink="/profile"
              class="w-9 h-9 rounded-full bg-surface-low overflow-hidden ring-2 ring-primary/10 text-primary font-black flex items-center justify-center text-sm">
-            {{ user.name?.charAt(0) || user.email?.charAt(0) | uppercase }}
+            {{ user()?.name?.charAt(0) || user()?.email?.charAt(0) | uppercase }}
           </a>
         }
       </div>
@@ -108,7 +108,7 @@
         @for (group of groups(); track group.id) {
           <app-group-card
             [group]="group"
-            [isAdmin]="group.created_by === user?.id"
+            [isAdmin]="group.created_by === user()?.id"
           />
         }
 

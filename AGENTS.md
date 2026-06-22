@@ -72,9 +72,58 @@ file: src/app/store/user.store.ts
 description: Extrai lógica de cache para um service separado
 ```
 
+- **Idioma:** A mensagem de commit **deve** ser escrita em **inglês**.
 - Strings **não** devem usar aspas.
 - Use `file` (singular) para um único arquivo; use `files` (plural) para lista de múltiplos arquivos.
 - `description` pode ser uma string (uma linha) ou uma lista de strings (múltiplos itens).
+
+## 📥 Convenção de Pull Request
+
+**Esta convenção é obrigatória.** Todo Pull Request **deve** seguir o template e regras abaixo.
+
+### Template
+
+```markdown
+**Origem:** `<nome-da-branch>`
+**Destino:** `<develop|main>`
+**Issues relacionadas:** Closes #X, Closes #Y
+
+---
+
+## 📋 Descrição
+
+<Parágrafo resumindo o propósito do PR>
+
+## ✨ O que foi feito
+
+- <Item 1>
+- <Item 2>
+
+## 🔧 Arquivos modificados
+
+```
+<output do git diff --stat>
+```
+
+## 🧪 Como testar
+
+```bash
+npm run docker:test
+```
+```
+
+### Regras
+
+| Campo | Regra |
+|-------|-------|
+| **Title** | `<tipo>: <descrição>` — `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:` (mesmos types do commit) |
+| **Origem** | Nome da branch de origem |
+| **Destino** | Branch alvo (sempre `develop`) |
+| **Issues** | `Closes #N` para cada issue resolvida (opcional se não houver) |
+| **Descrição** | 1-2 parágrafos explicando o contexto e o que o PR entrega |
+| **O que foi feito** | Lista de bullets com as mudanças, agrupadas por área se necessário |
+| **Arquivos** | Output de `git diff --stat` dentro de code block |
+| **Como testar** | Comando(s) para validar, dentro de code block bash |
 
 ## 🛠️ Diretrizes de Resposta
 - Seja direto, técnico e foque na qualidade do código.

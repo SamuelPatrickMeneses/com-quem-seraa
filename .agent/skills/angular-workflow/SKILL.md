@@ -48,5 +48,22 @@ Verifique se páginas usam `signal()` / `computed()` (não propriedades simples)
 ### 6. Testes
 Execute `npm run docker:test` e reporte o resultado.
 
+### 7. Stitch Alignment (Design → Code)
+Use `stitch_list_projects` + `stitch_list_screens` para listar as telas do Stitch.
+
+Compare cada tela Stitch (título + deviceType) com os componentes implementados em `features/`:
+- Para cada tela MOBILE e DESKTOP, verifique se existe um componente Angular correspondente.
+- Reporte telas sem componente (`❌`), componentes que só cobrem 1 viewport (`⚠️`), e telas com diferenças visuais relevantes.
+- Verifique especialmente se os breakpoints responsivos do Stitch (390px mobile, 1280px desktop) estão cobertos.
+
+Lista esperada:
+- `Login / Cadastro` → `login.page.ts` (mobile + desktop)
+- `Cadastro de Usuário` → `register.page.ts` (mobile)
+- `Dashboard de Grupos` → `my-groups.page.ts` (mobile + desktop)
+- `Criar Novo Grupo` → `create-group.page.ts` (mobile + desktop)
+- `Meu Perfil` → `profile.page.ts` (mobile + desktop)
+- `Detalhes do Grupo` → _(não implementado)_
+- `Revelação` → _(não implementado)_
+
 ## Output
 Relatório em markdown com seção por check, ✅/❌, paths e linhas relevantes.

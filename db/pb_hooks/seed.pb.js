@@ -66,6 +66,28 @@ onBootstrap((e) => {
             $app.save(partRecord);
         }
 
+        const drawnGroupRecord = new Record(groupsCollection);
+        drawnGroupRecord.set("name", "Sorteio Realizado 2024");
+        drawnGroupRecord.set("created_by", userIds[0]);
+        drawnGroupRecord.set("participants_count", 3);
+        drawnGroupRecord.set("has_been_drawn", true);
+        $app.save(drawnGroupRecord);
+
+        const drawnParticipantIds = [];
+        for (const userId of userIds) {
+            const partRecord = new Record(participantsCollection);
+            partRecord.set("group_id", drawnGroupRecord.id);
+            partRecord.set("giver_id", userId);
+            $app.save(partRecord);
+            drawnParticipantIds.push({ record: partRecord, userId });
+        }
+
+        drawnParticipantIds[0].record.set("receiver_id", drawnParticipantIds[1].userId);
+        drawnParticipantIds[1].record.set("receiver_id", drawnParticipantIds[2].userId);
+        drawnParticipantIds[2].record.set("receiver_id", drawnParticipantIds[0].userId);
+        for (const item of drawnParticipantIds) {
+            $app.save(item.record);
+        }
 
         console.log("Seed: Sucesso na inserção dos dados de teste!");
     } catch (err) {
@@ -115,6 +137,29 @@ if (env === "dev") {
                 partRecord.set("group_id", groupRecord.id);
                 partRecord.set("giver_id", userId);
                 $app.save(partRecord);
+            }
+
+            const drawnGroupRecord = new Record(groupsCollection);
+            drawnGroupRecord.set("name", "Sorteio Realizado 2024");
+            drawnGroupRecord.set("created_by", userIds[0]);
+            drawnGroupRecord.set("participants_count", 3);
+            drawnGroupRecord.set("has_been_drawn", true);
+            $app.save(drawnGroupRecord);
+
+            const drawnParticipantIds = [];
+            for (const userId of userIds) {
+                const partRecord = new Record(participantsCollection);
+                partRecord.set("group_id", drawnGroupRecord.id);
+                partRecord.set("giver_id", userId);
+                $app.save(partRecord);
+                drawnParticipantIds.push({ record: partRecord, userId });
+            }
+
+            drawnParticipantIds[0].record.set("receiver_id", drawnParticipantIds[1].userId);
+            drawnParticipantIds[1].record.set("receiver_id", drawnParticipantIds[2].userId);
+            drawnParticipantIds[2].record.set("receiver_id", drawnParticipantIds[0].userId);
+            for (const item of drawnParticipantIds) {
+                $app.save(item.record);
             }
 
             return e.json(200, {message: "Seed: dados de teste recarregados com sucesso!"});

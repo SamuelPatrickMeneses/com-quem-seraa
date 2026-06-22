@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { GroupService } from '../../core/services/group.service';
 import { PocketBaseClient, POCKETBASE_URL } from '../../infrastructure/pocketbase/pocketbase.client';
 import { routes } from '../../app.routes';
+import { setViewport, resetViewport } from '../../testing/responsive-helper';
 
 const POCKETBASE_DIRECT_URL = 'http://pocketbase:8090';
 
@@ -16,6 +17,10 @@ describe('MyGroupsComponent (integração)', () => {
   let ngZone: NgZone;
 
   beforeAll(async () => {
+    await fetch(`${POCKETBASE_DIRECT_URL}/api/test/reseed`);
+  });
+
+  afterAll(async () => {
     await fetch(`${POCKETBASE_DIRECT_URL}/api/test/reseed`);
   });
 
@@ -95,8 +100,88 @@ describe('MyGroupsComponent (integração)', () => {
   });
 });
 
+describe('MyGroupsComponent (responsivo)', () => {
+  let fixture: ComponentFixture<MyGroupsComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [MyGroupsComponent],
+      providers: [
+        provideRouter(routes),
+        { provide: POCKETBASE_URL, useValue: POCKETBASE_DIRECT_URL },
+        {
+          provide: GroupService,
+          useValue: {
+            getMyGroups: () => Promise.resolve({
+              items: [{ id: '1', name: 'Teste', description: '', created_by: 'user1', created_at: new Date().toISOString(), has_been_drawn: false, participants_count: 2 }],
+              total: 1,
+            }),
+          } as any,
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(MyGroupsComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    resetViewport();
+  });
+
+  afterAll(async () => {
+    await fetch(`${POCKETBASE_DIRECT_URL}/api/test/reseed`);
+  });
+
+  it('should have desktop nav actions with hidden md:flex classes', () => {
+    const desktopActions = fixture.nativeElement.querySelector('[class*="hidden"][class*="md:flex"]');
+    expect(desktopActions).toBeTruthy();
+    expect(desktopActions.className).toContain('hidden');
+    expect(desktopActions.className).toContain('md:flex');
+  });
+
+  it('should have mobile profile area with md:hidden class', () => {
+    const mobileProfile = fixture.nativeElement.querySelector('[class*="md:hidden"]');
+    expect(mobileProfile).toBeTruthy();
+    expect(mobileProfile.className).toContain('md:hidden');
+  });
+
+  it('should render heading with responsive text size classes', () => {
+    const heading = fixture.nativeElement.querySelector('h1');
+    expect(heading?.className).toContain('text-4xl');
+    expect(heading?.className).toContain('md:text-5xl');
+  });
+
+  it('should have grid with responsive column classes', () => {
+    const grid = fixture.nativeElement.querySelector('[class*="grid-cols-1"]');
+    expect(grid?.className).toContain('grid-cols-1');
+    expect(grid?.className).toContain('md:grid-cols-2');
+    expect(grid?.className).toContain('lg:grid-cols-3');
+  });
+
+  it('should render bottom nav on mobile', () => {
+    setViewport(375, 667);
+    fixture.detectChanges();
+    const bottomNav = fixture.nativeElement.querySelector('app-bottom-nav');
+    expect(bottomNav).toBeTruthy();
+  });
+
+  it('should not overflow at 688x724 viewport', () => {
+    setViewport(688, 724);
+    fixture.detectChanges();
+    const root = fixture.nativeElement.firstElementChild as HTMLElement;
+    expect(root.scrollWidth).toBeLessThanOrEqual(root.clientWidth + 1);
+  });
+});
+
 describe('MyGroupsComponent (erro)', () => {
   let fixture: ComponentFixture<MyGroupsComponent>;
+
+  beforeAll(async () => {
+    await fetch(`${POCKETBASE_DIRECT_URL}/api/test/reseed`);
+  });
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -113,10 +198,14 @@ describe('MyGroupsComponent (erro)', () => {
     fixture.detectChanges();
   });
 
+  afterAll(async () => {
+    await fetch(`${POCKETBASE_DIRECT_URL}/api/test/reseed`);
+  });
+
   it('should show error state when fetch fails', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('Algo deu errado');
-    expect(el.textContent).toContain('Tentar novamente');
+    expect(el.textContent).toContain('TENTAR NOVAMENTE');
     expect(el.querySelectorAll('app-group-card').length).toBe(0);
     expect(el.textContent).not.toContain('Nenhum grupo ainda');
   });

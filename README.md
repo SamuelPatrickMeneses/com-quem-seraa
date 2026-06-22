@@ -20,17 +20,28 @@ Toda a especificação do sistema está versionada na pasta `/docs`:
 * **Backend (BaaS):** Pocketbase (API + Auth + SQLite)
 
 ## 🚀 4. Quick Start (Como Executar)
+
+> Todos os comandos de execução utilizam **Docker Compose**. Certifique-se de tê-lo instalado.
+
 1. **Configurar variáveis de ambiente:**
    ```bash
    npm run setup:env
    ```
    Edite o `.env` gerado conforme necessário. Para detalhes sobre cada variável, veja o [SDD](./docs/sdd.md#🔐-8-variáveis-de-ambiente).
-2. **Rodar o servidor de desenvolvimento:**
+
+2. **Rodar o servidor de desenvolvimento (com Docker):**
    ```bash
-   npm run dev:web
+   npm run docker:up
    ```
-3. **(Opcional) Executar testes:**
+   Sobe os containers do **Pocketbase**, **build** (Angular com hot-reload) e **Nginx**. Acesse em `http://localhost`.
+
+3. **Parar os containers:**
+   ```bash
+   npm run docker:down
+   ```
+
+4. **Executar testes (com Docker):**
    ```bash
    npm run docker:test
    ```
-   Os testes rodam em container Docker com Selenium Firefox. Requer Docker Compose instalado.
+   Sobe os containers **Pocketbase**, **Selenium Firefox** e **Test Runner**, executa os specs e encerra tudo automaticamente.

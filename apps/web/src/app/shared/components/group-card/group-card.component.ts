@@ -16,15 +16,18 @@ import type { Group } from '../../../core/models/group.model';
       <div class="flex justify-between items-start mb-6">
         @if (status === 'SORTEADO') {
           <div class="bg-neutral/5 text-neutral/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-            Sorteado
+            <span class="md:hidden">SORTEADO</span>
+            <span class="hidden md:inline">Finalizado</span>
           </div>
         } @else if (status === 'ATIVO') {
           <div class="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-            Em Andamento
+            <span class="md:hidden">ATIVO</span>
+            <span class="hidden md:inline">Em Andamento</span>
           </div>
         } @else {
           <div class="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-            Aguardando Sorteio
+            <span class="md:hidden">PENDENTE</span>
+            <span class="hidden md:inline">Aguardando Sorteio</span>
           </div>
         }
         
@@ -45,10 +48,10 @@ import type { Group } from '../../../core/models/group.model';
         @if (status === 'SORTEADO') {
           <div class="flex items-center gap-3 mb-6">
             <lucide-icon [img]="CheckCircle2Icon" size="20" class="text-secondary"></lucide-icon>
-            <span class="text-sm font-medium text-secondary">Sorteio Finalizado</span>
+            <span class="text-sm font-medium text-secondary">Todos os presentes entregues</span>
           </div>
           <div class="w-full py-4 text-center bg-surface-low text-neutral/60 font-display font-bold rounded-2xl group-hover:bg-neutral/10 transition-all duration-300">
-            Revisar Detalhes
+            Revisar Histórico
           </div>
         } @else if (status === 'ATIVO') {
           <div class="flex items-center gap-2 mb-6 text-neutral/50">

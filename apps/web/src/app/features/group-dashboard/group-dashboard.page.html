@@ -1,0 +1,174 @@
+<div class="min-h-screen bg-[#faf9f8]">
+  <header class="bg-[#ffffff] border-b border-[#e4beba]/15 px-4 py-4 md:px-8">
+    <div class="max-w-6xl mx-auto">
+      <a routerLink="/my-groups" class="inline-flex items-center gap-1 text-sm text-[#5b403d] hover:text-[#1a1c1c] mb-2">
+        <lucide-icon [img]="ChevronLeftIcon" size="16"></lucide-icon>
+        Voltar
+      </a>
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl md:text-3xl font-bold text-[#1a1c1c]">{{ group()?.name }}</h1>
+        @if (status === 'SORTEADO') {
+          <span class="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">SORTEADO</span>
+        } @else if (status === 'ATIVO') {
+          <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">ATIVO</span>
+        } @else {
+          <span class="bg-neutral/5 text-neutral/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">PENDENTE</span>
+        }
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 md:px-8 py-6">
+    @if (isLoading()) {
+      <div class="flex justify-center py-12">
+        <div class="w-8 h-8 border-4 border-[#a20513] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    } @else if (error()) {
+      <div class="text-center py-12">
+        <p class="text-[#5b403d] mb-4">{{ error() }}</p>
+        <button (click)="loadData()" class="px-6 py-2 bg-[#a20513] text-white font-semibold rounded-xl hover:bg-[#93000e] transition-colors">
+          TENTAR NOVAMENTE
+        </button>
+      </div>
+    } @else {
+      <!-- Reveal Area (participant view) -->
+      @if (!isOrganizer() && myParticipant()) {
+        <div class="bg-[#ffffff] rounded-2xl p-8 mb-8 shadow-[0_2px_8px_rgba(91,64,61,0.06)] text-center">
+          @if (myParticipant()?.receiver_id) {
+            <lucide-icon [img]="GiftIcon" size="48" class="mx-auto mb-4 text-[#a20513]"></lucide-icon>
+            <h2 class="text-xl font-bold text-[#1a1c1c] mb-2">Seu amigo secreto é...</h2>
+            <p class="text-3xl font-black text-primary mb-2">{{ myParticipant()?.expand?.receiver_id?.name || '—' }}</p>
+            <p class="text-[#5b403d] text-sm">NÃO CONTE PARA NINGUÉM!</p>
+          } @else {
+            <lucide-icon [img]="SparklesIcon" size="48" class="mx-auto mb-4 text-[#e4beba]"></lucide-icon>
+            <h2 class="text-xl font-bold text-[#1a1c1c] mb-2">Aguardando sorteio</h2>
+            <p class="text-[#5b403d]">O organizador ainda não realizou o sorteio deste grupo.</p>
+          }
+        </div>
+      }
+
+      <!-- Admin Area (organizer view) -->
+      @if (isOrganizer()) {
+        <div class="bg-[#ffffff] rounded-2xl p-6 mb-8 shadow-[0_2px_8px_rgba(91,64,61,0.06)]">
+          <div class="flex items-center gap-2 text-primary mb-4">
+            <lucide-icon [img]="ShieldCheckIcon" size="20"></lucide-icon>
+            <span class="font-bold">Você é o organizador</span>
+          </div>
+
+          @if (status === 'SORTEADO') {
+            <a [routerLink]="'/group/' + groupId + '/admin'"
+               class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
+              Ver resultado do sorteio
+              <lucide-icon [img]="ArrowRightIcon" size="16"></lucide-icon>
+            </a>
+          } @else if (status === 'ATIVO') {
+            <button (click)="performDraw()" [disabled]="isDrawLoading()"
+                    class="inline-flex items-center gap-2 px-6 py-3 bg-[#a20513] text-white font-semibold rounded-xl hover:bg-[#93000e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              @if (isDrawLoading()) {
+                <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              } @else {
+                <lucide-icon [img]="SparklesIcon" size="18"></lucide-icon>
+              }
+              {{ isDrawLoading() ? 'SORTEANDO...' : 'REALIZAR SORTEIO' }}
+            </button>
+            <p class="text-xs text-[#5b403d] mt-2">Esta ação é irreversível e revelará os pares para todos.</p>
+          } @else {
+            <button disabled
+                    class="inline-flex items-center gap-2 px-6 py-3 bg-[#a20513]/50 text-white font-semibold rounded-xl cursor-not-allowed"
+                    title="É necessário no mínimo 3 participantes para realizar o sorteio.">
+              REALIZAR SORTEIO
+            </button>
+            <p class="text-xs text-[#5b403d] mt-2">É necessário no mínimo 3 participantes para realizar o sorteio.</p>
+          }
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            @if (isOrganizerParticipant()) {
+              <button (click)="toggleMembership()" [disabled]="isActionLoading()"
+                      class="inline-flex items-center gap-1 px-4 py-2 text-sm font-semibold text-[#5b403d] bg-[#f4f3f2] rounded-xl hover:bg-[#e9e8e7] transition-colors disabled:opacity-50">
+                <lucide-icon [img]="LogOutIcon" size="14"></lucide-icon>
+                DEIXAR DE SER MEMBRO
+              </button>
+            } @else {
+              <button (click)="toggleMembership()" [disabled]="isActionLoading()"
+                      class="inline-flex items-center gap-1 px-4 py-2 text-sm font-semibold text-secondary bg-secondary/10 rounded-xl hover:bg-secondary/20 transition-colors disabled:opacity-50">
+                <lucide-icon [img]="UserPlusIcon" size="14"></lucide-icon>
+                TORNAR-SE MEMBRO
+              </button>
+            }
+
+            @if (status !== 'SORTEADO') {
+              <button (click)="deleteGroup()" [disabled]="isActionLoading()"
+                      class="inline-flex items-center gap-1 px-4 py-2 text-sm font-semibold text-[#ba1a1a] bg-[#ba1a1a]/5 rounded-xl hover:bg-[#ba1a1a]/10 transition-colors disabled:opacity-50">
+                <lucide-icon [img]="Trash2Icon" size="14"></lucide-icon>
+                EXCLUIR GRUPO
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Participant actions (non-organizer) -->
+      @if (!isOrganizer() && myParticipant() && status !== 'SORTEADO') {
+        <div class="bg-[#ffffff] rounded-2xl p-6 mb-8 shadow-[0_2px_8px_rgba(91,64,61,0.06)]">
+          <button (click)="leaveGroup()" [disabled]="isActionLoading()"
+                  class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#ba1a1a] bg-[#ba1a1a]/5 rounded-xl hover:bg-[#ba1a1a]/10 transition-colors disabled:opacity-50">
+            <lucide-icon [img]="LogOutIcon" size="14"></lucide-icon>
+            SAIR DO GRUPO
+          </button>
+        </div>
+      }
+
+      <!-- Invite Link Section -->
+      <div class="bg-[#ffffff] rounded-2xl p-6 mb-8 shadow-[0_2px_8px_rgba(91,64,61,0.06)]">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-bold text-[#1a1c1c]">Link de Convite</h3>
+          <button (click)="copyInviteLink()"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-primary bg-primary/5 rounded-lg hover:bg-primary/10 transition-colors">
+            <lucide-icon [img]="copied() ? GiftIcon : CopyIcon" size="14"></lucide-icon>
+            {{ copied() ? 'COPIADO!' : 'COPIAR' }}
+          </button>
+        </div>
+        <div class="bg-[#f4f3f2] rounded-xl px-4 py-3 text-sm text-[#5b403d] break-all select-all">
+          {{ inviteUrl() }}
+        </div>
+        @if (status === 'SORTEADO') {
+          <p class="text-xs text-[#5b403d]/70 mt-2">Sorteio já realizado. Novos participantes não podem entrar.</p>
+        }
+      </div>
+
+      <!-- Participant List -->
+      <div class="bg-[#ffffff] rounded-2xl shadow-[0_2px_8px_rgba(91,64,61,0.06)] overflow-hidden">
+        <div class="px-6 py-4 border-b border-[#e4beba]/15">
+          <h3 class="font-bold text-[#1a1c1c]">Participantes ({{ participants().length }})</h3>
+        </div>
+        <div class="divide-y divide-[#e4beba]/15">
+          @for (p of participants(); track p.id) {
+            <div class="px-6 py-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-[#f4f3f2] flex items-center justify-center text-sm font-bold text-[#1a1c1c]">
+                  {{ p.expand?.giver_id?.name?.charAt(0) || '?' }}
+                </div>
+                <div>
+                  <p class="font-semibold text-[#1a1c1c]">{{ p.expand?.giver_id?.name || p.giver_id || 'Participante' }}</p>
+                  @if (p.giver_id === group()?.created_by) {
+                    <p class="text-xs text-primary font-medium">Organizador</p>
+                  }
+                </div>
+              </div>
+              @if (isOrganizer() && status !== 'SORTEADO' && p.giver_id !== group()?.created_by) {
+                <button (click)="removeParticipant(p)" [disabled]="isActionLoading()"
+                        class="p-2 text-[#5b403d] hover:text-[#ba1a1a] transition-colors disabled:opacity-50">
+                  <lucide-icon [img]="Trash2Icon" size="16"></lucide-icon>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </main>
+
+  <app-bottom-nav [items]="navItems"></app-bottom-nav>
+
+  <div class="fixed top-0 right-0 -z-10 w-1/2 h-1/2 bg-gradient-to-bl from-primary/5 to-transparent blur-3xl opacity-50 pointer-events-none"></div>
+</div>

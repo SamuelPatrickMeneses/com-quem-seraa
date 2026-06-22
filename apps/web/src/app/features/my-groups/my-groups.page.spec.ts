@@ -69,7 +69,7 @@ describe('MyGroupsComponent (integração)', () => {
     await createComponent();
 
     const cards = fixture.nativeElement.querySelectorAll('app-group-card');
-    expect(cards.length).toBe(1);
+    expect(cards.length).toBe(2);
     expect(fixture.nativeElement.textContent).toContain('Amigo Secreto 2024');
     expect(fixture.nativeElement.textContent).not.toContain('Nenhum grupo ainda');
   });

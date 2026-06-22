@@ -10,6 +10,11 @@
       "template": "You must follow the instructions in @.agent/skills/angular-workflow/SKILL.md.\nExecute the audit checklist and return a structured report.",
       "description": "🧱 Audita a arquitetura Angular: Feature-Driven (core/shared/features), standalone-only, Tailwind-only, rotas",
       "agent": "build"
+    },
+    "commit-workflow": {
+      "template": "You must follow the instructions in @.agent/skills/commit-workflow/SKILL.md.\nInspect staged changes, generate a YAML commit message per the convention in AGENTS.md, present it for approval, and commit when approved.",
+      "description": "📝 Commita mudanças staged seguindo a convenção YAML em inglês",
+      "agent": "build"
     }
   }
 }

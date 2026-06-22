@@ -41,9 +41,14 @@
         }
       </div>
 
-      <!-- Mobile Notification -->
+      <!-- Mobile Profile -->
       <div class="md:hidden">
-        <lucide-icon [img]="AlertCircleIcon" class="text-neutral/50"></lucide-icon>
+        @if (user) {
+          <a routerLink="/profile"
+             class="w-9 h-9 rounded-full bg-surface-low overflow-hidden ring-2 ring-primary/10 text-primary font-black flex items-center justify-center text-sm">
+            {{ user.name?.charAt(0) || user.email?.charAt(0) | uppercase }}
+          </a>
+        }
       </div>
     </div>
   </nav>
@@ -161,7 +166,7 @@
         <a routerLink="/create"
            class="bg-gradient-to-br from-primary to-primary-focus text-white px-8 py-4 rounded-2xl font-display font-bold transition-transform active:scale-95 shadow-lg shadow-primary/10 flex items-center gap-2">
           <lucide-icon [img]="PlusIcon" size="20"></lucide-icon>
-          CRIAR NOVO GRUPO
+          Criar Novo Grupo
         </a>
       </div>
     }

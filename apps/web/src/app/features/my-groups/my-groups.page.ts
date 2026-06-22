@@ -37,7 +37,7 @@ export class MyGroupsComponent implements OnInit {
   private groupService = inject(GroupService);
   private router = inject(Router);
 
-  user: any = null;
+  user = signal<any>(null);
   groups = signal<Group[]>([]);
   isLoading = signal(true);
   error = signal<string | null>(null);
@@ -56,7 +56,7 @@ export class MyGroupsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.user = this.authService.user;
+    this.user.set(this.authService.user);
     this.loadGroups();
   }
 

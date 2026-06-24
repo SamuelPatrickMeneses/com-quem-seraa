@@ -1,5 +1,5 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { GroupDashboardComponent } from './group-dashboard.page';
 import { GroupService } from '../../core/services/group.service';
 import { ParticipantService } from '../../core/services/participant.service';
@@ -568,5 +568,171 @@ describe('GroupDashboardComponent (erro)', () => {
   it('should show error state and retry button', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('TENTAR NOVAMENTE');
+  });
+});
+
+describe('GroupDashboardComponent (integração - sair)', () => {
+  let component: GroupDashboardComponent;
+  let fixture: ComponentFixture<GroupDashboardComponent>;
+  let auth: AuthService;
+  let ngZone: NgZone;
+
+  beforeEach(async () => {
+    await fetch(`${POCKETBASE_DIRECT_URL}/api/test/reseed`);
+    TestBed.resetTestingModule();
+    const undrawnGroupId = await fetchGroupIdAuth(false);
+    await TestBed.configureTestingModule({
+      imports: [GroupDashboardComponent],
+      providers: [
+        provideRouter(routes),
+        { provide: POCKETBASE_URL, useValue: POCKETBASE_DIRECT_URL },
+      ],
+    }).compileComponents();
+    auth = TestBed.inject(AuthService);
+    ngZone = TestBed.inject(NgZone);
+    fixture = TestBed.createComponent(GroupDashboardComponent);
+    component = fixture.componentInstance;
+    fixture.componentRef.setInput('groupId', undrawnGroupId);
+  });
+
+  afterEach(() => {
+    auth?.logout();
+  });
+
+  function waitForStable(): Promise<void> {
+    return new Promise(resolve => {
+      if (!component.isLoading()) {
+        resolve();
+        return;
+      }
+      const sub = ngZone.onStable.subscribe(() => {
+        if (!component.isLoading()) {
+          sub.unsubscribe();
+          resolve();
+        }
+      });
+    });
+  }
+
+  async function createComponent() {
+    fixture.detectChanges();
+    await waitForStable();
+    fixture.detectChanges();
+  }
+
+  it('should allow non-organizer to leave group', async () => {
+    await auth.login('beto@exemplo.com', '1234567890');
+    await createComponent();
+
+    const token = await loginToken();
+    const participantsResBefore = await fetch(
+      `${POCKETBASE_DIRECT_URL}/api/collections/group_participants/records?filter=(group_id='${component.groupId}')&perPage=100`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const participantsDataBefore: any = await participantsResBefore.json();
+    const totalCountBefore = participantsDataBefore.items.length;
+
+    spyOn(window, 'confirm').and.returnValue(true);
+    const navigateSpy = spyOn(TestBed.inject(Router), 'navigate');
+
+    await ngZone.run(() => component.leaveGroup());
+    fixture.detectChanges();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/my-groups']);
+
+    const participantsRes = await fetch(
+      `${POCKETBASE_DIRECT_URL}/api/collections/group_participants/records?filter=(group_id='${component.groupId}')&perPage=100`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const participantsData: any = await participantsRes.json();
+    const betoParticipant = participantsData.items.find(
+      (p: any) => p.giver_name === 'beto'
+    );
+    expect(betoParticipant).toBeUndefined();
+    expect(participantsData.items.length).toBe(totalCountBefore - 1);
+  });
+
+  it('should update participants_count after leaving', async () => {
+    await auth.login('beto@exemplo.com', '1234567890');
+    await createComponent();
+
+    const initialCount = component.group()!.participants_count;
+
+    spyOn(window, 'confirm').and.returnValue(true);
+    spyOn(TestBed.inject(Router), 'navigate');
+
+    await ngZone.run(() => component.leaveGroup());
+    fixture.detectChanges();
+
+    const token = await loginToken();
+    const groupRes = await fetch(
+      `${POCKETBASE_DIRECT_URL}/api/collections/groups/records/${component.groupId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const groupData: any = await groupRes.json();
+    expect(groupData.participants_count).toBe(initialCount - 1);
+  });
+
+  it('should allow organizer to remove a participant', async () => {
+    await auth.login('ana@exemplo.com', '1234567890');
+    await createComponent();
+
+    const token = await loginToken();
+    const participantsResBefore = await fetch(
+      `${POCKETBASE_DIRECT_URL}/api/collections/group_participants/records?filter=(group_id='${component.groupId}')&perPage=100`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const participantsDataBefore: any = await participantsResBefore.json();
+    const totalCountBefore = participantsDataBefore.items.length;
+
+    spyOn(window, 'confirm').and.returnValue(true);
+
+    const betoParticipant = participantsDataBefore.items.find(
+      (p: any) => p.giver_name === 'beto'
+    );
+    expect(betoParticipant).toBeTruthy();
+
+    await ngZone.run(() => component.removeParticipant(betoParticipant));
+    fixture.detectChanges();
+
+    const participantsRes = await fetch(
+      `${POCKETBASE_DIRECT_URL}/api/collections/group_participants/records?filter=(group_id='${component.groupId}')&perPage=100`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const participantsData: any = await participantsRes.json();
+    const betoParticipantAfter = participantsData.items.find(
+      (p: any) => p.giver_name === 'beto'
+    );
+    expect(betoParticipantAfter).toBeUndefined();
+    expect(participantsData.items.length).toBe(totalCountBefore - 1);
+  });
+
+  it('should update participants_count after organizer removes participant', async () => {
+    await auth.login('ana@exemplo.com', '1234567890');
+    await createComponent();
+
+    const initialCount = component.group()!.participants_count;
+
+    spyOn(window, 'confirm').and.returnValue(true);
+
+    const token = await loginToken();
+    const participantsResBefore = await fetch(
+      `${POCKETBASE_DIRECT_URL}/api/collections/group_participants/records?filter=(group_id='${component.groupId}')&perPage=100`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const participantsDataBefore: any = await participantsResBefore.json();
+    const betoParticipant = participantsDataBefore.items.find(
+      (p: any) => p.giver_name === 'beto'
+    );
+    expect(betoParticipant).toBeTruthy();
+
+    await ngZone.run(() => component.removeParticipant(betoParticipant));
+
+    const groupRes = await fetch(
+      `${POCKETBASE_DIRECT_URL}/api/collections/groups/records/${component.groupId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const groupData: any = await groupRes.json();
+    expect(groupData.participants_count).toBe(initialCount - 1);
   });
 });

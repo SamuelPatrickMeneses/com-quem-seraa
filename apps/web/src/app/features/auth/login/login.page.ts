@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { LucideAngularModule, Gift, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-angular';
 
@@ -26,6 +26,7 @@ export class LoginComponent {
 
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
 
   constructor() {
@@ -45,7 +46,8 @@ export class LoginComponent {
 
     try {
       await this.authService.login(email, password);
-      this.router.navigate(['/my-groups']);
+      const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+      this.router.navigateByUrl(returnUrl || '/my-groups');
     } catch (err: any) {
       this.errorMessage.set(err?.message || 'E-mail ou senha incorretos.');
     } finally {

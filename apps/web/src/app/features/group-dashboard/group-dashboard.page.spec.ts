@@ -101,6 +101,20 @@ describe('GroupDashboardComponent (integração)', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('Participantes (');
   });
+
+  it('should hide participant list for non-organizer (beto)', async () => {
+    await auth.login('beto@exemplo.com', '1234567890');
+    await createComponent();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).not.toContain('Participantes (');
+  });
+
+  it('should show participant count for non-organizer (beto)', async () => {
+    await auth.login('beto@exemplo.com', '1234567890');
+    await createComponent();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('participantes no grupo');
+  });
 });
 
 describe('GroupDashboardComponent (integração - sorteado)', () => {
@@ -200,7 +214,9 @@ describe('GroupDashboardComponent (exibição)', () => {
         {
           id: 'p1',
           giver_id: 'user-ana',
+          giver_name: 'Ana',
           receiver_id: drawn ? 'user-beto' : null,
+          receiver_name: drawn ? 'Beto' : null,
           group_id: 'grupo-1',
           joined_at: new Date().toISOString(),
           expand: {
@@ -211,7 +227,9 @@ describe('GroupDashboardComponent (exibição)', () => {
         {
           id: 'p2',
           giver_id: 'user-beto',
+          giver_name: 'Beto',
           receiver_id: drawn ? 'user-caio' : null,
+          receiver_name: drawn ? 'Caio' : null,
           group_id: 'grupo-1',
           joined_at: new Date().toISOString(),
           expand: {
@@ -222,7 +240,9 @@ describe('GroupDashboardComponent (exibição)', () => {
         {
           id: 'p3',
           giver_id: 'user-caio',
+          giver_name: 'Caio',
           receiver_id: drawn ? 'user-ana' : null,
+          receiver_name: drawn ? 'Ana' : null,
           group_id: 'grupo-1',
           joined_at: new Date().toISOString(),
           expand: {
@@ -291,6 +311,16 @@ describe('GroupDashboardComponent (exibição)', () => {
     expect(el.textContent).toContain('Caio');
   });
 
+  it('should hide participant list for non-organizer', async () => {
+    await setup({ isOrganizer: false, currentUserId: 'user-beto' });
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).not.toContain('Participantes (');
+    expect(el.textContent).not.toContain('Ana');
+    expect(el.textContent).not.toContain('Beto');
+    expect(el.textContent).not.toContain('Caio');
+    expect(el.textContent).toContain('3 participantes no grupo');
+  });
+
   it('should show organizer badge for creator', async () => {
     await setup();
     const el = fixture.nativeElement as HTMLElement;
@@ -353,6 +383,43 @@ describe('GroupDashboardComponent (exibição)', () => {
     expect(el.textContent).toContain('SAIR DO GRUPO');
   });
 
+  it('should hide SAIR DO GRUPO for organizer', async () => {
+    await setup();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).not.toContain('SAIR DO GRUPO');
+  });
+
+  it('should hide SAIR DO GRUPO for participant when drawn', async () => {
+    await setup({ isOrganizer: false, hasBeenDrawn: true, currentUserId: 'user-beto' });
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).not.toContain('SAIR DO GRUPO');
+  });
+
+  it('should hide admin area from non-organizer', async () => {
+    await setup({ isOrganizer: false, currentUserId: 'user-beto' });
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).not.toContain('Você é o organizador');
+    expect(el.textContent).not.toContain('REALIZAR SORTEIO');
+    expect(el.textContent).not.toContain('EXCLUIR GRUPO');
+    expect(el.textContent).not.toContain('Ver resultado do sorteio');
+    expect(el.textContent).not.toContain('DEIXAR DE SER MEMBRO');
+    expect(el.textContent).not.toContain('TORNAR-SE MEMBRO');
+  });
+
+  it('should show remove buttons for non-organizer participants', async () => {
+    await setup();
+    const participantList = fixture.nativeElement.querySelector('.divide-y');
+    const removeButtons = participantList.querySelectorAll('button lucide-icon');
+    expect(removeButtons.length).toBe(2);
+  });
+
+  it('should hide remove buttons after draw', async () => {
+    await setup({ isOrganizer: true, hasBeenDrawn: true });
+    const participantList = fixture.nativeElement.querySelector('.divide-y');
+    const removeButtons = participantList.querySelectorAll('button lucide-icon');
+    expect(removeButtons.length).toBe(0);
+  });
+
   it('should show EXCLUIR GRUPO for organizer when not drawn', async () => {
     await setup({ isOrganizer: true, hasBeenDrawn: false });
     const el = fixture.nativeElement as HTMLElement;
@@ -372,7 +439,7 @@ describe('GroupDashboardComponent (exibição)', () => {
     const mockParticipantService = jasmine.createSpyObj('ParticipantService', ['getParticipants', 'delete', 'joinGroup']);
     mockParticipantService.getParticipants.and.resolveTo({
       items: [
-        { id: 'p2', giver_id: 'user-beto', receiver_id: null, group_id: 'grupo-1', joined_at: new Date().toISOString(),
+        { id: 'p2', giver_id: 'user-beto', giver_name: 'Beto', receiver_id: null, receiver_name: null, group_id: 'grupo-1', joined_at: new Date().toISOString(),
           expand: { giver_id: { id: 'user-beto', name: 'Beto' } } },
       ],
       total: 1,

@@ -18,7 +18,9 @@ export class ParticipantService extends BaseCrudService<GroupParticipant> {
     return await this.create({
       group_id: groupId,
       giver_id: user.id,
+      giver_name: (user as any).name ?? '',
       receiver_id: null,
+      receiver_name: null,
     } as unknown as Partial<GroupParticipant>);
   }
 

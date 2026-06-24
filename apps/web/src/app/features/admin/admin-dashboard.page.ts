@@ -12,7 +12,7 @@ import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User } from 
   standalone: true,
   imports: [BottomNavComponent, RouterLink, LucideAngularModule],
   template: `
-    <div class="min-h-screen bg-[#faf9f8]">
+    <div class="min-h-screen bg-[#faf9f8] pb-24 md:pb-0">
       <header class="bg-[#ffffff] border-b border-[#e4beba]/15 px-4 py-4 md:px-8">
         <div class="max-w-6xl mx-auto">
           <a routerLink="/group/{{groupId}}" class="inline-flex items-center gap-1 text-sm text-[#5b403d] hover:text-[#1a1c1c] mb-2">
@@ -43,7 +43,7 @@ import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User } from 
                 <div class="flex items-center justify-between">
                   <div class="flex-1 text-center">
                     <lucide-icon [img]="GiftIcon" size="24" class="mx-auto mb-1 text-[#a20513]"></lucide-icon>
-                    <p class="font-semibold text-[#1a1c1c]">{{ pair.expand?.giver_id?.name || pair.giver_id }}</p>
+                    <p class="font-semibold text-[#1a1c1c]">{{ pair.giver_name || pair.giver_id }}</p>
                     <p class="text-xs text-[#5b403d] mt-0.5">Presenteia</p>
                   </div>
                   <div class="flex-shrink-0 mx-3">
@@ -51,7 +51,7 @@ import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User } from 
                   </div>
                   <div class="flex-1 text-center">
                     <lucide-icon [img]="GiftIcon" size="24" class="mx-auto mb-1 text-[#2b6954]"></lucide-icon>
-                    <p class="font-semibold text-[#1a1c1c]">{{ pair.expand?.receiver_id?.name || pair.receiver_id }}</p>
+                    <p class="font-semibold text-[#1a1c1c]">{{ pair.receiver_name || pair.receiver_id }}</p>
                     <p class="text-xs text-[#5b403d] mt-0.5">Recebe</p>
                   </div>
                 </div>

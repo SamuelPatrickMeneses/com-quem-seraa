@@ -11,7 +11,7 @@
     "dev:web:test": "npm run test -w apps/web",
     "dev:web:build": "npm run build -w apps/web",
     "dev:web:watch": "npm run watch -w apps/web",
-    "docker:up": "docker compose --profile dev up",
+    "docker:up": "docker compose --profile dev up --remove-orphans",
     "docker:down": "docker compose --profile '*' down",
     "docker:test": "sh scripts/docker-test.sh",
     "docker:test:filtered": "echo 'Use fdescribe()/fit() in your spec file to filter tests, then run npm run docker:test'",

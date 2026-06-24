@@ -130,6 +130,9 @@ export class GroupDashboardComponent implements OnInit {
   }
 
   async toggleMembership() {
+    if (this.group()?.has_been_drawn) {
+      throw new Error('Não é possível alterar participação após o sorteio.');
+    }
     this.isActionLoading.set(true);
     try {
       if (this.isOrganizerParticipant()) {

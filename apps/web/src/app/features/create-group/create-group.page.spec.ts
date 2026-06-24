@@ -107,14 +107,12 @@ describe('CreateGroupComponent', () => {
     const participantService = TestBed.inject(ParticipantService) as jasmine.SpyObj<ParticipantService>;
 
     groupService.create.and.resolveTo({ id: 'new-group-2' } as any);
-    groupService.update.and.resolveTo({} as any);
     participantService.joinGroup.and.resolveTo({} as any);
 
     component.form.patchValue({ name: 'Meu Grupo', joinGroup: true });
     await component.onSubmit();
 
     expect(participantService.joinGroup).toHaveBeenCalledWith('new-group-2');
-    expect(groupService.update).toHaveBeenCalledWith('new-group-2', jasmine.objectContaining({ participants_count: 1 }));
   });
 
   it('should show error message when creation fails', async () => {

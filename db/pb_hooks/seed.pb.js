@@ -56,7 +56,7 @@ onBootstrap((e) => {
         const groupRecord = new Record(groupsCollection);
         groupRecord.set("name", "Amigo Secreto 2024");
         groupRecord.set("created_by", userIds[0]);
-        groupRecord.set("participants_count", 3);
+        groupRecord.set("participants_count", 0);
         $app.save(groupRecord);
 
         const userNames = testUserEmails.map(e => e.split("@")[0]);
@@ -72,7 +72,7 @@ onBootstrap((e) => {
         const drawnGroupRecord = new Record(groupsCollection);
         drawnGroupRecord.set("name", "Sorteio Realizado 2024");
         drawnGroupRecord.set("created_by", userIds[0]);
-        drawnGroupRecord.set("participants_count", 3);
+        drawnGroupRecord.set("participants_count", 0);
         drawnGroupRecord.set("has_been_drawn", true);
         $app.save(drawnGroupRecord);
 
@@ -136,7 +136,7 @@ if (env === "dev") {
             const groupRecord = new Record(groupsCollection);
             groupRecord.set("name", "Amigo Secreto 2024");
             groupRecord.set("created_by", userIds[0]);
-            groupRecord.set("participants_count", 3);
+            groupRecord.set("participants_count", 0);
             $app.save(groupRecord);
 
             const userNames = testUserEmails.map(e => e.split("@")[0]);
@@ -152,7 +152,7 @@ if (env === "dev") {
             const drawnGroupRecord = new Record(groupsCollection);
             drawnGroupRecord.set("name", "Sorteio Realizado 2024");
             drawnGroupRecord.set("created_by", userIds[0]);
-            drawnGroupRecord.set("participants_count", 3);
+            drawnGroupRecord.set("participants_count", 0);
             drawnGroupRecord.set("has_been_drawn", true);
             $app.save(drawnGroupRecord);
 

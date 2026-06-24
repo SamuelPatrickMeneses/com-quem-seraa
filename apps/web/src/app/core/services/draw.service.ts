@@ -31,6 +31,7 @@ export class DrawService {
       updates.push(
         this.pbClient.instance.collection('group_participants').update(shuffledIds[i], {
           receiver_id: receiver.giver_id,
+          receiver_name: receiver.giver_name,
         })
       );
     }

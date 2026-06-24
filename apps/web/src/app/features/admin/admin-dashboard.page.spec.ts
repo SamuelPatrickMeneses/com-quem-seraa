@@ -19,7 +19,9 @@ function mockParticipant(id: string, giverName: string, receiverName: string) {
   return {
     id,
     giver_id: giverName.toLowerCase(),
+    giver_name: giverName,
     receiver_id: receiverName.toLowerCase(),
+    receiver_name: receiverName,
     group_id: 'drawn-group-id',
     joined_at: new Date().toISOString(),
     expand: {

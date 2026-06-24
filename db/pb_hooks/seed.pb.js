@@ -59,10 +59,13 @@ onBootstrap((e) => {
         groupRecord.set("participants_count", 3);
         $app.save(groupRecord);
 
-        for (const userId of userIds) {
+        const userNames = testUserEmails.map(e => e.split("@")[0]);
+
+        for (let i = 0; i < userIds.length; i++) {
             const partRecord = new Record(participantsCollection);
             partRecord.set("group_id", groupRecord.id);
-            partRecord.set("giver_id", userId);
+            partRecord.set("giver_id", userIds[i]);
+            partRecord.set("giver_name", userNames[i]);
             $app.save(partRecord);
         }
 
@@ -74,17 +77,21 @@ onBootstrap((e) => {
         $app.save(drawnGroupRecord);
 
         const drawnParticipantIds = [];
-        for (const userId of userIds) {
+        for (let i = 0; i < userIds.length; i++) {
             const partRecord = new Record(participantsCollection);
             partRecord.set("group_id", drawnGroupRecord.id);
-            partRecord.set("giver_id", userId);
+            partRecord.set("giver_id", userIds[i]);
+            partRecord.set("giver_name", userNames[i]);
             $app.save(partRecord);
-            drawnParticipantIds.push({ record: partRecord, userId });
+            drawnParticipantIds.push({ record: partRecord, userId: userIds[i], name: userNames[i] });
         }
 
         drawnParticipantIds[0].record.set("receiver_id", drawnParticipantIds[1].userId);
+        drawnParticipantIds[0].record.set("receiver_name", drawnParticipantIds[1].name);
         drawnParticipantIds[1].record.set("receiver_id", drawnParticipantIds[2].userId);
+        drawnParticipantIds[1].record.set("receiver_name", drawnParticipantIds[2].name);
         drawnParticipantIds[2].record.set("receiver_id", drawnParticipantIds[0].userId);
+        drawnParticipantIds[2].record.set("receiver_name", drawnParticipantIds[0].name);
         for (const item of drawnParticipantIds) {
             $app.save(item.record);
         }
@@ -132,10 +139,13 @@ if (env === "dev") {
             groupRecord.set("participants_count", 3);
             $app.save(groupRecord);
 
-            for (const userId of userIds) {
+            const userNames = testUserEmails.map(e => e.split("@")[0]);
+
+            for (let i = 0; i < userIds.length; i++) {
                 const partRecord = new Record(participantsCollection);
                 partRecord.set("group_id", groupRecord.id);
-                partRecord.set("giver_id", userId);
+                partRecord.set("giver_id", userIds[i]);
+                partRecord.set("giver_name", userNames[i]);
                 $app.save(partRecord);
             }
 
@@ -147,17 +157,21 @@ if (env === "dev") {
             $app.save(drawnGroupRecord);
 
             const drawnParticipantIds = [];
-            for (const userId of userIds) {
+            for (let i = 0; i < userIds.length; i++) {
                 const partRecord = new Record(participantsCollection);
                 partRecord.set("group_id", drawnGroupRecord.id);
-                partRecord.set("giver_id", userId);
+                partRecord.set("giver_id", userIds[i]);
+                partRecord.set("giver_name", userNames[i]);
                 $app.save(partRecord);
-                drawnParticipantIds.push({ record: partRecord, userId });
+                drawnParticipantIds.push({ record: partRecord, userId: userIds[i], name: userNames[i] });
             }
 
             drawnParticipantIds[0].record.set("receiver_id", drawnParticipantIds[1].userId);
+            drawnParticipantIds[0].record.set("receiver_name", drawnParticipantIds[1].name);
             drawnParticipantIds[1].record.set("receiver_id", drawnParticipantIds[2].userId);
+            drawnParticipantIds[1].record.set("receiver_name", drawnParticipantIds[2].name);
             drawnParticipantIds[2].record.set("receiver_id", drawnParticipantIds[0].userId);
+            drawnParticipantIds[2].record.set("receiver_name", drawnParticipantIds[0].name);
             for (const item of drawnParticipantIds) {
                 $app.save(item.record);
             }

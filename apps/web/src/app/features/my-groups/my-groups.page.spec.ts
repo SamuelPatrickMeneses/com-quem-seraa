@@ -210,3 +210,78 @@ describe('MyGroupsComponent (erro)', () => {
     expect(el.textContent).not.toContain('Nenhum grupo ainda');
   });
 });
+
+describe('MyGroupsComponent (comportamento)', () => {
+  let component: MyGroupsComponent;
+  let fixture: ComponentFixture<MyGroupsComponent>;
+  let mockAuthService: jasmine.SpyObj<AuthService>;
+
+  beforeEach(async () => {
+    mockAuthService = jasmine.createSpyObj('AuthService', ['login', 'logout', 'register'], {
+      isAuthenticated: true,
+      user: { id: 'user-1', name: 'Ana', email: 'ana@test.com' },
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [MyGroupsComponent],
+      providers: [
+        provideRouter(routes),
+        { provide: AuthService, useValue: mockAuthService },
+        {
+          provide: GroupService,
+          useValue: {
+            getMyGroups: jasmine.createSpy('getMyGroups').and.resolveTo({
+              items: Array.from({ length: 15 }, (_, i) => ({
+                id: `group-${i + 1}`,
+                name: `Grupo ${i + 1}`,
+                description: '',
+                created_by: 'user-1',
+                created_at: new Date().toISOString(),
+                has_been_drawn: false,
+                participants_count: 2,
+              })),
+              total: 15,
+            }),
+          } as any,
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(MyGroupsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  });
+
+  it('should call authService.logout on logout', () => {
+    component.logout();
+    expect(mockAuthService.logout).toHaveBeenCalled();
+  });
+
+  it('should show pagination when totalPages > 1', () => {
+    expect(component.totalPages()).toBe(2);
+    const paginationDiv = fixture.nativeElement.querySelector('[class*="mt-16"]');
+    expect(paginationDiv).toBeTruthy();
+  });
+
+  it('should show 15 group cards', () => {
+    expect(fixture.nativeElement.querySelectorAll('app-group-card').length).toBe(15);
+  });
+
+  it('should update currentPage when goToPage is called', () => {
+    expect(component.currentPage()).toBe(1);
+    component.goToPage(2);
+    expect(component.currentPage()).toBe(2);
+  });
+
+  it('should not go to page below 1', () => {
+    component.goToPage(0);
+    expect(component.currentPage()).toBe(1);
+  });
+
+  it('should not go to page above totalPages', () => {
+    component.goToPage(99);
+    expect(component.currentPage()).toBe(1);
+  });
+});

@@ -62,7 +62,7 @@ describe('ParticipantService', () => {
       const result = await service.joinGroup('group-1');
 
       expect(mockParticipantCollection.create).toHaveBeenCalledWith(
-        { group_id: 'group-1', giver_id: 'user-1', receiver_id: null },
+        { group_id: 'group-1', giver_id: 'user-1', giver_name: 'Test User', receiver_id: null, receiver_name: null },
         undefined,
       );
       expect(result).toEqual(expected as any);

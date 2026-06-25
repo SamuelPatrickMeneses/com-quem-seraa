@@ -66,7 +66,7 @@ describe('ProfileComponent (responsivo)', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const avatar = fixture.nativeElement.querySelector('[class*="rounded-\\[2rem\\]"]') as HTMLElement;
+    const avatar = fixture.nativeElement.querySelector('[class*="rounded-\\[2.5rem\\]"]') as HTMLElement;
     expect(avatar).toBeTruthy();
     expect(avatar.scrollWidth).toBeLessThanOrEqual(avatar.clientWidth + 1);
     expect(avatar.scrollHeight).toBeLessThanOrEqual(avatar.clientHeight + 1);
@@ -78,7 +78,7 @@ describe('ProfileComponent (responsivo)', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const avatar = fixture.nativeElement.querySelector('[class*="rounded-\\[2rem\\]"]') as HTMLElement;
+    const avatar = fixture.nativeElement.querySelector('[class*="rounded-\\[2.5rem\\]"]') as HTMLElement;
     expect(avatar).toBeTruthy();
     expect(avatar.scrollWidth).toBeLessThanOrEqual(avatar.clientWidth + 1);
   });

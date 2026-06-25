@@ -1,0 +1,283 @@
+<div class="min-h-screen bg-[#f4f4f5]">
+  <app-top-nav />
+  <main class="max-w-5xl mx-auto px-6 pt-8 pb-24">
+
+    <!-- ===== PROFILE HEADER ===== -->
+    <section class="flex items-center gap-6 mb-8 relative">
+      <!-- Avatar with edit button -->
+      <div class="relative shrink-0">
+        <div class="w-[110px] h-[110px] rounded-2xl bg-gradient-to-br from-stone-300 to-stone-400 overflow-hidden flex items-center justify-center text-white text-5xl font-black select-none">
+          {{ (auth.user?.['name']?.[0] || auth.user?.['email']?.[0] || '?') | uppercase }}
+        </div>
+        <!-- Red edit badge -->
+        <button
+          class="absolute -bottom-2 -right-2 w-8 h-8 bg-[#c0392b] rounded-full flex items-center justify-center shadow-md hover:bg-[#a93226] transition-colors"
+          aria-label="Editar foto"
+        >
+          <lucide-icon [img]="UserIcon" [size]="14" class="text-white"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Name & subtitle -->
+      <div>
+        <h1 class="text-3xl font-extrabold text-stone-900 leading-tight">
+          {{ auth.user?.['name'] || 'Usuário' }}
+        </h1>
+        <p class="flex items-center gap-1.5 text-stone-500 text-sm mt-1 font-medium">
+          <span class="inline-flex items-center justify-center w-4 h-4 bg-[#c0392b] rounded-full text-white text-[9px] font-black">+</span>
+          Membro desde {{ (auth.user?.['created'] | date:'yyyy') || '2024' }}
+        </p>
+      </div>
+
+      <!-- Snowflake ornament (top-right) -->
+      <div class="absolute right-0 top-0 opacity-10 pointer-events-none hidden md:block">
+        <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="50" y1="5" x2="50" y2="95" stroke="#888" stroke-width="6" stroke-linecap="round"/>
+          <line x1="5" y1="50" x2="95" y2="50" stroke="#888" stroke-width="6" stroke-linecap="round"/>
+          <line x1="18" y1="18" x2="82" y2="82" stroke="#888" stroke-width="6" stroke-linecap="round"/>
+          <line x1="82" y1="18" x2="18" y2="82" stroke="#888" stroke-width="6" stroke-linecap="round"/>
+          <line x1="50" y1="5" x2="38" y2="18" stroke="#888" stroke-width="4" stroke-linecap="round"/>
+          <line x1="50" y1="5" x2="62" y2="18" stroke="#888" stroke-width="4" stroke-linecap="round"/>
+          <line x1="50" y1="95" x2="38" y2="82" stroke="#888" stroke-width="4" stroke-linecap="round"/>
+          <line x1="50" y1="95" x2="62" y2="82" stroke="#888" stroke-width="4" stroke-linecap="round"/>
+          <line x1="5" y1="50" x2="18" y2="38" stroke="#888" stroke-width="4" stroke-linecap="round"/>
+          <line x1="5" y1="50" x2="18" y2="62" stroke="#888" stroke-width="4" stroke-linecap="round"/>
+          <line x1="95" y1="50" x2="82" y2="38" stroke="#888" stroke-width="4" stroke-linecap="round"/>
+          <line x1="95" y1="50" x2="82" y2="62" stroke="#888" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ===== TABS ===== -->
+    <div class="flex gap-8 mb-6 border-b border-stone-200">
+      <button
+        (click)="activeTab.set('personal')"
+        class="pb-3 text-sm font-semibold transition-colors relative"
+        [ngClass]="activeTab() === 'personal' ? 'text-[#c0392b]' : 'text-stone-400 hover:text-stone-600'"
+      >
+        Personal Information
+        <span
+          *ngIf="activeTab() === 'personal'"
+          class="absolute bottom-0 left-0 right-0 h-[2px] bg-[#c0392b] rounded-full"
+        ></span>
+      </button>
+
+      <button
+        (click)="activeTab.set('security')"
+        class="pb-3 text-sm font-semibold transition-colors relative"
+        [ngClass]="activeTab() === 'security' ? 'text-[#c0392b]' : 'text-stone-400 hover:text-stone-600'"
+      >
+        Security &amp; Privacy
+        <span
+          *ngIf="activeTab() === 'security'"
+          class="absolute bottom-0 left-0 right-0 h-[2px] bg-[#c0392b] rounded-full"
+        ></span>
+      </button>
+    </div>
+
+    <!-- ===== TWO-COLUMN LAYOUT ===== -->
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 items-start">
+
+      <!-- ===== LEFT COLUMN ===== -->
+      <div>
+
+        <!-- PERSONAL INFO TAB -->
+        <div *ngIf="activeTab() === 'personal'">
+          <form [formGroup]="profileForm" (ngSubmit)="onSubmitProfile()" class="bg-white rounded-2xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-stone-900 mb-6">Account Details</h2>
+
+            <!-- Name + Email row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <!-- Full Name -->
+              <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-bold uppercase tracking-widest text-stone-400">Full Name</label>
+                <input
+                  type="text"
+                  formControlName="name"
+                  placeholder="Thiago Silva"
+                  class="bg-stone-100 rounded-xl px-4 py-3 text-stone-700 text-sm outline-none focus:ring-2 focus:ring-[#c0392b]/30 border-none placeholder-stone-400"
+                  [class.ring-2]="profileForm.get('name')?.invalid && profileForm.get('name')?.touched"
+                  [class.ring-red-300]="profileForm.get('name')?.invalid && profileForm.get('name')?.touched"
+                />
+              </div>
+
+              <!-- Email (readonly) -->
+              <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-bold uppercase tracking-widest text-stone-400">Email Address</label>
+                <div class="bg-stone-100 rounded-xl px-4 py-3 text-stone-400 text-sm cursor-not-allowed select-none">
+                  {{ auth.user?.['email'] || 'email@exemplo.com' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Bio -->
+            <div class="flex flex-col gap-1 mb-6">
+              <label class="text-[10px] font-bold uppercase tracking-widest text-stone-400">Bio (Gift Preferences)</label>
+              <textarea
+                rows="4"
+                placeholder="Tell your Secret Santa what you love... (e.g., Coffee, Sci-Fi books, succulent plants)"
+                class="bg-stone-100 rounded-xl px-4 py-3 text-stone-700 text-sm outline-none focus:ring-2 focus:ring-[#c0392b]/30 border-none placeholder-stone-400 resize-y"
+              ></textarea>
+            </div>
+
+            <!-- Feedback -->
+            <div
+              *ngIf="profileMessage()"
+              class="mb-4 px-4 py-3 rounded-xl text-sm font-semibold"
+              [ngClass]="profileMessage()?.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'"
+            >
+              {{ profileMessage()?.text }}
+            </div>
+
+            <!-- Save button -->
+            <div class="flex justify-end">
+              <button
+                type="submit"
+                [disabled]="profileForm.invalid || loadingProfile()"
+                class="px-8 py-3 bg-[#c0392b] hover:bg-[#a93226] active:scale-95 text-white font-bold rounded-xl transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <lucide-icon *ngIf="loadingProfile()" [img]="Loader2Icon" class="animate-spin" [size]="16"></lucide-icon>
+                Save All Changes
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- SECURITY TAB -->
+        <div *ngIf="activeTab() === 'security'" class="space-y-4">
+          <form [formGroup]="passwordForm" (ngSubmit)="onSubmitPassword()" class="bg-white rounded-2xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-stone-900 mb-6">Change Password</h2>
+
+            <div class="flex flex-col gap-1 mb-4">
+              <label class="text-[10px] font-bold uppercase tracking-widest text-stone-400">Current Password</label>
+              <div class="relative">
+                <input [type]="showOldPassword() ? 'text' : 'password'" formControlName="oldPassword"
+                  class="w-full bg-stone-100 rounded-xl px-4 py-3 pr-11 text-stone-700 text-sm outline-none focus:ring-2 focus:ring-[#c0392b]/30 border-none" />
+                <button type="button" (click)="showOldPassword.set(!showOldPassword())"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors">
+                  <lucide-icon *ngIf="showOldPassword()" [img]="EyeOffIcon" [size]="18"></lucide-icon>
+                  <lucide-icon *ngIf="!showOldPassword()" [img]="EyeIcon" [size]="18"></lucide-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-bold uppercase tracking-widest text-stone-400">New Password</label>
+                <div class="relative">
+                  <input [type]="showNewPassword() ? 'text' : 'password'" formControlName="password"
+                    class="w-full bg-stone-100 rounded-xl px-4 py-3 pr-11 text-stone-700 text-sm outline-none focus:ring-2 focus:ring-[#c0392b]/30 border-none" />
+                  <button type="button" (click)="showNewPassword.set(!showNewPassword())"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors">
+                    <lucide-icon *ngIf="showNewPassword()" [img]="EyeOffIcon" [size]="18"></lucide-icon>
+                    <lucide-icon *ngIf="!showNewPassword()" [img]="EyeIcon" [size]="18"></lucide-icon>
+                  </button>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-bold uppercase tracking-widest text-stone-400">Confirm New Password</label>
+                <div class="relative">
+                  <input [type]="showConfirmPassword() ? 'text' : 'password'" formControlName="passwordConfirm"
+                    class="w-full bg-stone-100 rounded-xl px-4 py-3 pr-11 text-stone-700 text-sm outline-none focus:ring-2 focus:ring-[#c0392b]/30 border-none" />
+                  <button type="button" (click)="showConfirmPassword.set(!showConfirmPassword())"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors">
+                    <lucide-icon *ngIf="showConfirmPassword()" [img]="EyeOffIcon" [size]="18"></lucide-icon>
+                    <lucide-icon *ngIf="!showConfirmPassword()" [img]="EyeIcon" [size]="18"></lucide-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="passwordMessage()" class="mb-4 px-4 py-3 rounded-xl text-sm font-semibold"
+              [ngClass]="passwordMessage()?.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'">
+              {{ passwordMessage()?.text }}
+            </div>
+
+            <div class="flex justify-end">
+              <button type="submit" [disabled]="passwordForm.invalid || loadingPassword()"
+                class="px-8 py-3 bg-[#c0392b] hover:bg-[#a93226] active:scale-95 text-white font-bold rounded-xl transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                <lucide-icon *ngIf="loadingPassword()" [img]="Loader2Icon" class="animate-spin" [size]="16"></lucide-icon>
+                Update Password
+              </button>
+            </div>
+          </form>
+
+          <!-- Logout / Danger Zone -->
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-red-100">
+            <h3 class="text-base font-bold text-red-600 mb-1">Session</h3>
+            <p class="text-stone-400 text-sm mb-4">Ao sair da sua conta, você precisará fazer login novamente para acessar seus grupos.</p>
+            <button (click)="logout()" class="flex items-center gap-2 text-red-600 font-semibold text-sm hover:bg-red-50 px-3 py-2 rounded-lg transition-colors">
+              <lucide-icon [img]="LogOutIcon" [size]="16"></lucide-icon>
+              Sair da Conta
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== RIGHT SIDEBAR ===== -->
+      <div class="space-y-4">
+
+        <!-- Secret Santa Activity card -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm relative overflow-hidden">
+          <!-- subtle gift icon watermark -->
+          <div class="absolute -bottom-4 -right-4 opacity-5 pointer-events-none">
+            <lucide-icon [img]="GiftIcon" [size]="100"></lucide-icon>
+          </div>
+
+          <h3 class="text-base font-bold text-stone-900 mb-4">Secret Santa Activity</h3>
+
+          <div class="space-y-4">
+            <!-- Groups Joined -->
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                <lucide-icon [img]="UsersIcon" [size]="18" class="text-green-600"></lucide-icon>
+              </div>
+              <div>
+                <div class="text-xl font-extrabold text-stone-900 leading-none">12</div>
+                <div class="text-[10px] font-bold uppercase tracking-widest text-stone-400 mt-0.5">Groups Joined</div>
+              </div>
+            </div>
+
+            <!-- Gifts Given -->
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+                <lucide-icon [img]="GiftIcon" [size]="18" class="text-red-500"></lucide-icon>
+              </div>
+              <div>
+                <div class="text-xl font-extrabold text-stone-900 leading-none">45</div>
+                <div class="text-[10px] font-bold uppercase tracking-widest text-stone-400 mt-0.5">Gifts Given</div>
+              </div>
+            </div>
+
+            <!-- Santa Rank -->
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center shrink-0">
+                <lucide-icon [img]="SparklesIcon" [size]="18" class="text-yellow-500"></lucide-icon>
+              </div>
+              <div>
+                <div class="text-xl font-extrabold text-stone-900 leading-none">Silver</div>
+                <div class="text-[10px] font-bold uppercase tracking-widest text-stone-400 mt-0.5">Santa Rank</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Host your own event card -->
+        <div class="bg-[#c0392b] rounded-2xl p-5 text-white">
+          <span class="text-[9px] font-bold uppercase tracking-widest bg-white/20 rounded-full px-2.5 py-1">Christmas 2024</span>
+          <h3 class="text-xl font-extrabold mt-3 mb-2 leading-tight">Host your own event</h3>
+          <p class="text-white/80 text-sm mb-4">Create a magical gift exchange for your family and friends in seconds.</p>
+          <a routerLink="/create" class="flex items-center gap-2 font-bold text-sm hover:gap-3 transition-all">
+            Create Now
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <app-bottom-nav [items]="navItems" />
+</div>

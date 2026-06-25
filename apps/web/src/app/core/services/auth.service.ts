@@ -51,4 +51,30 @@ export class AuthService {
   get pocketBase(): PocketBase {
     return this.pbClient.instance;
   }
+
+  /**
+   * Atualiza os dados de perfil (como o nome)
+   */
+  async updateProfile(userId: string, data: { name: string }) {
+    return await this.pbClient.instance.collection('users').update(userId, data);
+  }
+
+  /**
+   * Atualiza a senha
+   * O PocketBase exige re-autenticação antes de aceitar a troca de senha
+   */
+  async changePassword(userId: string, data: { oldPassword: string, password: string, passwordConfirm: string }) {
+    const email = this.user?.['email'];
+    if (!email) throw new Error('Usuário não autenticado.');
+
+    // Re-autentica com a senha atual para garantir token válido
+    await this.pbClient.instance.collection('users').authWithPassword(email, data.oldPassword);
+
+    // Atualiza a senha
+    return await this.pbClient.instance.collection('users').update(userId, {
+      oldPassword: data.oldPassword,
+      password: data.password,
+      passwordConfirm: data.passwordConfirm,
+    });
+  }
 }

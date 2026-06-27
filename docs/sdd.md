@@ -30,7 +30,7 @@
 | Termo PRD (PT-BR) | Entidade Técnica (EN) | Atributos Principais |
 | :--- | :--- | :--- |
 | Usuário | `user` (coleção nativa Pocketbase) | `id`, `name`, `email`, `verified`, `emailVisibility` |
-| Grupo | `group` | `id`, `name`, `description`, `created_by` (FK user.id), `created_at`, `has_been_drawn` |
+| Grupo | `group` | `id`, `name`, `description`, `created_by` (FK user.id), `created_at`, `has_been_drawn`, `drawn_at`, `participants_count` |
 | Participante | `group_participant` | `id`, `group_id` (FK), `giver_id` (FK user.id, NULL antes sorteio), `receiver_id` (FK user.id, NULL antes sorteio), `joined_at` |
 | Sorteio (implícito) | Atualização em massa dos `giver_id` e `receiver_id` na tabela `group_participant` | - |
 
@@ -45,6 +45,7 @@ erDiagram
         string created_by "default: @request.auth.id"
         datetime created_at "default: NOW()"
         boolean has_been_drawn "default: false"
+        datetime drawn_at "NULL"
         int participants_count "default: 0"
     }
     
@@ -63,15 +64,17 @@ erDiagram
         string id PK
         string giver_id FK "NULL"
         string receiver_id FK "NULL"
+        string giver_name "NULL"
+        string receiver_name "NULL"
         string group_id FK "NN"
         datetime joined_at "default: NOW()"
     }
     
 
     user ||--o{ group : created_by
-    group ||--o{ group_paticipant : group_id
-    user ||--o{ group_paticipant : giver_id
-    user ||--o{ group_paticipant : receiver_id
+    group ||--o{ group_participant : group_id
+    user ||--o{ group_participant : giver_id
+    user ||--o{ group_participant : receiver_id
 ```
 
 ## 📑 4. Contratos Globais (Interfaces & Types)
@@ -112,6 +115,7 @@ export interface Group {
   created_by: string;   // user.id
   created_at: string;   // ISO date
   has_been_drawn: boolean;
+  drawn_at?: string;    // ISO date
   participants_count: number;
   expand?: {
     created_by?: User;
@@ -119,13 +123,15 @@ export interface Group {
   };
 }
 
-export type CreateGroupDTO = Omit<Group, 'id' | 'created_at' | 'has_been_drawn'>;
+export type CreateGroupDTO = Omit<Group, 'id' | 'created_at' | 'has_been_drawn' | 'drawn_at'>;
 
 // src/app/core/models/group-participant.model.ts
 export interface GroupParticipant {
   id: string;
   giver_id: string | null;      // quem presenteia (preenchido após sorteio)
+  giver_name: string;           // denormalized name do giver
   receiver_id: string | null;   // quem recebe (preenchido após sorteio)
+  receiver_name: string | null; // denormalized name do receiver
   group_id: string;
   joined_at: string;            // ISO date
   expand?: {
@@ -135,7 +141,7 @@ export interface GroupParticipant {
   };
 }
 
-export type JoinGroupDTO = Omit<GroupParticipant, 'id' | 'joined_at' | 'giver_id' | 'receiver_id'>;
+export type JoinGroupDTO = Omit<GroupParticipant, 'id' | 'joined_at'>;
 
 // DTO para atualização de perfil
 export interface UpdateProfileDTO {
@@ -195,7 +201,6 @@ projeto/
 | `/create` | `features/create-group/create-group.page.ts` | `authGuard` |
 | `/join` | `features/join-group/join-group.page.ts` (query param `?code=xxx`) | `authGuard` |
 | `/group/:groupId` | `features/group-dashboard/group-dashboard.page.ts` | `authGuard`, `groupExistsGuard` |
-| `/group/:groupId/reveal` | `features/reveal/reveal.page.ts` | `authGuard`, `groupExistsGuard`, `drawAvailableGuard` |
 | `/group/:groupId/admin` | `features/admin/admin-dashboard.page.ts` | `authGuard`, `groupExistsGuard`, `isOrganizerGuard` |
 | `/profile` | `features/profile/profile.page.ts` (placeholder) | `authGuard` |
 
@@ -274,12 +279,11 @@ flowchart LR
     end
     
     subgraph Volumes
-        V1["/s7/ → /s8/"]
-        V2["/s9/ → /s10/"]
-        V3["/s11/ → /s12/"]
-        V4["/s13/ → /s14/"]
-        V5["/s15/ → /s16/"]
-        V6["/s17/ → /s18/"]
+        V1["./apps/web/dist/frontend/browser"]
+        V2["./server/logs"]
+        V3["pocketbase_data<br>(named volume)"]
+        V4["./db/pb_hooks"]
+        V5["./db/pb_migrations"]
     end
     
     N --> V1
@@ -287,7 +291,6 @@ flowchart LR
     PB --> V3
     PB --> V4
     PB --> V5
-    PB --> V6
     
     User((Usuário)) -->|HTTP :80| N
     N -->|"/api/*"| PB
@@ -630,14 +633,6 @@ O projeto utiliza um arquivo `.env` para gerenciar configurações e segredos. U
 ### ⚠️ Importante
 - O arquivo `.env` **não deve ser versionado** (já incluído no `.gitignore`).
 - Em produção, certifique-se de usar senhas fortes.
-
-## Biblioteca de Componentes Escolhida
-
-A equipe optou por utilizar o DaisyUI.
-
-A decisão foi baseada na velocidade de desenvolvimento, já que a biblioteca fornece componentes prontos integrados ao Tailwind, permitindo a criação de interfaces modernas com menos esforço e configuração.
-
----
 
 ## 📝 9. Convenção de Commits
 

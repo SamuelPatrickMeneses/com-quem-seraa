@@ -179,6 +179,19 @@ describe('GroupDashboardComponent (integração - sorteado)', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('Seu amigo secreto é');
   });
+
+  it('should hide receiver name by default and reveal on toggle', async () => {
+    await auth.login('caio@exemplo.com', '1234567890');
+    await createComponent();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('????');
+    expect(el.textContent).toContain('REVELAR');
+    component.toggleRevelation();
+    fixture.detectChanges();
+    expect(el.textContent).toContain('ana');
+    expect(el.textContent).toContain('OCULTAR');
+    expect(el.textContent).toContain('NÃO CONTE PARA NINGUÉM!');
+  });
 });
 
 describe('GroupDashboardComponent (exibição)', () => {
@@ -337,7 +350,46 @@ describe('GroupDashboardComponent (exibição)', () => {
     await setup({ isOrganizer: false, hasBeenDrawn: true, currentUserId: 'user-beto' });
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('Seu amigo secreto é');
+    component.toggleRevelation();
+    fixture.detectChanges();
     expect(el.textContent).toContain('Caio');
+  });
+
+  it('should hide receiver name by default', async () => {
+    await setup({ isOrganizer: false, hasBeenDrawn: true, currentUserId: 'user-beto' });
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Seu amigo secreto é');
+    expect(el.textContent).not.toContain('Caio');
+    expect(el.textContent).toContain('REVELAR');
+  });
+
+  it('should show receiver name after reveal', async () => {
+    await setup({ isOrganizer: false, hasBeenDrawn: true, currentUserId: 'user-beto' });
+    component.toggleRevelation();
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Caio');
+    expect(el.textContent).toContain('OCULTAR');
+    expect(el.textContent).toContain('NÃO CONTE PARA NINGUÉM!');
+  });
+
+  it('should re-hide receiver name after toggling twice', async () => {
+    await setup({ isOrganizer: false, hasBeenDrawn: true, currentUserId: 'user-beto' });
+    component.toggleRevelation();
+    fixture.detectChanges();
+    component.toggleRevelation();
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).not.toContain('Caio');
+    expect(el.textContent).toContain('REVELAR');
+  });
+
+  it('should hide name for organizer who is also participant when drawn', async () => {
+    await setup({ isOrganizer: true, hasBeenDrawn: true, currentUserId: 'user-ana' });
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Seu amigo secreto é');
+    expect(el.textContent).toContain('????');
+    expect(el.textContent).toContain('REVELAR');
   });
 
   it('should show bottom navigation', async () => {

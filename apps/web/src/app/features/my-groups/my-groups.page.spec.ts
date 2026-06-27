@@ -177,6 +177,7 @@ describe('MyGroupsComponent (responsivo)', () => {
 });
 
 describe('MyGroupsComponent (erro)', () => {
+  let component: MyGroupsComponent;
   let fixture: ComponentFixture<MyGroupsComponent>;
 
   beforeAll(async () => {
@@ -193,6 +194,7 @@ describe('MyGroupsComponent (erro)', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(MyGroupsComponent);
+    component = fixture.componentInstance;
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -208,6 +210,16 @@ describe('MyGroupsComponent (erro)', () => {
     expect(el.textContent).toContain('TENTAR NOVAMENTE');
     expect(el.querySelectorAll('app-group-card').length).toBe(0);
     expect(el.textContent).not.toContain('Nenhum grupo ainda');
+  });
+
+  it('should reload groups when TENTAR NOVAMENTE is clicked', () => {
+    const loadGroupsSpy = spyOn(component, 'loadGroups').and.callThrough();
+    fixture.detectChanges();
+
+    const retryButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    retryButton.click();
+
+    expect(loadGroupsSpy).toHaveBeenCalled();
   });
 });
 

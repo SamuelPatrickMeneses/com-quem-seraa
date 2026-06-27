@@ -1,5 +1,7 @@
 import { Component, OnInit, inject, signal, computed, Input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { DatePipe } from '@angular/common';
+import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 import { BottomNavComponent, NavItem } from '../../shared/components/bottom-nav/bottom-nav.component';
 import { GroupService } from '../../core/services/group.service';
 import { ParticipantService } from '../../core/services/participant.service';
@@ -13,7 +15,7 @@ import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User as User
 @Component({
   selector: 'app-group-dashboard',
   standalone: true,
-  imports: [RouterLink, LucideAngularModule, BottomNavComponent],
+  imports: [RouterLink, LucideAngularModule, BottomNavComponent, ConfirmModalComponent, DatePipe],
   templateUrl: './group-dashboard.page.html',
 })
 export class GroupDashboardComponent implements OnInit {
@@ -49,6 +51,12 @@ export class GroupDashboardComponent implements OnInit {
   copied = signal(false);
   isDrawLoading = signal(false);
   isActionLoading = signal(false);
+  showConfirmModal = signal(false);
+  confirmModalTitle = signal('');
+  confirmModalMessage = signal('');
+  confirmModalConfirmText = signal('Confirmar');
+  confirmModalCancelText = signal('Cancelar');
+  private confirmResolve: ((value: boolean) => void) | null = null;
 
   readonly isOrganizer = computed(() => {
     const g = this.group();
@@ -104,10 +112,34 @@ export class GroupDashboardComponent implements OnInit {
     }
   }
 
+  private promptConfirm(title: string, message: string, confirmText = 'Confirmar', cancelText = 'Cancelar'): Promise<boolean> {
+    this.confirmModalTitle.set(title);
+    this.confirmModalMessage.set(message);
+    this.confirmModalConfirmText.set(confirmText);
+    this.confirmModalCancelText.set(cancelText);
+    this.showConfirmModal.set(true);
+    return new Promise(resolve => { this.confirmResolve = resolve; });
+  }
+
+  onModalConfirm() {
+    this.confirmResolve?.(true);
+    this.confirmResolve = null;
+    this.showConfirmModal.set(false);
+  }
+
+  onModalCancel() {
+    this.confirmResolve?.(false);
+    this.confirmResolve = null;
+    this.showConfirmModal.set(false);
+  }
+
   async performDraw() {
-    if (!confirm('Tem certeza que deseja realizar o sorteio? Esta ação não pode ser desfeita.')) {
-      return;
-    }
+    const confirmed = await this.promptConfirm(
+      'Realizar sorteio',
+      'Tem certeza que deseja realizar o sorteio? Esta ação não pode ser desfeita.',
+      'Sim, realizar',
+    );
+    if (!confirmed) return;
     this.isDrawLoading.set(true);
     try {
       await this.drawService.performDraw(this.groupId);
@@ -133,9 +165,19 @@ export class GroupDashboardComponent implements OnInit {
     if (this.group()?.has_been_drawn) {
       throw new Error('Não é possível alterar participação após o sorteio.');
     }
+    const g = this.group();
+    const isLeaving = this.isOrganizerParticipant();
+    const confirmed = await this.promptConfirm(
+      isLeaving ? 'Sair do grupo' : 'Entrar no grupo',
+      isLeaving
+        ? `Tem certeza que deseja deixar de ser membro do grupo "${g?.name || ''}"?`
+        : `Deseja entrar como participante do grupo "${g?.name || ''}"?`,
+      isLeaving ? 'Sim, sair' : 'Sim, entrar',
+    );
+    if (!confirmed) return;
     this.isActionLoading.set(true);
     try {
-      if (this.isOrganizerParticipant()) {
+      if (isLeaving) {
         if (this.participants().length <= 1) {
           throw new Error('Você é o único participante. Adicione mais pessoas antes de sair.');
         }
@@ -155,9 +197,12 @@ export class GroupDashboardComponent implements OnInit {
   }
 
   async removeParticipant(participant: GroupParticipant) {
-    if (!confirm('Tem certeza que deseja remover este participante?')) {
-      return;
-    }
+    const confirmed = await this.promptConfirm(
+      'Remover participante',
+      `Tem certeza que deseja remover ${participant.giver_name || 'este participante'} do grupo?`,
+      'Sim, remover',
+    );
+    if (!confirmed) return;
     this.isActionLoading.set(true);
     try {
       await this.participantService.delete(participant.id);
@@ -171,9 +216,12 @@ export class GroupDashboardComponent implements OnInit {
 
   async leaveGroup() {
     const g = this.group();
-    if (!confirm(`Tem certeza que deseja sair do grupo "${g?.name || ''}"?`)) {
-      return;
-    }
+    const confirmed = await this.promptConfirm(
+      'Sair do grupo',
+      `Tem certeza que deseja sair do grupo "${g?.name || ''}"?`,
+      'Sim, sair',
+    );
+    if (!confirmed) return;
     this.isActionLoading.set(true);
     try {
       const myP = this.myParticipant();
@@ -190,9 +238,12 @@ export class GroupDashboardComponent implements OnInit {
   async deleteGroup() {
     const g = this.group();
     if (!g) return;
-    if (!confirm(`Tem certeza que deseja excluir o grupo "${g.name}"? Esta ação não pode ser desfeita.`)) {
-      return;
-    }
+    const confirmed = await this.promptConfirm(
+      'Excluir grupo',
+      `Tem certeza que deseja excluir o grupo "${g.name}"? Esta ação não pode ser desfeita.`,
+      'Sim, excluir',
+    );
+    if (!confirmed) return;
     this.isActionLoading.set(true);
     try {
       const participants = this.participants();

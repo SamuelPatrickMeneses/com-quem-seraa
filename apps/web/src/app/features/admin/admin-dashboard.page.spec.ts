@@ -239,6 +239,7 @@ describe('AdminDashboardComponent (responsivo)', () => {
 });
 
 describe('AdminDashboardComponent (erro)', () => {
+  let component: AdminDashboardComponent;
   let fixture: ComponentFixture<AdminDashboardComponent>;
 
   beforeEach(async () => {
@@ -259,6 +260,7 @@ describe('AdminDashboardComponent (erro)', () => {
     });
 
     fixture = TestBed.createComponent(AdminDashboardComponent);
+    component = fixture.componentInstance;
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -268,5 +270,15 @@ describe('AdminDashboardComponent (erro)', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('Algo deu errado');
     expect(el.textContent).toContain('TENTAR NOVAMENTE');
+  });
+
+  it('should reload pairs when TENTAR NOVAMENTE is clicked', () => {
+    const loadPairsSpy = spyOn(component, 'loadPairs').and.callThrough();
+    fixture.detectChanges();
+
+    const retryButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    retryButton.click();
+
+    expect(loadPairsSpy).toHaveBeenCalled();
   });
 });

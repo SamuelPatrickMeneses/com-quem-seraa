@@ -85,6 +85,7 @@ describe('ParticipantService', () => {
 
       expect(mockParticipantCollection.getList).toHaveBeenCalledWith(1, 50, {
         filter: 'group_id = "group-1"',
+        sort: '-joined_at',
         expand: 'giver_id,receiver_id',
       });
       expect(result).toEqual(expected as any);

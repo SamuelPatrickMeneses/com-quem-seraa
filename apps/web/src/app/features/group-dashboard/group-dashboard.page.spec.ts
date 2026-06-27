@@ -377,22 +377,22 @@ describe('GroupDashboardComponent (exibição)', () => {
     expect(el.textContent).toContain('COPIAR');
   });
 
-  it('should show SAIR DO GRUPO for participant when not drawn', async () => {
+  it('should show DEIXAR DE SER MEMBRO for participant when not drawn', async () => {
     await setup({ isOrganizer: false, hasBeenDrawn: false, currentUserId: 'user-beto' });
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).toContain('SAIR DO GRUPO');
+    expect(el.textContent).toContain('DEIXAR DE SER MEMBRO');
   });
 
-  it('should hide SAIR DO GRUPO for organizer', async () => {
+  it('should show DEIXAR DE SER MEMBRO for organizer who is a participant', async () => {
     await setup();
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).not.toContain('SAIR DO GRUPO');
+    expect(el.textContent).toContain('DEIXAR DE SER MEMBRO');
   });
 
-  it('should hide SAIR DO GRUPO for participant when drawn', async () => {
+  it('should hide DEIXAR DE SER MEMBRO for participant when drawn', async () => {
     await setup({ isOrganizer: false, hasBeenDrawn: true, currentUserId: 'user-beto' });
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).not.toContain('SAIR DO GRUPO');
+    expect(el.textContent).not.toContain('DEIXAR DE SER MEMBRO');
   });
 
   it('should hide admin area from non-organizer', async () => {
@@ -402,7 +402,6 @@ describe('GroupDashboardComponent (exibição)', () => {
     expect(el.textContent).not.toContain('REALIZAR SORTEIO');
     expect(el.textContent).not.toContain('EXCLUIR GRUPO');
     expect(el.textContent).not.toContain('Ver resultado do sorteio');
-    expect(el.textContent).not.toContain('DEIXAR DE SER MEMBRO');
     expect(el.textContent).not.toContain('TORNAR-SE MEMBRO');
   });
 
@@ -470,6 +469,159 @@ describe('GroupDashboardComponent (exibição)', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('TORNAR-SE MEMBRO');
   });
+
+  it('should call performDraw when organizer confirms', async () => {
+    await setup({ isOrganizer: true, hasBeenDrawn: false, participantCount: 3 });
+    const drawService = TestBed.inject(DrawService) as jasmine.SpyObj<DrawService>;
+
+    const drawPromise = component.performDraw();
+    component.onModalConfirm();
+    await drawPromise;
+
+    expect(drawService.performDraw).toHaveBeenCalledWith('grupo-1');
+  });
+
+  it('should set error when performDraw fails', async () => {
+    await setup({ isOrganizer: true, hasBeenDrawn: false, participantCount: 3 });
+    const drawService = TestBed.inject(DrawService) as jasmine.SpyObj<DrawService>;
+    drawService.performDraw.and.rejectWith(new Error('Falha no sorteio'));
+
+    const drawPromise = component.performDraw();
+    component.onModalConfirm();
+    await drawPromise;
+
+    expect(component.error()).toContain('Falha no sorteio');
+  });
+
+  it('should not call performDraw when cancelled', async () => {
+    await setup({ isOrganizer: true, hasBeenDrawn: false, participantCount: 3 });
+    const drawService = TestBed.inject(DrawService) as jasmine.SpyObj<DrawService>;
+
+    const drawPromise = component.performDraw();
+    component.onModalCancel();
+    await drawPromise;
+
+    expect(drawService.performDraw).not.toHaveBeenCalled();
+  });
+
+  it('should call deleteGroup and navigate on confirm', async () => {
+    await setup({ isOrganizer: true, hasBeenDrawn: false });
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+    const participantService = TestBed.inject(ParticipantService) as jasmine.SpyObj<ParticipantService>;
+    const groupService = TestBed.inject(GroupService) as jasmine.SpyObj<GroupService>;
+
+    const deletePromise = component.deleteGroup();
+    component.onModalConfirm();
+    await deletePromise;
+
+    expect(participantService.delete).toHaveBeenCalledTimes(3);
+    expect(groupService.delete).toHaveBeenCalledWith('grupo-1');
+    expect(navigateSpy).toHaveBeenCalledWith(['/my-groups']);
+  });
+
+  it('should not delete when deleteGroup is cancelled', async () => {
+    await setup({ isOrganizer: true, hasBeenDrawn: false });
+    const groupService = TestBed.inject(GroupService) as jasmine.SpyObj<GroupService>;
+
+    const deletePromise = component.deleteGroup();
+    component.onModalCancel();
+    await deletePromise;
+
+    expect(groupService.delete).not.toHaveBeenCalled();
+  });
+
+  it('should remove organizer from participants via toggleMembership', async () => {
+    await setup({ isOrganizer: true, hasBeenDrawn: false, participantCount: 3 });
+    const participantService = TestBed.inject(ParticipantService) as jasmine.SpyObj<ParticipantService>;
+
+    const togglePromise = component.toggleMembership();
+    component.onModalConfirm();
+    await togglePromise;
+
+    expect(participantService.delete).toHaveBeenCalledWith('p1');
+  });
+
+  it('should add organizer as participant via toggleMembership', async () => {
+    const uid = 'user-ana';
+    const createdBy = uid;
+
+    const mockGroupService = jasmine.createSpyObj('GroupService', ['getById', 'delete']);
+    mockGroupService.getById.and.resolveTo({
+      id: 'grupo-1', name: 'Amigo Secreto 2024', created_by: createdBy,
+      has_been_drawn: false, participants_count: 1, created_at: new Date().toISOString(),
+    });
+
+    const mockParticipantService = jasmine.createSpyObj('ParticipantService', ['getParticipants', 'delete', 'joinGroup']);
+    mockParticipantService.getParticipants.and.resolveTo({
+      items: [
+        { id: 'p2', giver_id: 'user-beto', giver_name: 'Beto', receiver_id: null, receiver_name: null, group_id: 'grupo-1', joined_at: new Date().toISOString(),
+          expand: { giver_id: { id: 'user-beto', name: 'Beto' } } },
+      ],
+      total: 1,
+    } as any);
+    mockParticipantService.joinGroup.and.resolveTo({} as any);
+    const mockDrawService = jasmine.createSpyObj('DrawService', ['performDraw']);
+    const mockAuthService = jasmine.createSpyObj('AuthService', [], {
+      user: { id: uid, name: 'Ana' },
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [GroupDashboardComponent],
+      providers: [
+        provideRouter(routes),
+        { provide: GroupService, useValue: mockGroupService },
+        { provide: ParticipantService, useValue: mockParticipantService },
+        { provide: DrawService, useValue: mockDrawService },
+        { provide: AuthService, useValue: mockAuthService },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(GroupDashboardComponent);
+    component = fixture.componentInstance;
+    fixture.componentRef.setInput('groupId', 'grupo-1');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const togglePromise = component.toggleMembership();
+    component.onModalConfirm();
+    await togglePromise;
+
+    expect(mockParticipantService.joinGroup).toHaveBeenCalledWith('grupo-1');
+  });
+
+  it('should copy invite link to clipboard', async () => {
+    await setup();
+    const mockWriteText = jasmine.createSpy('writeText').and.resolveTo();
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: mockWriteText },
+      configurable: true,
+    });
+
+    await component.copyInviteLink();
+
+    expect(mockWriteText).toHaveBeenCalledWith(component.inviteUrl());
+    expect(component.copied()).toBe(true);
+  });
+
+  it('should reset copied state after timeout', async () => {
+    await setup();
+    const mockWriteText = jasmine.createSpy('writeText').and.resolveTo();
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: mockWriteText },
+      configurable: true,
+    });
+    jasmine.clock().install();
+
+    await component.copyInviteLink();
+    expect(component.copied()).toBe(true);
+
+    jasmine.clock().tick(2001);
+    expect(component.copied()).toBe(false);
+
+    jasmine.clock().uninstall();
+  });
 });
 
 describe('GroupDashboardComponent (responsivo)', () => {
@@ -529,6 +681,7 @@ describe('GroupDashboardComponent (responsivo)', () => {
 });
 
 describe('GroupDashboardComponent (erro)', () => {
+  let component: GroupDashboardComponent;
   let fixture: ComponentFixture<GroupDashboardComponent>;
 
   beforeEach(async () => {
@@ -559,6 +712,7 @@ describe('GroupDashboardComponent (erro)', () => {
     });
 
     fixture = TestBed.createComponent(GroupDashboardComponent);
+    component = fixture.componentInstance;
     fixture.componentRef.setInput('groupId', 'grupo-1');
     fixture.detectChanges();
     await fixture.whenStable();
@@ -568,6 +722,16 @@ describe('GroupDashboardComponent (erro)', () => {
   it('should show error state and retry button', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('TENTAR NOVAMENTE');
+  });
+
+  it('should reload data when TENTAR NOVAMENTE is clicked', () => {
+    const loadDataSpy = spyOn(component, 'loadData').and.callThrough();
+    fixture.detectChanges();
+
+    const retryButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    retryButton.click();
+
+    expect(loadDataSpy).toHaveBeenCalled();
   });
 });
 
@@ -632,10 +796,11 @@ describe('GroupDashboardComponent (integração - sair)', () => {
     const participantsDataBefore: any = await participantsResBefore.json();
     const totalCountBefore = participantsDataBefore.items.length;
 
-    spyOn(window, 'confirm').and.returnValue(true);
     const navigateSpy = spyOn(TestBed.inject(Router), 'navigate');
 
-    await ngZone.run(() => component.leaveGroup());
+    const leavePromise = ngZone.run(() => component.leaveGroup());
+    component.onModalConfirm();
+    await leavePromise;
     fixture.detectChanges();
 
     expect(navigateSpy).toHaveBeenCalledWith(['/my-groups']);
@@ -658,10 +823,11 @@ describe('GroupDashboardComponent (integração - sair)', () => {
 
     const initialCount = component.group()!.participants_count;
 
-    spyOn(window, 'confirm').and.returnValue(true);
     spyOn(TestBed.inject(Router), 'navigate');
 
-    await ngZone.run(() => component.leaveGroup());
+    const leavePromise = ngZone.run(() => component.leaveGroup());
+    component.onModalConfirm();
+    await leavePromise;
     fixture.detectChanges();
 
     const token = await loginToken();
@@ -685,14 +851,14 @@ describe('GroupDashboardComponent (integração - sair)', () => {
     const participantsDataBefore: any = await participantsResBefore.json();
     const totalCountBefore = participantsDataBefore.items.length;
 
-    spyOn(window, 'confirm').and.returnValue(true);
-
     const betoParticipant = participantsDataBefore.items.find(
       (p: any) => p.giver_name === 'beto'
     );
     expect(betoParticipant).toBeTruthy();
 
-    await ngZone.run(() => component.removeParticipant(betoParticipant));
+    const removePromise = ngZone.run(() => component.removeParticipant(betoParticipant));
+    component.onModalConfirm();
+    await removePromise;
     fixture.detectChanges();
 
     const participantsRes = await fetch(
@@ -713,8 +879,6 @@ describe('GroupDashboardComponent (integração - sair)', () => {
 
     const initialCount = component.group()!.participants_count;
 
-    spyOn(window, 'confirm').and.returnValue(true);
-
     const token = await loginToken();
     const participantsResBefore = await fetch(
       `${POCKETBASE_DIRECT_URL}/api/collections/group_participants/records?filter=(group_id='${component.groupId}')&perPage=100`,
@@ -726,7 +890,9 @@ describe('GroupDashboardComponent (integração - sair)', () => {
     );
     expect(betoParticipant).toBeTruthy();
 
-    await ngZone.run(() => component.removeParticipant(betoParticipant));
+    const removePromise = ngZone.run(() => component.removeParticipant(betoParticipant));
+    component.onModalConfirm();
+    await removePromise;
 
     const groupRes = await fetch(
       `${POCKETBASE_DIRECT_URL}/api/collections/groups/records/${component.groupId}`,

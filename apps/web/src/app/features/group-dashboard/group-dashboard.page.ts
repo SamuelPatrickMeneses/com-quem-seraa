@@ -10,7 +10,7 @@ import { DrawService } from '../../core/services/draw.service';
 import type { Group } from '../../core/models/group.model';
 import type { GroupParticipant } from '../../core/models/group-participant.model';
 import type { User } from '../../core/models/user.model';
-import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User as UserIcon, ShieldCheck, Sparkles, ArrowRight, Copy, LogOut, Trash2, UserPlus } from 'lucide-angular';
+import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User as UserIcon, ShieldCheck, Sparkles, ArrowRight, Copy, LogOut, Trash2, UserPlus, Eye, EyeOff } from 'lucide-angular';
 
 @Component({
   selector: 'app-group-dashboard',
@@ -35,6 +35,8 @@ export class GroupDashboardComponent implements OnInit {
   readonly LogOutIcon = LogOut;
   readonly Trash2Icon = Trash2;
   readonly UserPlusIcon = UserPlus;
+  readonly EyeIcon = Eye;
+  readonly EyeOffIcon = EyeOff;
 
   readonly navItems: NavItem[] = [
     { label: 'Grupos', icon: Users, route: '/my-groups' },
@@ -57,6 +59,7 @@ export class GroupDashboardComponent implements OnInit {
   confirmModalConfirmText = signal('Confirmar');
   confirmModalCancelText = signal('Cancelar');
   private confirmResolve: ((value: boolean) => void) | null = null;
+  readonly isRevealed = signal(false);
 
   readonly isOrganizer = computed(() => {
     const g = this.group();
@@ -88,6 +91,10 @@ export class GroupDashboardComponent implements OnInit {
     if (g.has_been_drawn) return 'SORTEADO';
     if (g.participants_count >= 3) return 'ATIVO';
     return 'PENDENTE';
+  }
+
+  toggleRevelation() {
+    this.isRevealed.update(v => !v);
   }
 
   ngOnInit() {

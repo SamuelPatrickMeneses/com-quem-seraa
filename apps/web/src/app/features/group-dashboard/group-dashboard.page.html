@@ -37,8 +37,24 @@
           @if (myParticipant()?.receiver_id) {
             <lucide-icon [img]="GiftIcon" size="48" class="mx-auto mb-4 text-[#a20513]"></lucide-icon>
             <h2 class="text-xl font-bold text-[#1a1c1c] mb-2">Seu amigo secreto é...</h2>
-            <p class="text-3xl font-black text-primary mb-2">{{ myParticipant()?.receiver_name || '—' }}</p>
-            <p class="text-[#5b403d] text-sm">NÃO CONTE PARA NINGUÉM!</p>
+            @if (isRevealed()) {
+              <p class="text-3xl font-black text-primary mb-2">{{ myParticipant()?.receiver_name || '—' }}</p>
+              <p class="text-[#5b403d] text-sm mb-4">NÃO CONTE PARA NINGUÉM!</p>
+              <button (click)="toggleRevelation()"
+                      class="inline-flex items-center gap-1 px-4 py-2 text-sm font-semibold text-[#5b403d] bg-[#f4f3f2] rounded-xl hover:bg-[#e4e2e0] transition-colors">
+                <lucide-icon [img]="EyeOffIcon" size="14"></lucide-icon>
+                OCULTAR
+              </button>
+            } @else {
+              <div class="mb-4">
+                <div class="text-3xl font-black text-primary/20 select-none mb-2 blur-sm">????</div>
+              </div>
+              <button (click)="toggleRevelation()"
+                      class="inline-flex items-center gap-1 px-6 py-3 bg-[#a20513] text-white font-semibold rounded-xl hover:bg-[#93000e] transition-colors">
+                <lucide-icon [img]="EyeIcon" size="18"></lucide-icon>
+                REVELAR
+              </button>
+            }
           } @else {
             <lucide-icon [img]="SparklesIcon" size="48" class="mx-auto mb-4 text-[#e4beba]"></lucide-icon>
             <h2 class="text-xl font-bold text-[#1a1c1c] mb-2">Aguardando sorteio</h2>

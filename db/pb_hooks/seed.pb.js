@@ -61,11 +61,14 @@ onBootstrap((e) => {
 
         const userNames = testUserEmails.map(e => e.split("@")[0]);
 
+        const now = new Date().toISOString();
+
         for (let i = 0; i < userIds.length; i++) {
             const partRecord = new Record(participantsCollection);
             partRecord.set("group_id", groupRecord.id);
             partRecord.set("giver_id", userIds[i]);
             partRecord.set("giver_name", userNames[i]);
+            partRecord.set("joined_at", now);
             $app.save(partRecord);
         }
 
@@ -74,6 +77,7 @@ onBootstrap((e) => {
         drawnGroupRecord.set("created_by", userIds[0]);
         drawnGroupRecord.set("participants_count", 0);
         drawnGroupRecord.set("has_been_drawn", true);
+        drawnGroupRecord.set("drawn_at", now);
         $app.save(drawnGroupRecord);
 
         const drawnParticipantIds = [];
@@ -82,6 +86,7 @@ onBootstrap((e) => {
             partRecord.set("group_id", drawnGroupRecord.id);
             partRecord.set("giver_id", userIds[i]);
             partRecord.set("giver_name", userNames[i]);
+            partRecord.set("joined_at", now);
             $app.save(partRecord);
             drawnParticipantIds.push({ record: partRecord, userId: userIds[i], name: userNames[i] });
         }
@@ -141,11 +146,14 @@ if (env === "dev") {
 
             const userNames = testUserEmails.map(e => e.split("@")[0]);
 
+            const now = new Date().toISOString();
+
             for (let i = 0; i < userIds.length; i++) {
                 const partRecord = new Record(participantsCollection);
                 partRecord.set("group_id", groupRecord.id);
                 partRecord.set("giver_id", userIds[i]);
                 partRecord.set("giver_name", userNames[i]);
+                partRecord.set("joined_at", now);
                 $app.save(partRecord);
             }
 
@@ -154,6 +162,7 @@ if (env === "dev") {
             drawnGroupRecord.set("created_by", userIds[0]);
             drawnGroupRecord.set("participants_count", 0);
             drawnGroupRecord.set("has_been_drawn", true);
+            drawnGroupRecord.set("drawn_at", now);
             $app.save(drawnGroupRecord);
 
             const drawnParticipantIds = [];
@@ -162,6 +171,7 @@ if (env === "dev") {
                 partRecord.set("group_id", drawnGroupRecord.id);
                 partRecord.set("giver_id", userIds[i]);
                 partRecord.set("giver_name", userNames[i]);
+                partRecord.set("joined_at", now);
                 $app.save(partRecord);
                 drawnParticipantIds.push({ record: partRecord, userId: userIds[i], name: userNames[i] });
             }

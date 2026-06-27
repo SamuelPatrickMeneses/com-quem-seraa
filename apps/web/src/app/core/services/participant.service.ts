@@ -28,6 +28,7 @@ export class ParticipantService extends BaseCrudService<GroupParticipant> {
     return await this.pbClient.instance.collection('group_participants')
       .getList<GroupParticipant & RecordModel>(1, 50, {
         filter: `group_id = "${groupId}"`,
+        sort: '-joined_at',
         expand: 'giver_id,receiver_id',
       });
   }

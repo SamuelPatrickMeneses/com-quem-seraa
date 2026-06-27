@@ -40,6 +40,7 @@ export class DrawService {
 
     await this.pbClient.instance.collection('groups').update(groupId, {
       has_been_drawn: true,
+      drawn_at: new Date().toISOString(),
     });
   }
 

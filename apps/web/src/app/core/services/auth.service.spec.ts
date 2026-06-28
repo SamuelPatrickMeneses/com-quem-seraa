@@ -9,7 +9,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let mockPbClient: jasmine.SpyObj<PocketBaseClient>;
   let mockCollection: jasmine.SpyObj<ReturnType<PocketBaseClient['instance']['collection']>>;
-  let mockAuthStore: { isValid: boolean; model: Record<string, unknown> | null; clear: jasmine.Spy };
+  let mockAuthStore: { isValid: boolean; model: Record<string, unknown> | null; token: string; clear: jasmine.Spy; save: jasmine.Spy };
 
   beforeEach(() => {
     mockCollection = jasmine.createSpyObj('RecordService', [
@@ -21,6 +21,7 @@ describe('AuthService', () => {
 
     mockAuthStore = {
       isValid: true,
+      token: 'token-1',
       model: {
         id: 'user-1',
         name: 'Test User',
@@ -34,6 +35,7 @@ describe('AuthService', () => {
         updated: '2026-06-27T00:00:00.000Z',
       },
       clear: jasmine.createSpy('clear'),
+      save: jasmine.createSpy('save'),
     };
 
     const mockPb = {
@@ -151,10 +153,46 @@ describe('AuthService', () => {
       const result = await service.updateProfile('user-1', { name: 'New Name', bio: 'New bio' });
 
       expect(mockCollection.update).toHaveBeenCalledWith('user-1', { name: 'New Name', bio: 'New bio' });
+      expect(mockAuthStore.save).toHaveBeenCalled();
       expect(result).toEqual({
         id: 'user-1',
         name: 'New Name',
         bio: 'New bio',
+        collectionId: 'users',
+        collectionName: 'users',
+        emailVisibility: false,
+        verified: true,
+        created: '2026-06-27T00:00:00.000Z',
+        updated: '2026-06-27T00:00:00.000Z',
+      });
+    });
+  });
+
+  describe('updateAvatar', () => {
+    it('should update avatar and refresh authStore', async () => {
+      const avatar = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+      mockCollection.update.and.resolveTo({
+        id: 'user-1',
+        name: 'Test User',
+        email: 'test@example.com',
+        avatar: 'avatars/avatar.png',
+        collectionId: 'users',
+        collectionName: 'users',
+        emailVisibility: false,
+        verified: true,
+        created: '2026-06-27T00:00:00.000Z',
+        updated: '2026-06-27T00:00:00.000Z',
+      });
+
+      const result = await service.updateAvatar('user-1', avatar);
+
+      expect(mockCollection.update).toHaveBeenCalledWith('user-1', { avatar });
+      expect(mockAuthStore.save).toHaveBeenCalled();
+      expect(result).toEqual({
+        id: 'user-1',
+        name: 'Test User',
+        email: 'test@example.com',
+        avatar: 'avatars/avatar.png',
         collectionId: 'users',
         collectionName: 'users',
         emailVisibility: false,

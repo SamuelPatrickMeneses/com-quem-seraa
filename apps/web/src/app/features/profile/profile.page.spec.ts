@@ -23,6 +23,13 @@ async function setup(user: any = { name: 'Ana', email: 'ana@test.com', bio: 'Lov
         provide: AuthService,
         useValue: {
           user,
+          pocketBase: {
+            files: {
+              getUrl: jasmine.createSpy('getUrl').and.returnValue('https://cdn.example.com/avatar.png'),
+            },
+          },
+          updateAvatar: jasmine.createSpy('updateAvatar').and.resolveTo({ id: 'user-1' }),
+          updateProfile: jasmine.createSpy('updateProfile').and.resolveTo({ id: 'user-1' }),
           logout: jasmine.createSpy('logout'),
         },
       },
@@ -46,6 +53,12 @@ describe('ProfileComponent', () => {
     const text = (fixture.nativeElement as HTMLElement).textContent || '';
     expect(text).toContain('Ana Silva');
     expect(text).toContain('ana@test.com');
+  });
+
+  it('should render the avatar edit button', async () => {
+    const { fixture } = await setup({ name: 'Ana Silva', email: 'ana@test.com', avatar: 'avatars/avatar.png' });
+    const button = fixture.nativeElement.querySelector('[aria-label="Editar avatar"]');
+    expect(button).toBeTruthy();
   });
 
   it('should bind bio in the profile form', async () => {
@@ -108,5 +121,42 @@ describe('ProfileComponent (responsivo)', () => {
       expect(nav).withContext(`at ${vp.w}x${vp.h}`).toBeTruthy();
       resetViewport();
     }
+  });
+
+  it('should keep avatar request pending until save is clicked', async () => {
+    const { fixture } = await setup({ id: 'user-1', name: 'Ana Silva', email: 'ana@test.com' });
+    const component = fixture.componentInstance;
+    const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+    const input = document.createElement('input');
+
+    Object.defineProperty(input, 'files', {
+      value: [file],
+    });
+
+    await component.onAvatarSelected({ target: input } as unknown as Event);
+
+    const authService = TestBed.inject(AuthService) as unknown as { updateAvatar: jasmine.Spy };
+    expect(authService.updateAvatar).not.toHaveBeenCalled();
+    expect(component.selectedAvatarName()).toBe('avatar.png');
+  });
+
+  it('should submit the selected avatar together with profile changes', async () => {
+    const { fixture } = await setup({ id: 'user-1', name: 'Ana Silva', email: 'ana@test.com' });
+    const component = fixture.componentInstance;
+    const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+    const input = document.createElement('input');
+
+    Object.defineProperty(input, 'files', {
+      value: [file],
+    });
+
+    await component.onAvatarSelected({ target: input } as unknown as Event);
+    component.profileForm.patchValue({ name: 'Ana Silva', bio: 'Novo texto' });
+    await component.onSubmitProfile();
+
+    const authService = TestBed.inject(AuthService) as unknown as { updateAvatar: jasmine.Spy; updateProfile: jasmine.Spy };
+    expect(authService.updateProfile).toHaveBeenCalledWith('user-1', { name: 'Ana Silva', bio: 'Novo texto' });
+    expect(authService.updateAvatar).toHaveBeenCalled();
+    expect(component.selectedAvatarName()).toBeNull();
   });
 });

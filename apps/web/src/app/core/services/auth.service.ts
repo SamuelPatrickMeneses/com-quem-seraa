@@ -57,7 +57,18 @@ export class AuthService {
    * Atualiza os dados de perfil (como o nome)
    */
   async updateProfile(userId: string, data: Pick<UpdateProfileDTO, 'name' | 'bio'>) {
-    return await this.pbClient.instance.collection('users').update(userId, data);
+    const updatedUser = await this.pbClient.instance.collection('users').update(userId, data);
+    this.pbClient.instance.authStore.save(this.pbClient.instance.authStore.token, updatedUser);
+    return updatedUser;
+  }
+
+  /**
+   * Atualiza o avatar do usuário autenticado
+   */
+  async updateAvatar(userId: string, avatar: File) {
+    const updatedUser = await this.pbClient.instance.collection('users').update(userId, { avatar });
+    this.pbClient.instance.authStore.save(this.pbClient.instance.authStore.token, updatedUser);
+    return updatedUser;
   }
 
   /**

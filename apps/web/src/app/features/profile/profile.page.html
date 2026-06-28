@@ -6,16 +6,44 @@
     <section class="flex items-center gap-6 mb-8 relative">
       <!-- Avatar with edit button -->
       <div class="relative shrink-0">
-        <div class="w-[110px] h-[110px] rounded-2xl bg-gradient-to-br from-stone-300 to-stone-400 overflow-hidden flex items-center justify-center text-white text-5xl font-black select-none">
-          {{ (auth.user?.['name']?.[0] || auth.user?.['email']?.[0] || '?') | uppercase }}
-        </div>
+        <ng-container *ngIf="avatarUrl; else avatarFallback">
+          <img
+            [src]="avatarUrl"
+            [alt]="'Avatar de ' + (auth.user?.['name'] || auth.user?.['email'] || 'usuário')"
+            data-testid="profile-avatar"
+            class="w-[110px] h-[110px] rounded-2xl object-cover overflow-hidden border-4 border-white shadow-sm select-none"
+          />
+        </ng-container>
+        <ng-template #avatarFallback>
+          <div data-testid="profile-avatar" class="w-[110px] h-[110px] rounded-2xl bg-gradient-to-br from-stone-300 to-stone-400 overflow-hidden flex items-center justify-center text-white text-5xl font-black select-none">
+            {{ (auth.user?.['name']?.[0] || auth.user?.['email']?.[0] || '?') | uppercase }}
+          </div>
+        </ng-template>
+
+        <input
+          #avatarInput
+          type="file"
+          accept="image/*"
+          class="hidden"
+          (change)="onAvatarSelected($event)"
+        />
+
         <!-- Red edit badge -->
         <button
+          type="button"
+          (click)="avatarInput.click()"
           class="absolute -bottom-2 -right-2 w-8 h-8 bg-[#c0392b] rounded-full flex items-center justify-center shadow-md hover:bg-[#a93226] transition-colors"
-          aria-label="Editar foto"
+          aria-label="Editar avatar"
+          title="Editar avatar"
         >
-          <lucide-icon [img]="UserIcon" [size]="14" class="text-white"></lucide-icon>
+          <lucide-icon [img]="PencilIcon" [size]="14" class="text-white"></lucide-icon>
         </button>
+        <div
+          *ngIf="selectedAvatarName()"
+          class="mt-3 px-3 py-2 rounded-xl text-xs font-semibold bg-stone-100 text-stone-600"
+        >
+          Avatar selecionado: {{ selectedAvatarName() }}
+        </div>
       </div>
 
       <!-- Name & subtitle -->

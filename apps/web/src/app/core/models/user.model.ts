@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   bio?: string;
+  avatar?: string;
   collectionId?: string;
   collectionName?: string;
   emailVisibility: boolean;

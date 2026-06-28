@@ -21,7 +21,18 @@ describe('AuthService', () => {
 
     mockAuthStore = {
       isValid: true,
-      model: { id: 'user-1', name: 'Test User', email: 'test@example.com', collectionId: 'users', collectionName: 'users' },
+      model: {
+        id: 'user-1',
+        name: 'Test User',
+        email: 'test@example.com',
+        bio: 'Likes cocoa',
+        collectionId: 'users',
+        collectionName: 'users',
+        emailVisibility: false,
+        verified: true,
+        created: '2026-06-27T00:00:00.000Z',
+        updated: '2026-06-27T00:00:00.000Z',
+      },
       clear: jasmine.createSpy('clear'),
     };
 
@@ -62,7 +73,18 @@ describe('AuthService', () => {
 
   describe('user', () => {
     it('should return the authStore model', () => {
-      expect(service.user).toEqual({ id: 'user-1', name: 'Test User', email: 'test@example.com', collectionId: 'users', collectionName: 'users' });
+      expect(service.user).toEqual({
+        id: 'user-1',
+        name: 'Test User',
+        email: 'test@example.com',
+        bio: 'Likes cocoa',
+        collectionId: 'users',
+        collectionName: 'users',
+        emailVisibility: false,
+        verified: true,
+        created: '2026-06-27T00:00:00.000Z',
+        updated: '2026-06-27T00:00:00.000Z',
+      });
     });
 
     it('should return null when authStore.model is null', () => {
@@ -109,6 +131,37 @@ describe('AuthService', () => {
     it('should return the raw PocketBase instance', () => {
       const pb = service.pocketBase;
       expect(pb.collection).toBeDefined();
+    });
+  });
+
+  describe('updateProfile', () => {
+    it('should update name and bio', async () => {
+      mockCollection.update.and.resolveTo({
+        id: 'user-1',
+        name: 'New Name',
+        bio: 'New bio',
+        collectionId: 'users',
+        collectionName: 'users',
+        emailVisibility: false,
+        verified: true,
+        created: '2026-06-27T00:00:00.000Z',
+        updated: '2026-06-27T00:00:00.000Z',
+      });
+
+      const result = await service.updateProfile('user-1', { name: 'New Name', bio: 'New bio' });
+
+      expect(mockCollection.update).toHaveBeenCalledWith('user-1', { name: 'New Name', bio: 'New bio' });
+      expect(result).toEqual({
+        id: 'user-1',
+        name: 'New Name',
+        bio: 'New bio',
+        collectionId: 'users',
+        collectionName: 'users',
+        emailVisibility: false,
+        verified: true,
+        created: '2026-06-27T00:00:00.000Z',
+        updated: '2026-06-27T00:00:00.000Z',
+      });
     });
   });
 });

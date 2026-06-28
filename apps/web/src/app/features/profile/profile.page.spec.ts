@@ -8,7 +8,7 @@ import { setViewport, resetViewport, BREAKPOINTS } from '../../testing/responsiv
 @Component({ standalone: true, template: '' })
 class MockShellComponent {}
 
-async function setup(user: any = { name: 'Ana', email: 'ana@test.com' }) {
+async function setup(user: any = { name: 'Ana', email: 'ana@test.com', bio: 'Loves books' }) {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     imports: [ProfileComponent],
@@ -48,6 +48,13 @@ describe('ProfileComponent', () => {
     expect(text).toContain('ana@test.com');
   });
 
+  it('should bind bio in the profile form', async () => {
+    const { fixture } = await setup({ name: 'Ana Silva', email: 'ana@test.com', bio: 'Gosta de café' });
+    const textarea = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    expect(textarea).toBeTruthy();
+    expect(textarea.value).toBe('Gosta de café');
+  });
+
   it('should have bottom nav with profile active', async () => {
     const { fixture } = await setup();
     const nav = fixture.nativeElement.querySelector('app-bottom-nav');
@@ -66,7 +73,7 @@ describe('ProfileComponent (responsivo)', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const avatar = fixture.nativeElement.querySelector('[class*="rounded-\\[2.5rem\\]"]') as HTMLElement;
+    const avatar = fixture.nativeElement.querySelector('[class*="bg-gradient-to-br"][class*="from-stone-300"]') as HTMLElement;
     expect(avatar).toBeTruthy();
     expect(avatar.scrollWidth).toBeLessThanOrEqual(avatar.clientWidth + 1);
     expect(avatar.scrollHeight).toBeLessThanOrEqual(avatar.clientHeight + 1);
@@ -78,7 +85,7 @@ describe('ProfileComponent (responsivo)', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const avatar = fixture.nativeElement.querySelector('[class*="rounded-\\[2.5rem\\]"]') as HTMLElement;
+    const avatar = fixture.nativeElement.querySelector('[class*="bg-gradient-to-br"][class*="from-stone-300"]') as HTMLElement;
     expect(avatar).toBeTruthy();
     expect(avatar.scrollWidth).toBeLessThanOrEqual(avatar.clientWidth + 1);
   });

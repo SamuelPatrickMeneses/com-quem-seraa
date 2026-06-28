@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import PocketBase from 'pocketbase';
 import { PocketBaseClient } from '../../infrastructure/pocketbase/pocketbase.client';
+import { User, UpdateProfileDTO } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -18,8 +19,8 @@ export class AuthService {
   /**
    * Retorna os dados do usuário logado
    */
-  get user() {
-    return this.pbClient.instance.authStore.model;
+  get user(): User | null {
+    return this.pbClient.instance.authStore.model as User | null;
   }
 
   /**
@@ -55,7 +56,7 @@ export class AuthService {
   /**
    * Atualiza os dados de perfil (como o nome)
    */
-  async updateProfile(userId: string, data: { name: string }) {
+  async updateProfile(userId: string, data: Pick<UpdateProfileDTO, 'name' | 'bio'>) {
     return await this.pbClient.instance.collection('users').update(userId, data);
   }
 

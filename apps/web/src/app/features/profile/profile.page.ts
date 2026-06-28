@@ -51,7 +51,8 @@ export class ProfileComponent {
 
   constructor() {
     this.profileForm = this.fb.group({
-      name: [this.auth.user?.['name'] || '', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]]
+      name: [this.auth.user?.name || '', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+      bio: [this.auth.user?.bio || '']
     });
 
     this.passwordForm = this.fb.group({

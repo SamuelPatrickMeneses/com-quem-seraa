@@ -2,6 +2,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  bio?: string;
+  collectionId?: string;
+  collectionName?: string;
   emailVisibility: boolean;
   verified: boolean;
   created: string;
@@ -23,6 +26,7 @@ export interface LoginDTO {
 
 export interface UpdateProfileDTO {
   name?: string;
+  bio?: string;
   password?: string;
   passwordConfirm?: string;
   oldPassword?: string;

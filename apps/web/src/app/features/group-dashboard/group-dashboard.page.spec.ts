@@ -475,9 +475,16 @@ describe('GroupDashboardComponent (exibição)', () => {
     await setup({ isOrganizer: false, currentUserId: 'user-beto' });
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('Participantes (');
+    expect(el.textContent).toContain('Toque em um membro para ver a bio');
     expect(el.textContent).toContain('Ana');
     expect(el.textContent).toContain('Beto');
     expect(el.textContent).toContain('Caio');
+  });
+
+  it('should show bio preview in participant list when available', async () => {
+    await setup();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Bio da Ana');
   });
 
   it('should show organizer badge for creator', async () => {

@@ -21,7 +21,7 @@
             <div tabindex="0" role="button" class="flex items-center gap-3 cursor-pointer group">
               <div class="text-right">
                 <p class="text-xs font-bold font-display leading-none">{{ firstName() }}</p>
-                <p class="text-[10px] text-neutral/50 uppercase tracking-widest mt-1">Organizador</p>
+                <p class="text-[10px] text-neutral/50 uppercase tracking-widest mt-1">Membro</p>
               </div>
               @let desktopAvatarUrl = avatarUrl(user());
               @if (desktopAvatarUrl) {
@@ -78,6 +78,7 @@
     <header class="mb-12">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
+          <p class="text-sm font-bold uppercase tracking-widest text-primary/70 mb-2">Olá, {{ firstName() }}</p>
           <h1 class="font-display font-extrabold text-4xl md:text-5xl text-neutral tracking-tight mb-2">Seus Grupos</h1>
           <p class="text-neutral/50 text-lg font-light leading-relaxed max-w-2xl">
             Gerencie seus sorteios de fim de ano e acompanhe a entrega dos presentes com seus amigos e familiares.

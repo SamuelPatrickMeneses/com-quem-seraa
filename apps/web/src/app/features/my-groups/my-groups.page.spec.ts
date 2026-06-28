@@ -166,6 +166,10 @@ describe('MyGroupsComponent (responsivo)', () => {
     expect(heading?.className).toContain('md:text-5xl');
   });
 
+  it('should greet the logged user by first name', () => {
+    expect(fixture.nativeElement.textContent).toContain('Olá, Ana');
+  });
+
   it('should render the current user avatar when available', () => {
     const avatar = fixture.nativeElement.querySelector('[data-testid="my-groups-user-avatar"]') as HTMLElement;
     expect(avatar).toBeTruthy();

@@ -138,6 +138,11 @@ export class GroupDashboardComponent implements OnInit {
     return (name?.trim()?.charAt(0) || '?').toUpperCase();
   }
 
+  participantBioPreview(participant: GroupParticipant): string | null {
+    const bio = this.participantUser(participant)?.bio?.trim();
+    return bio || null;
+  }
+
   isParticipantSelected(participant: GroupParticipant): boolean {
     const user = this.participantUser(participant);
     return !!user && this.selectedParticipant()?.id === user.id;

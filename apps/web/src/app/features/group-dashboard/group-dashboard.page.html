@@ -5,8 +5,17 @@
         <lucide-icon [img]="ChevronLeftIcon" size="16"></lucide-icon>
         Voltar
       </a>
-      <div class="flex items-center gap-3">
-        <h1 class="text-2xl md:text-3xl font-bold text-[#1a1c1c]">{{ group()?.name }}</h1>
+      <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold text-[#1a1c1c]">{{ group()?.name }}</h1>
+          @if (group()?.description) {
+            <p class="text-sm text-[#5b403d] mt-1 max-w-2xl">{{ group()?.description }}</p>
+          }
+          @if (group()?.created_at) {
+            <p class="text-xs text-[#5b403d]/60 mt-1">Criado em {{ group()?.created_at | date: 'dd/MM/yyyy' }}</p>
+          }
+        </div>
+        <div class="flex items-center gap-3">
         @if (status === 'SORTEADO') {
           <span class="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">SORTEADO</span>
         } @else if (status === 'ATIVO') {
@@ -14,6 +23,7 @@
         } @else {
           <span class="bg-neutral/5 text-neutral/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">PENDENTE</span>
         }
+        </div>
       </div>
     </div>
   </header>
@@ -164,7 +174,15 @@
       <!-- Participant List -->
       <div class="bg-[#ffffff] rounded-2xl shadow-[0_2px_8px_rgba(91,64,61,0.06)] overflow-hidden mb-20">
         <div class="px-6 py-4 border-b border-[#e4beba]/15">
-          <h3 class="font-bold text-[#1a1c1c]">Participantes ({{ group()?.participants_count }})</h3>
+          <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <h3 class="font-bold text-[#1a1c1c]">Participantes ({{ group()?.participants_count }})</h3>
+            <p class="text-xs text-[#5b403d]/70">Toque em um membro para ver a bio</p>
+          </div>
+          @if (status === 'PENDENTE' && isOrganizer()) {
+            <p class="text-xs text-[#5b403d] mt-2">
+              Faltam {{ 3 - (group()?.participants_count ?? 0) }} participante(s) para liberar o sorteio.
+            </p>
+          }
         </div>
         <div class="divide-y divide-[#e4beba]/15">
           @for (p of participants(); track p.id) {
@@ -189,7 +207,7 @@
                     {{ participantInitial(p.giver_name) }}
                   </div>
                 }
-                <div>
+                <div class="min-w-0 flex-1">
                   <p class="font-semibold text-[#1a1c1c]">{{ p.giver_name || p.giver_id || 'Participante' }}</p>
                   <div class="flex items-center gap-2 text-xs text-[#5b403d]">
                     @if (p.giver_id === group()?.created_by) {
@@ -197,6 +215,9 @@
                     }
                     <span>Entrou em {{ p.joined_at | date: 'dd/MM/yyyy' }}</span>
                   </div>
+                  @if (participantBioPreview(p); as bioPreview) {
+                    <p class="text-xs text-[#5b403d]/70 mt-1 line-clamp-1">{{ bioPreview }}</p>
+                  }
                 </div>
               </button>
               @if (isOrganizer() && status !== 'SORTEADO' && p.giver_id !== group()?.created_by) {
@@ -256,7 +277,9 @@
             <p class="text-sm text-[#5b403d] leading-relaxed" data-testid="participant-bio-text">
               {{ selectedParticipant()?.bio || 'Esse membro ainda não informou uma bio.' }}
             </p>
-            <p class="text-xs text-[#5b403d]/60 mt-2 break-all">{{ selectedParticipant()?.email }}</p>
+            @if (selectedParticipant()?.email && selectedParticipant()?.emailVisibility) {
+              <p class="text-xs text-[#5b403d]/60 mt-2 break-all">{{ selectedParticipant()?.email }}</p>
+            }
           </div>
         </div>
       </div>

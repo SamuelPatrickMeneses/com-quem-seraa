@@ -96,13 +96,17 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('should call authWithPassword with email and password', async () => {
-      const expectedResult = { token: 'abc', record: { id: 'user-1', collectionId: 'users', collectionName: 'users' } };
+    it('should call authWithPassword with email and password and persist auth', async () => {
+      const expectedResult = {
+        token: 'abc',
+        record: { id: 'user-1', collectionId: 'users', collectionName: 'users' },
+      };
       mockCollection.authWithPassword.and.resolveTo(expectedResult);
 
       const result = await service.login('email@test.com', '123456');
 
       expect(mockCollection.authWithPassword).toHaveBeenCalledWith('email@test.com', '123456');
+      expect(mockAuthStore.save).toHaveBeenCalledWith('abc', expectedResult.record);
       expect(result).toEqual(expectedResult);
     });
   });
@@ -115,17 +119,23 @@ describe('AuthService', () => {
   });
 
   describe('register', () => {
-    it('should create user and request verification', async () => {
+    it('should create user, request verification and login', async () => {
       const data = { email: 'new@test.com', password: '123456', passwordConfirm: '123456', name: 'New User' };
-      const createdUser = { id: 'user-2', collectionId: 'users', collectionName: 'users', ...data };
-      mockCollection.create.and.resolveTo(createdUser);
+      const authResult = {
+        token: 'new-token',
+        record: { id: 'user-2', collectionId: 'users', collectionName: 'users', ...data },
+      };
+      mockCollection.create.and.resolveTo(authResult.record);
       mockCollection.requestVerification.and.resolveTo();
+      mockCollection.authWithPassword.and.resolveTo(authResult);
 
       const result = await service.register(data);
 
       expect(mockCollection.create).toHaveBeenCalledWith(data);
       expect(mockCollection.requestVerification).toHaveBeenCalledWith('new@test.com');
-      expect(result).toEqual(createdUser);
+      expect(mockCollection.authWithPassword).toHaveBeenCalledWith('new@test.com', '123456');
+      expect(mockAuthStore.save).toHaveBeenCalledWith('new-token', authResult.record);
+      expect(result).toEqual(authResult);
     });
   });
 

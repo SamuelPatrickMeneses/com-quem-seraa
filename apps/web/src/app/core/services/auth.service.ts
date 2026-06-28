@@ -27,7 +27,9 @@ export class AuthService {
    * Realiza o login com e-mail e senha
    */
   async login(email: string, pass: string) {
-    return await this.pbClient.instance.collection('users').authWithPassword(email, pass);
+    const authData = await this.pbClient.instance.collection('users').authWithPassword(email, pass);
+    this.pbClient.instance.authStore.save(authData.token, authData.record);
+    return authData;
   }
 
   /**
@@ -38,12 +40,12 @@ export class AuthService {
   }
 
   /**
-   * Realiza o registro de um novo usuário
+   * Realiza o registro de um novo usuário e autentica a sessão
    */
   async register(data: any) {
-    const user = await this.pbClient.instance.collection('users').create(data);
+    await this.pbClient.instance.collection('users').create(data);
     await this.pbClient.instance.collection('users').requestVerification(data.email);
-    return user;
+    return await this.login(data.email, data.password);
   }
 
   /**

@@ -38,6 +38,11 @@ onBootstrap((e) => {
 
 
         const testUserEmails = ["ana@exemplo.com", "beto@exemplo.com", "caio@exemplo.com"];
+        const testUserBios = {
+            "ana@exemplo.com": "Organizadora e fã de presentes criativos.",
+            "beto@exemplo.com": "Curte livros, café e jogos de tabuleiro.",
+            "caio@exemplo.com": "Apaixonado por música e viagens.",
+        };
         const userIds = [];
 
 
@@ -46,6 +51,7 @@ onBootstrap((e) => {
             const record = new Record(usersCollection);
             record.set("email", email);
             record.set("name", email.split("@")[0]);
+            record.set("bio", testUserBios[email] || "");
             record.set("password", "1234567890");
             record.set("verified", true);
             $app.save(record);
@@ -126,12 +132,18 @@ if (env === "dev") {
             }
 
             const testUserEmails = ["ana@exemplo.com", "beto@exemplo.com", "caio@exemplo.com"];
+            const testUserBios = {
+                "ana@exemplo.com": "Organizadora e fã de presentes criativos.",
+                "beto@exemplo.com": "Curte livros, café e jogos de tabuleiro.",
+                "caio@exemplo.com": "Apaixonado por música e viagens.",
+            };
             const userIds = [];
 
             for (const email of testUserEmails) {
                 const record = new Record(usersCollection);
                 record.set("email", email);
                 record.set("name", email.split("@")[0]);
+                record.set("bio", testUserBios[email] || "");
                 record.set("password", "1234567890");
                 record.set("verified", true);
                 $app.save(record);

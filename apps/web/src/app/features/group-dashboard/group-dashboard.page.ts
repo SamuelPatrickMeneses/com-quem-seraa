@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed, Input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 import { BottomNavComponent, NavItem } from '../../shared/components/bottom-nav/bottom-nav.component';
 import { GroupService } from '../../core/services/group.service';
@@ -15,7 +15,7 @@ import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User as User
 @Component({
   selector: 'app-group-dashboard',
   standalone: true,
-  imports: [RouterLink, LucideAngularModule, BottomNavComponent, ConfirmModalComponent, DatePipe],
+  imports: [RouterLink, LucideAngularModule, BottomNavComponent, ConfirmModalComponent, DatePipe, NgClass],
   templateUrl: './group-dashboard.page.html',
 })
 export class GroupDashboardComponent implements OnInit {
@@ -26,7 +26,6 @@ export class GroupDashboardComponent implements OnInit {
   private router = inject(Router);
 
   readonly GiftIcon = Gift;
-  readonly UsersIcon = Users;
   readonly ChevronLeftIcon = ChevronLeft;
   readonly ShieldCheckIcon = ShieldCheck;
   readonly SparklesIcon = Sparkles;
@@ -53,6 +52,7 @@ export class GroupDashboardComponent implements OnInit {
   copied = signal(false);
   isDrawLoading = signal(false);
   isActionLoading = signal(false);
+  selectedParticipant = signal<User | null>(null);
   showConfirmModal = signal(false);
   confirmModalTitle = signal('');
   confirmModalMessage = signal('');
@@ -102,9 +102,73 @@ export class GroupDashboardComponent implements OnInit {
     this.loadData();
   }
 
+  participantAvatarUrl(user?: User | null): string | null {
+    if (!user?.avatar) {
+      return null;
+    }
+
+    return this.authService.pocketBase.files.getUrl(user, user.avatar);
+  }
+
+  participantUser(participant: GroupParticipant): User | null {
+    const expanded = participant.expand?.giver_id;
+    if (expanded) {
+      return {
+        ...expanded,
+        name: expanded.name || participant.giver_name,
+      };
+    }
+
+    if (!participant.giver_id) {
+      return null;
+    }
+
+    return {
+      id: participant.giver_id,
+      name: participant.giver_name,
+      email: '',
+      emailVisibility: false,
+      verified: false,
+      created: '',
+      updated: '',
+    };
+  }
+
+  participantInitial(name?: string | null): string {
+    return (name?.trim()?.charAt(0) || '?').toUpperCase();
+  }
+
+  isParticipantSelected(participant: GroupParticipant): boolean {
+    const user = this.participantUser(participant);
+    return !!user && this.selectedParticipant()?.id === user.id;
+  }
+
+  participantRowClass(participant: GroupParticipant): Record<string, boolean> {
+    const selected = this.isParticipantSelected(participant);
+    return {
+      'bg-primary/5': selected,
+      'ring-1': selected,
+      'ring-primary/20': selected,
+    };
+  }
+
+  selectParticipant(participant: GroupParticipant) {
+    const user = this.participantUser(participant);
+    if (user && this.selectedParticipant()?.id === user.id) {
+      this.selectedParticipant.set(null);
+      return;
+    }
+    this.selectedParticipant.set(user);
+  }
+
+  clearSelectedParticipant() {
+    this.selectedParticipant.set(null);
+  }
+
   async loadData() {
     this.isLoading.set(true);
     this.error.set(null);
+    this.selectedParticipant.set(null);
     try {
       const [group, participantsResult] = await Promise.all([
         this.groupService.getById(this.groupId),

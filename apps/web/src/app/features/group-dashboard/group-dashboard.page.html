@@ -161,49 +161,107 @@
         </div>
       }
 
-      <!-- Participant List (organizer only) -->
-      @if (isOrganizer()) {
-        <div class="bg-[#ffffff] rounded-2xl shadow-[0_2px_8px_rgba(91,64,61,0.06)] overflow-hidden mb-20">
-          <div class="px-6 py-4 border-b border-[#e4beba]/15">
-            <h3 class="font-bold text-[#1a1c1c]">Participantes ({{ group()?.participants_count }})</h3>
-          </div>
-          <div class="divide-y divide-[#e4beba]/15">
-            @for (p of participants(); track p.id) {
-              <div class="px-6 py-4 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-[#f4f3f2] flex items-center justify-center text-sm font-bold text-[#1a1c1c]">
-                    {{ (p.giver_name || '?').charAt(0) }}
+      <!-- Participant List -->
+      <div class="bg-[#ffffff] rounded-2xl shadow-[0_2px_8px_rgba(91,64,61,0.06)] overflow-hidden mb-20">
+        <div class="px-6 py-4 border-b border-[#e4beba]/15">
+          <h3 class="font-bold text-[#1a1c1c]">Participantes ({{ group()?.participants_count }})</h3>
+        </div>
+        <div class="divide-y divide-[#e4beba]/15">
+          @for (p of participants(); track p.id) {
+            <div class="px-6 py-4 flex items-center justify-between">
+              <button
+                type="button"
+                [attr.data-testid]="'participant-row-' + p.id"
+                (click)="selectParticipant(p)"
+                class="flex items-center gap-3 text-left flex-1 pr-4 rounded-xl transition-colors"
+                [ngClass]="participantRowClass(p)"
+              >
+                @let member = participantUser(p);
+                @let rowAvatarUrl = participantAvatarUrl(member);
+                @if (rowAvatarUrl) {
+                  <img
+                    [src]="rowAvatarUrl"
+                    [alt]="'Avatar de ' + (p.giver_name || p.giver_id || 'participante')"
+                    class="w-10 h-10 rounded-full object-cover bg-[#f4f3f2] ring-1 ring-[#e4beba]/20 shrink-0"
+                  />
+                } @else {
+                  <div class="w-10 h-10 rounded-full bg-[#f4f3f2] flex items-center justify-center text-sm font-bold text-[#1a1c1c] shrink-0">
+                    {{ participantInitial(p.giver_name) }}
                   </div>
-                  <div>
-                    <p class="font-semibold text-[#1a1c1c]">{{ p.giver_name || p.giver_id || 'Participante' }}</p>
-                    <div class="flex items-center gap-2 text-xs text-[#5b403d]">
-                      @if (p.giver_id === group()?.created_by) {
-                        <span class="text-primary font-medium">Organizador</span>
-                      }
-                      <span>Entrou em {{ p.joined_at | date: 'dd/MM/yyyy' }}</span>
-                    </div>
+                }
+                <div>
+                  <p class="font-semibold text-[#1a1c1c]">{{ p.giver_name || p.giver_id || 'Participante' }}</p>
+                  <div class="flex items-center gap-2 text-xs text-[#5b403d]">
+                    @if (p.giver_id === group()?.created_by) {
+                      <span class="text-primary font-medium">Organizador</span>
+                    }
+                    <span>Entrou em {{ p.joined_at | date: 'dd/MM/yyyy' }}</span>
                   </div>
                 </div>
-                @if (status !== 'SORTEADO' && p.giver_id !== group()?.created_by) {
-                  <button (click)="removeParticipant(p)" [disabled]="isActionLoading()"
-                          class="p-2 text-[#5b403d] hover:text-[#ba1a1a] transition-colors disabled:opacity-50">
-                    <lucide-icon [img]="Trash2Icon" size="16"></lucide-icon>
-                  </button>
-                }
-              </div>
-            }
-          </div>
+              </button>
+              @if (isOrganizer() && status !== 'SORTEADO' && p.giver_id !== group()?.created_by) {
+                <button (click)="removeParticipant(p)" [disabled]="isActionLoading()"
+                        class="p-2 text-[#5b403d] hover:text-[#ba1a1a] transition-colors disabled:opacity-50">
+                  <lucide-icon [img]="Trash2Icon" size="16"></lucide-icon>
+                </button>
+              }
+            </div>
+          }
         </div>
-      } @else {
-        <div class="bg-[#ffffff] rounded-2xl p-6 shadow-[0_2px_8px_rgba(91,64,61,0.06)] mb-20">
-          <p class="text-[#1a1c1c] font-semibold">
-            <lucide-icon [img]="UsersIcon" size="18" class="inline mr-2"></lucide-icon>
-            {{ group()?.participants_count }} participantes no grupo
-          </p>
-        </div>
-      }
+      </div>
     }
   </main>
+
+  @if (selectedParticipant()) {
+    <div
+      class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+      data-testid="participant-bio-overlay"
+      (click)="clearSelectedParticipant()"
+    >
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+      <div
+        class="relative bg-[#ffffff] rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200"
+        data-testid="participant-bio-panel"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-widest text-[#5b403d]/60 mb-1">Detalhes do membro</p>
+            <h3 class="font-bold text-[#1a1c1c] text-lg">{{ selectedParticipant()?.name }}</h3>
+          </div>
+          <button
+            type="button"
+            data-testid="participant-bio-close"
+            (click)="clearSelectedParticipant()"
+            class="text-xs font-bold uppercase tracking-widest text-[#5b403d]/50 hover:text-[#1a1c1c]"
+          >
+            Fechar
+          </button>
+        </div>
+
+        <div class="flex items-start gap-4">
+          @let selectedAvatarUrl = participantAvatarUrl(selectedParticipant());
+          @if (selectedAvatarUrl) {
+            <img
+              [src]="selectedAvatarUrl"
+              [alt]="'Avatar de ' + (selectedParticipant()?.name || 'participante')"
+              class="w-16 h-16 rounded-2xl object-cover bg-[#f4f3f2] shrink-0"
+            />
+          } @else {
+            <div class="w-16 h-16 rounded-2xl bg-[#f4f3f2] flex items-center justify-center text-xl font-black text-[#1a1c1c] shrink-0">
+              {{ participantInitial(selectedParticipant()?.name) }}
+            </div>
+          }
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-[#5b403d] leading-relaxed" data-testid="participant-bio-text">
+              {{ selectedParticipant()?.bio || 'Esse membro ainda não informou uma bio.' }}
+            </p>
+            <p class="text-xs text-[#5b403d]/60 mt-2 break-all">{{ selectedParticipant()?.email }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
 
   <app-bottom-nav [items]="navItems"></app-bottom-nav>
 

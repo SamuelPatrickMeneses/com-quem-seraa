@@ -20,12 +20,22 @@
           <div class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="flex items-center gap-3 cursor-pointer group">
               <div class="text-right">
-                <p class="text-xs font-bold font-display leading-none">{{ user()?.name?.split(' ')[0] || 'Usuário' }}</p>
+                <p class="text-xs font-bold font-display leading-none">{{ firstName() }}</p>
                 <p class="text-[10px] text-neutral/50 uppercase tracking-widest mt-1">Organizador</p>
               </div>
-              <div class="w-10 h-10 rounded-full bg-surface-low overflow-hidden ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all text-primary font-black flex items-center justify-center">
-                {{ user()?.name?.charAt(0) || user()?.email?.charAt(0) | uppercase }}
-              </div>
+              @let desktopAvatarUrl = avatarUrl(user());
+              @if (desktopAvatarUrl) {
+                <img
+                  [src]="desktopAvatarUrl"
+                  [alt]="'Avatar de ' + (user()?.name || user()?.email || 'usuário')"
+                  data-testid="my-groups-user-avatar"
+                  class="w-10 h-10 rounded-full bg-surface-low overflow-hidden ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all object-cover"
+                />
+              } @else {
+                <div data-testid="my-groups-user-avatar" class="w-10 h-10 rounded-full bg-surface-low overflow-hidden ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all text-primary font-black flex items-center justify-center">
+                  {{ user()?.name?.charAt(0) || user()?.email?.charAt(0) | uppercase }}
+                </div>
+              }
             </div>
             <ul tabindex="0" class="mt-4 z-[1] p-3 shadow-ambient menu menu-sm dropdown-content bg-white/90 backdrop-blur-xl rounded-[1.5rem] w-64 border border-neutral/5">
               <li class="px-4 py-3">
@@ -46,7 +56,17 @@
         @if (user()) {
           <a routerLink="/profile"
              class="w-9 h-9 rounded-full bg-surface-low overflow-hidden ring-2 ring-primary/10 text-primary font-black flex items-center justify-center text-sm">
-            {{ user()?.name?.charAt(0) || user()?.email?.charAt(0) | uppercase }}
+            @let mobileAvatarUrl = avatarUrl(user());
+            @if (mobileAvatarUrl) {
+              <img
+                [src]="mobileAvatarUrl"
+                [alt]="'Avatar de ' + (user()?.name || user()?.email || 'usuário')"
+                data-testid="my-groups-mobile-avatar"
+                class="w-full h-full object-cover"
+              />
+            } @else {
+              <span data-testid="my-groups-mobile-avatar">{{ user()?.name?.charAt(0) || user()?.email?.charAt(0) | uppercase }}</span>
+            }
           </a>
         }
       </div>

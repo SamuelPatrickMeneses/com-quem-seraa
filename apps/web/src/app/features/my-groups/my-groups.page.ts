@@ -1,21 +1,46 @@
-import { Component, OnInit, inject, signal, computed, input, effect } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  input,
+  effect,
+} from '@angular/core';
 import { UpperCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { GroupService } from '../../core/services/group.service';
 import { GroupCardComponent } from '../../shared/components/group-card/group-card.component';
-import { BottomNavComponent, NavItem } from '../../shared/components/bottom-nav/bottom-nav.component';
-import { LucideAngularModule, Gift, LogOut, Plus, User, PlusCircle, Users, AlertCircle, RefreshCw } from 'lucide-angular';
+import {
+  BottomNavComponent,
+  NavItem,
+} from '../../shared/components/bottom-nav/bottom-nav.component';
+import {
+  LucideAngularModule,
+  Gift,
+  LogOut,
+  Plus,
+  User,
+  PlusCircle,
+  Users,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-angular';
 import type { Group } from '../../core/models/group.model';
+import type { User as AppUser } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-my-groups',
   standalone: true,
   imports: [
-    UpperCasePipe, RouterLink,
-    LucideAngularModule, GroupCardComponent, BottomNavComponent
+    UpperCasePipe,
+    RouterLink,
+    LucideAngularModule,
+    GroupCardComponent,
+    BottomNavComponent,
   ],
-  templateUrl: './my-groups.page.html'
+  templateUrl: './my-groups.page.html',
 })
 export class MyGroupsComponent implements OnInit {
   readonly groupId = input<string>('', { alias: 'groupId' });
@@ -37,7 +62,7 @@ export class MyGroupsComponent implements OnInit {
   private groupService = inject(GroupService);
   private router = inject(Router);
 
-  user = signal<any>(null);
+  user = signal<AppUser | null>(null);
   groups = signal<Group[]>([]);
   isLoading = signal(true);
   error = signal<string | null>(null);
@@ -46,7 +71,7 @@ export class MyGroupsComponent implements OnInit {
   perPage = 10;
 
   readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.totalGroups() / this.perPage))
+    Math.max(1, Math.ceil(this.totalGroups() / this.perPage)),
   );
 
   constructor() {
@@ -60,15 +85,32 @@ export class MyGroupsComponent implements OnInit {
     this.loadGroups();
   }
 
+  firstName(): string {
+    return this.user()?.name?.split(' ')[0] ?? 'Usuário';
+  }
+
+  avatarUrl(user: AppUser | null | undefined): string | null {
+    if (!user?.avatar) {
+      return null;
+    }
+
+    return this.authService.pocketBase.files.getUrl(user, user.avatar);
+  }
+
   async loadGroups() {
     this.isLoading.set(true);
     this.error.set(null);
     try {
-      const result = await this.groupService.getMyGroups(this.currentPage(), this.perPage);
+      const result = await this.groupService.getMyGroups(
+        this.currentPage(),
+        this.perPage,
+      );
       this.groups.set(result.items);
       this.totalGroups.set(result.total);
     } catch {
-      this.error.set('Não foi possível carregar seus grupos. Verifique sua conexão.');
+      this.error.set(
+        'Não foi possível carregar seus grupos. Verifique sua conexão.',
+      );
     } finally {
       this.isLoading.set(false);
     }

@@ -235,7 +235,7 @@
           <div class="bg-white rounded-2xl p-6 shadow-sm border border-red-100">
             <h3 class="text-base font-bold text-red-600 mb-1">Session</h3>
             <p class="text-stone-400 text-sm mb-4">Ao sair da sua conta, você precisará fazer login novamente para acessar seus grupos.</p>
-            <button (click)="logout()" class="flex items-center gap-2 text-red-600 font-semibold text-sm hover:bg-red-50 px-3 py-2 rounded-lg transition-colors">
+            <button (click)="logout()" aria-label="Sair da Conta" class="flex items-center gap-2 text-red-600 font-semibold text-sm hover:bg-red-50 px-3 py-2 rounded-lg transition-colors">
               <lucide-icon [img]="LogOutIcon" [size]="16"></lucide-icon>
               Sair da Conta
             </button>

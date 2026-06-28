@@ -77,10 +77,10 @@ describe('ProfileComponent', () => {
   it('should call auth.logout when logout button is clicked', async () => {
     const { fixture } = await setup();
     const authService = TestBed.inject(AuthService) as any;
-    const logoutBtn = fixture.nativeElement.querySelector('.btn.btn-error') as HTMLButtonElement;
+    const logoutBtn = fixture.nativeElement.querySelector('button[aria-label="Sair da Conta"]') as HTMLButtonElement | null;
     expect(logoutBtn).toBeTruthy();
-    expect(logoutBtn.textContent).toContain('Encerrar Sessão');
-    logoutBtn.click();
+    expect(logoutBtn!.textContent).toContain('Sair da Conta');
+    logoutBtn!.click();
     expect(authService.logout).toHaveBeenCalled();
   });
 });

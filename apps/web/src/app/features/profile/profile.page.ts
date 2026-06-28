@@ -140,35 +140,39 @@ export class ProfileComponent {
       return file;
     }
 
-    const image = await this.loadImage(file);
-    const maxSize = 1024;
-    const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+    try {
+      const image = await this.loadImage(file);
+      const maxSize = 1024;
+      const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
 
-    if (scale === 1 && file.size <= 900_000) {
+      if (scale === 1 && file.size <= 900_000) {
+        return file;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        return file;
+      }
+
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      const blob = await this.canvasToBlob(canvas, 'image/webp', 0.82)
+        ?? await this.canvasToBlob(canvas, 'image/jpeg', 0.82);
+
+      if (!blob) {
+        return file;
+      }
+
+      const extension = blob.type === 'image/webp' ? 'webp' : 'jpg';
+      const sanitizedName = file.name.replace(/\.[^.]+$/, '') || 'avatar';
+      return new File([blob], `${sanitizedName}.${extension}`, { type: blob.type });
+    } catch {
       return file;
     }
-
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(image.width * scale));
-    canvas.height = Math.max(1, Math.round(image.height * scale));
-
-    const context = canvas.getContext('2d');
-    if (!context) {
-      return file;
-    }
-
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-    const blob = await this.canvasToBlob(canvas, 'image/webp', 0.82)
-      ?? await this.canvasToBlob(canvas, 'image/jpeg', 0.82);
-
-    if (!blob) {
-      return file;
-    }
-
-    const extension = blob.type === 'image/webp' ? 'webp' : 'jpg';
-    const sanitizedName = file.name.replace(/\.[^.]+$/, '') || 'avatar';
-    return new File([blob], `${sanitizedName}.${extension}`, { type: blob.type });
   }
 
   private loadImage(file: File): Promise<HTMLImageElement> {

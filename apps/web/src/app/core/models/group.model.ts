@@ -8,6 +8,7 @@ export interface Group {
   created_by: string;
   created_at: string;
   has_been_drawn: boolean;
+  drawn_at?: string;
   participants_count: number;
   expand?: {
     created_by?: User;

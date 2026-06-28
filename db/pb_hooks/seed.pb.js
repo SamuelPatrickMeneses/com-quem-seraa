@@ -56,16 +56,50 @@ onBootstrap((e) => {
         const groupRecord = new Record(groupsCollection);
         groupRecord.set("name", "Amigo Secreto 2024");
         groupRecord.set("created_by", userIds[0]);
-        groupRecord.set("participants_count", 3);
+        groupRecord.set("participants_count", 0);
         $app.save(groupRecord);
 
-        for (const userId of userIds) {
+        const userNames = testUserEmails.map(e => e.split("@")[0]);
+
+        const now = new Date().toISOString();
+
+        for (let i = 0; i < userIds.length; i++) {
             const partRecord = new Record(participantsCollection);
             partRecord.set("group_id", groupRecord.id);
-            partRecord.set("giver_id", userId);
+            partRecord.set("giver_id", userIds[i]);
+            partRecord.set("giver_name", userNames[i]);
+            partRecord.set("joined_at", now);
             $app.save(partRecord);
         }
 
+        const drawnGroupRecord = new Record(groupsCollection);
+        drawnGroupRecord.set("name", "Sorteio Realizado 2024");
+        drawnGroupRecord.set("created_by", userIds[0]);
+        drawnGroupRecord.set("participants_count", 0);
+        drawnGroupRecord.set("has_been_drawn", true);
+        drawnGroupRecord.set("drawn_at", now);
+        $app.save(drawnGroupRecord);
+
+        const drawnParticipantIds = [];
+        for (let i = 0; i < userIds.length; i++) {
+            const partRecord = new Record(participantsCollection);
+            partRecord.set("group_id", drawnGroupRecord.id);
+            partRecord.set("giver_id", userIds[i]);
+            partRecord.set("giver_name", userNames[i]);
+            partRecord.set("joined_at", now);
+            $app.save(partRecord);
+            drawnParticipantIds.push({ record: partRecord, userId: userIds[i], name: userNames[i] });
+        }
+
+        drawnParticipantIds[0].record.set("receiver_id", drawnParticipantIds[1].userId);
+        drawnParticipantIds[0].record.set("receiver_name", drawnParticipantIds[1].name);
+        drawnParticipantIds[1].record.set("receiver_id", drawnParticipantIds[2].userId);
+        drawnParticipantIds[1].record.set("receiver_name", drawnParticipantIds[2].name);
+        drawnParticipantIds[2].record.set("receiver_id", drawnParticipantIds[0].userId);
+        drawnParticipantIds[2].record.set("receiver_name", drawnParticipantIds[0].name);
+        for (const item of drawnParticipantIds) {
+            $app.save(item.record);
+        }
 
         console.log("Seed: Sucesso na inserção dos dados de teste!");
     } catch (err) {
@@ -107,14 +141,49 @@ if (env === "dev") {
             const groupRecord = new Record(groupsCollection);
             groupRecord.set("name", "Amigo Secreto 2024");
             groupRecord.set("created_by", userIds[0]);
-            groupRecord.set("participants_count", 3);
+            groupRecord.set("participants_count", 0);
             $app.save(groupRecord);
 
-            for (const userId of userIds) {
+            const userNames = testUserEmails.map(e => e.split("@")[0]);
+
+            const now = new Date().toISOString();
+
+            for (let i = 0; i < userIds.length; i++) {
                 const partRecord = new Record(participantsCollection);
                 partRecord.set("group_id", groupRecord.id);
-                partRecord.set("giver_id", userId);
+                partRecord.set("giver_id", userIds[i]);
+                partRecord.set("giver_name", userNames[i]);
+                partRecord.set("joined_at", now);
                 $app.save(partRecord);
+            }
+
+            const drawnGroupRecord = new Record(groupsCollection);
+            drawnGroupRecord.set("name", "Sorteio Realizado 2024");
+            drawnGroupRecord.set("created_by", userIds[0]);
+            drawnGroupRecord.set("participants_count", 0);
+            drawnGroupRecord.set("has_been_drawn", true);
+            drawnGroupRecord.set("drawn_at", now);
+            $app.save(drawnGroupRecord);
+
+            const drawnParticipantIds = [];
+            for (let i = 0; i < userIds.length; i++) {
+                const partRecord = new Record(participantsCollection);
+                partRecord.set("group_id", drawnGroupRecord.id);
+                partRecord.set("giver_id", userIds[i]);
+                partRecord.set("giver_name", userNames[i]);
+                partRecord.set("joined_at", now);
+                $app.save(partRecord);
+                drawnParticipantIds.push({ record: partRecord, userId: userIds[i], name: userNames[i] });
+            }
+
+            drawnParticipantIds[0].record.set("receiver_id", drawnParticipantIds[1].userId);
+            drawnParticipantIds[0].record.set("receiver_name", drawnParticipantIds[1].name);
+            drawnParticipantIds[1].record.set("receiver_id", drawnParticipantIds[2].userId);
+            drawnParticipantIds[1].record.set("receiver_name", drawnParticipantIds[2].name);
+            drawnParticipantIds[2].record.set("receiver_id", drawnParticipantIds[0].userId);
+            drawnParticipantIds[2].record.set("receiver_name", drawnParticipantIds[0].name);
+            for (const item of drawnParticipantIds) {
+                $app.save(item.record);
             }
 
             return e.json(200, {message: "Seed: dados de teste recarregados com sucesso!"});

@@ -18,7 +18,9 @@ export class ParticipantService extends BaseCrudService<GroupParticipant> {
     return await this.create({
       group_id: groupId,
       giver_id: user.id,
+      giver_name: (user as any).name ?? '',
       receiver_id: null,
+      receiver_name: null,
     } as unknown as Partial<GroupParticipant>);
   }
 
@@ -26,6 +28,7 @@ export class ParticipantService extends BaseCrudService<GroupParticipant> {
     return await this.pbClient.instance.collection('group_participants')
       .getList<GroupParticipant & RecordModel>(1, 50, {
         filter: `group_id = "${groupId}"`,
+        sort: '-joined_at',
         expand: 'giver_id,receiver_id',
       });
   }

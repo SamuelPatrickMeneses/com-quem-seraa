@@ -73,6 +73,16 @@ describe('ProfileComponent', () => {
     const nav = fixture.nativeElement.querySelector('app-bottom-nav');
     expect(nav).toBeTruthy();
   });
+
+  it('should call auth.logout when logout button is clicked', async () => {
+    const { fixture } = await setup();
+    const authService = TestBed.inject(AuthService) as any;
+    const logoutBtn = fixture.nativeElement.querySelector('.btn.btn-error') as HTMLButtonElement;
+    expect(logoutBtn).toBeTruthy();
+    expect(logoutBtn.textContent).toContain('Encerrar Sessão');
+    logoutBtn.click();
+    expect(authService.logout).toHaveBeenCalled();
+  });
 });
 
 describe('ProfileComponent (responsivo)', () => {

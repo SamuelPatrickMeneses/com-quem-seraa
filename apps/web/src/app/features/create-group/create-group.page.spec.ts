@@ -107,14 +107,12 @@ describe('CreateGroupComponent', () => {
     const participantService = TestBed.inject(ParticipantService) as jasmine.SpyObj<ParticipantService>;
 
     groupService.create.and.resolveTo({ id: 'new-group-2' } as any);
-    groupService.update.and.resolveTo({} as any);
     participantService.joinGroup.and.resolveTo({} as any);
 
     component.form.patchValue({ name: 'Meu Grupo', joinGroup: true });
     await component.onSubmit();
 
     expect(participantService.joinGroup).toHaveBeenCalledWith('new-group-2');
-    expect(groupService.update).toHaveBeenCalledWith('new-group-2', jasmine.objectContaining({ participants_count: 1 }));
   });
 
   it('should show error message when creation fails', async () => {
@@ -127,6 +125,26 @@ describe('CreateGroupComponent', () => {
 
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('Falha de rede');
+    expect(component.loading()).toBeFalse();
+  });
+
+  it('should show Criando... text during submission', async () => {
+    const groupService = TestBed.inject(GroupService) as jasmine.SpyObj<GroupService>;
+    groupService.create.and.resolveTo({ id: 'new-group-1' } as any);
+
+    component.form.patchValue({ name: 'Meu Grupo' });
+
+    const submitPromise = component.onSubmit();
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Criando...');
+    expect(component.loading()).toBeTrue();
+
+    await submitPromise;
+    fixture.detectChanges();
+
+    expect(el.textContent).not.toContain('Criando...');
     expect(component.loading()).toBeFalse();
   });
 });

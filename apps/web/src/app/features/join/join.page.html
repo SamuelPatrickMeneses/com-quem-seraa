@@ -1,0 +1,14 @@
+<div class="min-h-screen bg-surface flex items-center justify-center p-4">
+  @if (loading()) {
+    <div class="flex flex-col items-center gap-4">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+      <p class="text-neutral/70 font-body">Entrando no grupo...</p>
+    </div>
+  } @else if (error()) {
+    <div class="text-center max-w-md">
+      <h2 class="font-display font-bold text-2xl text-neutral mb-2">Erro ao entrar</h2>
+      <p class="text-neutral/70 font-body mb-6">{{ error() }}</p>
+      <a routerLink="/my-groups" class="text-primary font-bold hover:underline">Ir para meus grupos</a>
+    </div>
+  }
+</div>

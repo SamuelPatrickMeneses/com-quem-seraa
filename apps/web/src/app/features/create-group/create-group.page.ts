@@ -70,7 +70,6 @@ export class CreateGroupComponent implements OnInit {
 
       if (this.form.getRawValue().joinGroup) {
         await this.participantService.joinGroup(group.id);
-        await this.groupService.update(group.id, { participants_count: 1 } as any);
       }
 
       this.router.navigate(['/group', group.id]);

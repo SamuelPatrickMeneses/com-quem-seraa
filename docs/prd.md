@@ -51,7 +51,7 @@ O "Com Quem Será" é um sistema de amigo secreto que resolve o problema de orga
 - **RN03:** Nenhum participante pode ser sorteado para presentear a si mesmo (impedir que `giver_id = receiver_id`).
 - **RN04:** O resultado do sorteio (quem tirou quem) deve ser visível apenas para o organizador.
 - **RN05:** O participante só pode ver seu `receiver_id` após o sorteio ser concluído.
-- **RN06:** O link de convite deve expirar ou ser invalidado após o sorteio para evitar novas entradas.
+- **RN06:** O link de convite deve ser ocultado após o sorteio para evitar novas entradas.
 - **RN07:** O organizador não pode ser removido do grupo.
 - **RN08:** Um usuário só pode participar uma única vez do mesmo grupo (unicidade de `user_id + group_id` em `group_participant`).
 
@@ -115,11 +115,17 @@ O "Com Quem Será" é um sistema de amigo secreto que resolve o problema de orga
 
 ```mermaid
 flowchart LR
-    subgraph Navegador
-        A[Angular SPA]
+    subgraph "Build Time (Docker)"
+        NGINX_FS["📁 Nginx filesystem<br>(/usr/share/nginx/html)"]
+        BUILD["🛠 ng build<br>(dist/frontend/browser)"]
+        BUILD -->|"COPY"| NGINX_FS
     end
     
-    subgraph Docker Host
+    subgraph "Runtime (Navegador)"
+        A["Angular SPA<br>(executando no browser)"]
+    end
+    
+    subgraph "Docker Host (Runtime)"
         subgraph "Container: Nginx (:80)"
             N[Proxy Reverso]
         end
@@ -127,13 +133,13 @@ flowchart LR
         subgraph "Container: Pocketbase (:8090)"
             P[API + Auth + SQLite]
         end
-        
-        N -->|"/api/*"| P
-        N -->|"/* (SPA)"| A
     end
     
-    A -->|"HTTP via Nginx"| N
-    P -->|"Respostas JSON"| N
+    A -->|"HTTP GET / → index.html"| N
+    A -->|"HTTP /api/*"| N
+    N -->|"proxy_pass"| P
+    P -->|"JSON"| N
+    N -->|"JSON"| A
 ```
 
 ### 8.6. Diretrizes Técnicas Obrigatórias
@@ -330,7 +336,7 @@ Cada card deve conter as seguintes informações e ações:
 | 3 | Usuário clica em "Criar grupo". |
 | 4 | Sistema valida o nome do grupo. |
 | 5 | Sistema cria o registro na tabela `group` com: <br> - `name` = valor do campo <br> - `description` = null (ou vazio) <br> - `created_by` = `currentUser.id` <br> - `has_been_drawn` = false <br> - `participants_count` = 0 (inicial) |
-| 6 | **Se o checkbox "Participar do grupo" estiver marcado:** <br> Sistema cria um registro em `group_participant` com: <br> - `group_id` = ID do grupo recém-criado <br> - `giver_id` = null <br> - `receiver_id` = null <br> - `joined_at` = data atual <br> E incrementa `participants_count` do grupo para 1. |
+| 6 | **Se o checkbox "Participar do grupo" estiver marcado:** <br> Sistema cria um registro em `group_participant` com: <br> - `group_id` = ID do grupo recém-criado <br> - `giver_id` = `currentUser.id` (usuário que entrou é o próprio giver) <br> - `giver_name` = nome do `currentUser` <br> - `receiver_id` = null <br> - `receiver_name` = null <br> - `joined_at` = data atual <br> E incrementa `participants_count` do grupo para 1. |
 | 7 | **Se o checkbox NÃO estiver marcado:** <br> O grupo é criado sem participantes. O organizador (criador) não participa do sorteio. |
 | 8 | Sistema redireciona o usuário para a tela de dashboard do grupo (`/group/:groupId`). |
 | 9 | Opcionalmente, exibir mensagem de sucesso: "Grupo [nome] criado com sucesso!" |
@@ -402,6 +408,26 @@ flowchart TD
 
 ---
 
+##### 9.5.3. Fluxo do Link de Convite (`/join`)
+
+```mermaid
+flowchart TD
+    A[Usuário recebe link /join?code=xxx] --> B{JoinComponent<br>Usuário está logado?}
+    B -->|Não| C[Redireciona para /login<br>com returnUrl=/join?code=xxx]
+    C --> D[Usuário faz login]
+    D --> E[Redireciona para /join?code=xxx]
+    E --> B
+    B -->|Sim| F[Busca grupo via groupService.getByInviteCode]
+    F --> G{O usuário é o<br>created_by do grupo?}
+    G -->|Sim| H[Redireciona para /group/:groupId]
+    G -->|Não| I[Cria participante via<br>participantService.joinGroup]
+    I --> J[Redireciona para /group/:groupId]
+    H --> K[Visão do Criador ou Participante]
+    J --> K
+```
+
+---
+
 #### 9.5.1. Visão do Criador (Organizador)
 
 **Layout Funcional:**
@@ -423,14 +449,14 @@ flowchart TD
 
 | Ação | Condição | Comportamento |
 | :--- | :--- | :--- |
-| **"Tornar-se membro"** | Criador NÃO está na lista de participantes (`group_participant` não existe para este user no grupo) | Adiciona o criador como participante. Cria registro `group_participant` com `giver_id` = null, `receiver_id` = null. Incrementa `participants_count`. Exibe mensagem de sucesso. |
-| **"Deixar de ser membro"** | Criador ESTÁ na lista de participantes E grupo tem mais de 1 participante (não é o único) | Remove o criador da lista de participantes. Deleta registro `group_participant`. Decrementa `participants_count`. Exibe mensagem de sucesso. |
+| **"Tornar-se membro"** | Criador NÃO está na lista de participantes (`group_participant` não existe para este user no grupo) | Botão habilitado. Exibe modal de confirmação: "Deseja entrar como participante do grupo [nome]?" Após confirmação, adiciona o criador como participante. Cria registro `group_participant` com `giver_id` = null, `receiver_id` = null. Incrementa `participants_count`. Exibe mensagem de sucesso. |
+| **"Deixar de ser membro"** | Criador ESTÁ na lista de participantes E grupo tem mais de 1 participante (não é o único) | Botão habilitado. Exibe modal de confirmação: "Tem certeza que deseja deixar de ser membro do grupo [nome]?" Após confirmação, remove o criador da lista de participantes. Deleta registro `group_participant`. Decrementa `participants_count`. Exibe mensagem de sucesso. |
 | **"Deixar de ser membro" (bloqueado)** | Criador é o ÚNICO participante do grupo | Botão desabilitado com tooltip: "Você é o único participante. Adicione mais pessoas antes de sair." |
-| **"Copiar link de convite"** | Sempre disponível | Copia o URL de convite para a área de transferência. Exibir feedback "Link copiado!". |
-| **"Realizar sorteio"** | Mínimo 3 participantes E sorteio NÃO realizado | Executa o algoritmo de sorteio (via API custom). Preenche `giver_id` e `receiver_id` para todos os participantes. Marca `has_been_drawn = true`. Redireciona para `/group/:groupId/admin` (ou exibe resultados na mesma tela). |
+| **"Copiar link de convite"** | Sorteio NÃO realizado | Copia o URL de convite para a área de transferência. Exibir feedback "Link copiado!". Oculta a seção de convite após o sorteio. |
+| **"Realizar sorteio"** | Mínimo 3 participantes E sorteio NÃO realizado | Exibe modal de confirmação: "Tem certeza que deseja realizar o sorteio? Esta ação não pode ser desfeita." Após confirmação, executa o algoritmo de sorteio (via API custom). Preenche `giver_id` e `receiver_id` para todos os participantes. Marca `has_been_drawn = true`. Redireciona para `/group/:groupId/admin` (ou exibe resultados na mesma tela). |
 | **"Realizar sorteio" (bloqueado)** | Menos de 3 participantes | Botão desabilitado com tooltip: "É necessário no mínimo 3 participantes para realizar o sorteio." |
 | **"Realizar sorteio" (bloqueado)** | Sorteio já realizado | Botão oculto ou desabilitado com tooltip: "O sorteio deste grupo já foi realizado." |
-| **"Excluir grupo"** | Sorteio NÃO realizado | Abre modal de confirmação: "Tem certeza que deseja excluir o grupo [nome]? Esta ação não pode ser desfeita." Após confirmação, deleta o grupo e todos os `group_participant` associados. Redireciona para `/my-groups`. |
+| **"Excluir grupo"** | Sorteio NÃO realizado | Exibe modal de confirmação: "Tem certeza que deseja excluir o grupo [nome]? Esta ação não pode ser desfeita." Após confirmação, deleta o grupo e todos os `group_participant` associados. Redireciona para `/my-groups`. |
 | **"Excluir grupo" (bloqueado)** | Sorteio já realizado | Botão oculto ou desabilitado com tooltip: "Grupos com sorteio realizado não podem ser excluídos." |
 
 ##### 9.5.1.3. Ações do Organizador (Pós-sorteio)
@@ -438,7 +464,7 @@ flowchart TD
 | Ação | Comportamento |
 | :--- | :--- |
 | **"Ver resultado do sorteio"** | Redireciona para `/group/:groupId/admin` (painel administrativo com todos os pares). |
-| **"Copiar link de convite"** | Disponível mas convites não devem funcionar mais (ou exibir aviso: "Sorteio já realizado, novos participantes não podem entrar"). |
+| **"Revelação do amigo secreto"** | Se o organizador também for participante, ele vê o card de revelação mostrando quem deve presentear — mesma experiência de um participante comum. |
 | **"Excluir grupo"** | Desabilitado (ou oculto). |
 
 ##### 9.5.1.4. Lista de Participantes
@@ -458,10 +484,13 @@ flowchart TD
 
 ##### 9.5.1.5. Link de Convite
 
+**Visibilidade:** A seção de link de convite é exibida apenas **antes do sorteio** (`has_been_drawn = false`). Após o sorteio, a seção é ocultada.
+
 | Elemento | Comportamento |
 | :--- | :--- |
 | **URL de convite** | Exibir o link completo ou um campo com o link (ex: `http://localhost/join?code=xxx`). |
 | **Botão "Copiar"** | Copia o link para a área de transferência. Exibir feedback visual "Copiado!". |
+| **Fluxo do link** | O destinatário acessa `/join?code=xxx` → `JoinComponent` verifica autenticação → redireciona para login se necessário → chama `GET /api/join` (PocketBase hook) → participante é criado → redireciona para `/group/:groupId`. |
 | **Gerar novo código** | Opcional (MVP pode não ter). Se implementado, invalidar código antigo e gerar novo. |
 
 ---
@@ -472,7 +501,7 @@ flowchart TD
 - A tela exibe as seguintes seções/informações:
   1. **Cabeçalho do grupo:** Nome do grupo, data de criação, indicador de status do sorteio.
   2. **Área de ações do participante:** Botões para ações disponíveis.
-  3. **Lista de participantes:** Visualização limitada (apenas nomes, sem ações de remoção).
+  3. **Número de participantes:** Exibe apenas o total de participantes, sem listar nomes.
   4. **Revelação do amigo secreto** (exibido diretamente na tela, se sorteio já realizado).
 
 **Comportamento esperado:**
@@ -482,14 +511,14 @@ flowchart TD
 | Situação | Exibição e Ações |
 | :--- | :--- |
 | Sorteio NÃO realizado (`has_been_drawn = false`) | Badge "Aguardando sorteio". Botão "Sair do grupo" disponível. Área de revelação do amigo secreto oculta ou exibe "Aguardando sorteio...". |
-| Sorteio realizado (`has_been_drawn = true`) | Badge "Sorteio realizado!". Área de revelação do amigo secreto **exibe o nome da pessoa que o participante deve presentear**. Botão "Sair do grupo" **NÃO é exibido** (participante não pode sair após sorteio). |
+| Sorteio realizado (`has_been_drawn = true`) | Badge "Sorteio realizado!". Área de revelação do amigo secreto **exibe o nome da pessoa que o participante deve presentear**. Botão "Deixar de ser membro" **NÃO é exibido** (participante não pode sair após sorteio). |
 
 ##### 9.5.2.2. Ações do Participante
 
 | Ação | Condição | Comportamento |
 | :--- | :--- | :--- |
-| **"Sair do grupo"** | Sorteio NÃO realizado | Abre modal de confirmação: "Tem certeza que deseja sair do grupo [nome]?" Após confirmação, deleta o registro `group_participant` do usuário. Decrementa `participants_count`. Redireciona para `/my-groups`. |
-| **"Sair do grupo"** | Sorteio já realizado | **Botão NÃO é exibido** (ou oculto). Participante não pode sair após o sorteio ser realizado. |
+| **"Deixar de ser membro"** | Sorteio NÃO realizado | Botão habilitado. Exibe modal de confirmação: "Tem certeza que deseja sair do grupo [nome]?" Após confirmação, deleta o registro `group_participant` do usuário. Decrementa `participants_count`. Redireciona para `/my-groups`. |
+| **"Deixar de ser membro"** | Sorteio já realizado | **Botão NÃO é exibido** (ou oculto). Participante não pode sair após o sorteio ser realizado. |
 | **"Copiar link de convite"** | Apenas se o participante quiser convidar outros (opcional) | Copia o link de convite. Se sorteio já realizado, exibir aviso: "O sorteio já foi realizado. Novos participantes não podem entrar." |
 
 ##### 9.5.2.3. Revelação do Amigo Secreto (Área de Destaque)

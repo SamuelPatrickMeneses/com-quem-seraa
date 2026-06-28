@@ -49,7 +49,8 @@ export class GroupDashboardComponent implements OnInit {
   isLoading = signal(true);
   error = signal<string | null>(null);
   authUser = signal<User | null>(null);
-  copied = signal(false);
+  copiedLink = signal(false);
+  copiedCode = signal(false);
   isDrawLoading = signal(false);
   isActionLoading = signal(false);
   selectedParticipant = signal<User | null>(null);
@@ -230,8 +231,18 @@ export class GroupDashboardComponent implements OnInit {
   async copyInviteLink() {
     try {
       await navigator.clipboard.writeText(this.inviteUrl());
-      this.copied.set(true);
-      setTimeout(() => this.copied.set(false), 2000);
+      this.copiedLink.set(true);
+      setTimeout(() => this.copiedLink.set(false), 2000);
+    } catch {
+      // Fallback para ambientes sem clipboard API
+    }
+  }
+
+  async copyInviteCode() {
+    try {
+      await navigator.clipboard.writeText(this.groupId);
+      this.copiedCode.set(true);
+      setTimeout(() => this.copiedCode.set(false), 2000);
     } catch {
       // Fallback para ambientes sem clipboard API
     }

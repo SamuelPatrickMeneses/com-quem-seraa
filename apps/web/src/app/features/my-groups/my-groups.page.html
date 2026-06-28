@@ -84,12 +84,20 @@
             Gerencie seus sorteios de fim de ano e acompanhe a entrega dos presentes com seus amigos e familiares.
           </p>
         </div>
-        <div class="flex gap-2">
-          <div class="bg-surface-low px-4 py-2 rounded-xl flex items-center gap-2 border border-neutral/5">
-            <lucide-icon [img]="GiftIcon" size="16" class="text-primary"></lucide-icon>
-            <span class="text-xs font-bold uppercase tracking-tighter">Temporada 2023</span>
-          </div>
-        </div>
+        <form (submit)="joinByCode(joinCodeInput.value, $event)" class="flex gap-2">
+          <input
+            #joinCodeInput
+            type="text"
+            placeholder="Código do grupo"
+            class="bg-surface-lowest px-4 py-2 rounded-xl border border-neutral/10 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none text-sm font-bold w-40 md:w-48 transition-all placeholder:font-medium placeholder:text-neutral/40"
+          >
+          <button
+            type="submit"
+            class="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-xl font-bold text-sm transition-colors active:scale-95"
+          >
+            Entrar
+          </button>
+        </form>
       </div>
     </header>
 

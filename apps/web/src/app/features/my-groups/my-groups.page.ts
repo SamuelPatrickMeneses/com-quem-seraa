@@ -122,6 +122,12 @@ export class MyGroupsComponent implements OnInit {
     this.loadGroups();
   }
 
+  joinByCode(code: string, event: Event) {
+    event.preventDefault();
+    if (!code || !code.trim()) return;
+    this.router.navigate(['/join'], { queryParams: { code: code.trim() } });
+  }
+
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);

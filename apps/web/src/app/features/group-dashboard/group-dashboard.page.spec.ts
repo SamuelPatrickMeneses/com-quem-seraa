@@ -807,7 +807,7 @@ describe('GroupDashboardComponent (exibição)', () => {
     await component.copyInviteLink();
 
     expect(mockWriteText).toHaveBeenCalledWith(component.inviteUrl());
-    expect(component.copied()).toBe(true);
+    expect(component.copiedLink()).toBe(true);
   });
 
   it('should reset copied state after timeout', async () => {
@@ -820,12 +820,26 @@ describe('GroupDashboardComponent (exibição)', () => {
     jasmine.clock().install();
 
     await component.copyInviteLink();
-    expect(component.copied()).toBe(true);
+    expect(component.copiedLink()).toBe(true);
 
     jasmine.clock().tick(2001);
-    expect(component.copied()).toBe(false);
+    expect(component.copiedLink()).toBe(false);
 
     jasmine.clock().uninstall();
+  });
+
+  it('should copy invite code to clipboard', async () => {
+    await setup();
+    const mockWriteText = jasmine.createSpy('writeText').and.resolveTo();
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: mockWriteText },
+      configurable: true,
+    });
+
+    await component.copyInviteCode();
+
+    expect(mockWriteText).toHaveBeenCalledWith(component.groupId);
+    expect(component.copiedCode()).toBe(true);
   });
 });
 

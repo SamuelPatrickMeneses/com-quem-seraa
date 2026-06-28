@@ -38,11 +38,43 @@ onBootstrap((e) => {
 
 
         const testUserEmails = ["ana@exemplo.com", "beto@exemplo.com", "caio@exemplo.com"];
+
         const testUserBios = {
-            "ana@exemplo.com": "Organizadora e fã de presentes criativos.",
-            "beto@exemplo.com": "Curte livros, café e jogos de tabuleiro.",
-            "caio@exemplo.com": "Apaixonado por música e viagens.",
+            "ana@exemplo.com": `
+🎁 Lista de desejos
+
+📚 Livros: Romance, fantasia e desenvolvimento pessoal.
+☕ Café: Cafés especiais, canecas e acessórios.
+🕯️ Decoração: Velas aromáticas, difusores e plantinhas.
+🍫 Doces: Chocolates, cookies e caixas de bombons.
+💄 Beleza: Skincare, hidratantes e perfumes suaves.
+💌 Extras: Cartinhas, presentes personalizados e itens feitos à mão.
+`,
+
+            "beto@exemplo.com": `
+🎁 Lista de desejos
+
+🎮 Geek & Games: Jogos, controles, gift cards da Steam e mousepad.
+💻 Tecnologia: Fones Bluetooth, teclado mecânico e acessórios para PC.
+☕ Café: Cafés gourmet, canecas e garrafas térmicas.
+👕 Roupas: Camisetas geek, moletons e bonés.
+🧩 Hobby: LEGO, quebra-cabeças e jogos de tabuleiro.
+🍬 Extras: Chocolates e snacks importados.
+`,
+
+            "caio@exemplo.com": `
+🎁 Lista de desejos
+
+🎵 Música: Fones de ouvido, caixas de som e discos de vinil.
+✈️ Viagens: Mochilas, nécessaires, garrafas térmicas e almofadas de pescoço.
+📸 Fotografia: Acessórios para câmera e tripés.
+⌚ Acessórios: Carteira, relógio, óculos de sol e pulseiras.
+🏃 Esportes: Roupas esportivas, squeeze e acessórios fitness.
+🎁 Extras: Vale-presente, livros e experiências diferentes.
+            `,
         };
+
+
         const userIds = [];
 
 
@@ -128,7 +160,7 @@ if (env === "dev") {
 
             if (!groupsCollection || !participantsCollection) {
                 console.log("Seed: Coleções 'groups' ou 'group_participants' ainda não existem.");
-                return e.json(500, {message: "Coleções necessárias não encontradas."});
+                return e.json(500, { message: "Coleções necessárias não encontradas." });
             }
 
             const testUserEmails = ["ana@exemplo.com", "beto@exemplo.com", "caio@exemplo.com"];
@@ -198,9 +230,9 @@ if (env === "dev") {
                 $app.save(item.record);
             }
 
-            return e.json(200, {message: "Seed: dados de teste recarregados com sucesso!"});
+            return e.json(200, { message: "Seed: dados de teste recarregados com sucesso!" });
         } catch (err) {
-            return e.json(500, {message: "Seed: erro ao recarregar dados de teste.", error: String(err)});
+            return e.json(500, { message: "Seed: erro ao recarregar dados de teste.", error: String(err) });
         }
     });
 }

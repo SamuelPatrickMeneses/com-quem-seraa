@@ -10,12 +10,12 @@ import { DrawService } from '../../core/services/draw.service';
 import type { Group } from '../../core/models/group.model';
 import type { GroupParticipant } from '../../core/models/group-participant.model';
 import type { User } from '../../core/models/user.model';
-import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User as UserIcon, ShieldCheck, Sparkles, ArrowRight, Copy, LogOut, Trash2, UserPlus, Eye, EyeOff } from 'lucide-angular';
+import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User as UserIcon, ShieldCheck, Sparkles, ArrowRight, Copy, LogOut, Trash2, UserPlus, Eye, EyeOff, AlertCircle, Calendar, Check } from 'lucide-angular';
 
 @Component({
   selector: 'app-group-dashboard',
   standalone: true,
-  imports: [RouterLink, LucideAngularModule, BottomNavComponent, ConfirmModalComponent, DatePipe, NgClass],
+  imports: [RouterLink, LucideAngularModule, BottomNavComponent, ConfirmModalComponent, DatePipe],
   templateUrl: './group-dashboard.page.html',
 })
 export class GroupDashboardComponent implements OnInit {
@@ -26,6 +26,7 @@ export class GroupDashboardComponent implements OnInit {
   private router = inject(Router);
 
   readonly GiftIcon = Gift;
+  readonly UsersIcon = Users;
   readonly ChevronLeftIcon = ChevronLeft;
   readonly ShieldCheckIcon = ShieldCheck;
   readonly SparklesIcon = Sparkles;
@@ -36,6 +37,9 @@ export class GroupDashboardComponent implements OnInit {
   readonly UserPlusIcon = UserPlus;
   readonly EyeIcon = Eye;
   readonly EyeOffIcon = EyeOff;
+  readonly AlertCircleIcon = AlertCircle;
+  readonly CalendarIcon = Calendar;
+  readonly CheckIcon = Check;
 
   readonly navItems: NavItem[] = [
     { label: 'Grupos', icon: Users, route: '/my-groups' },

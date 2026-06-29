@@ -26,6 +26,9 @@ import {
   Users,
   AlertCircle,
   RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
 } from 'lucide-angular';
 import type { Group } from '../../core/models/group.model';
 import type { User as AppUser } from '../../core/models/user.model';
@@ -51,6 +54,9 @@ export class MyGroupsComponent implements OnInit {
   readonly UserIcon = User;
   readonly AlertCircleIcon = AlertCircle;
   readonly RefreshCwIcon = RefreshCw;
+  readonly ChevronLeftIcon = ChevronLeft;
+  readonly ChevronRightIcon = ChevronRight;
+  readonly CalendarIcon = Calendar;
 
   readonly navItems: NavItem[] = [
     { label: 'Grupos', icon: Users, route: '/my-groups' },
@@ -63,16 +69,40 @@ export class MyGroupsComponent implements OnInit {
   private router = inject(Router);
 
   user = signal<AppUser | null>(null);
-  groups = signal<Group[]>([]);
+  allGroups = signal<Group[]>([]);
   isLoading = signal(true);
   error = signal<string | null>(null);
-  totalGroups = signal(0);
   currentPage = signal(1);
-  perPage = 10;
+  perPage = 6;
+
+  readonly groups = computed(() => {
+    const start = (this.currentPage() - 1) * this.perPage;
+    return this.allGroups().slice(start, start + this.perPage);
+  });
+
+  readonly totalGroups = computed(() => this.allGroups().length);
 
   readonly totalPages = computed(() =>
     Math.max(1, Math.ceil(this.totalGroups() / this.perPage)),
   );
+
+  readonly pageNumbers = computed(() =>
+    Array.from({ length: this.totalPages() }, (_, i) => i + 1)
+  );
+
+  getVisiblePages(): string[] {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    if (total <= 7) return this.pageNumbers().map(String);
+    const pages: string[] = ['1'];
+    if (current > 3) pages.push('...');
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
+    for (let i = start; i <= end; i++) pages.push(String(i));
+    if (current < total - 2) pages.push('...');
+    pages.push(String(total));
+    return pages;
+  }
 
   constructor() {
     effect(() => {
@@ -101,12 +131,8 @@ export class MyGroupsComponent implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
     try {
-      const result = await this.groupService.getMyGroups(
-        this.currentPage(),
-        this.perPage,
-      );
-      this.groups.set(result.items);
-      this.totalGroups.set(result.total);
+      const result = await this.groupService.getMyGroups();
+      this.allGroups.set(result.items);
     } catch {
       this.error.set(
         'Não foi possível carregar seus grupos. Verifique sua conexão.',
@@ -119,7 +145,6 @@ export class MyGroupsComponent implements OnInit {
   goToPage(page: number) {
     if (page < 1 || page > this.totalPages()) return;
     this.currentPage.set(page);
-    this.loadGroups();
   }
 
   joinByCode(code: string, event: Event) {

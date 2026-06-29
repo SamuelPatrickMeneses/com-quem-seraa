@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, Gift, ArrowLeft, Check, Loader, AlertCircle, Sparkles, PartyPopper, Users, PlusCircle, User } from 'lucide-angular';
+import { LucideAngularModule, Gift, ArrowLeft, ArrowRight, Check, Loader, AlertCircle, Sparkles, PartyPopper, Users, PlusCircle, User } from 'lucide-angular';
 import { AuthService } from '../../core/services/auth.service';
 import { GroupService } from '../../core/services/group.service';
 import { ParticipantService } from '../../core/services/participant.service';
@@ -22,6 +22,7 @@ export class CreateGroupComponent implements OnInit {
 
   readonly GiftIcon = Gift;
   readonly ArrowLeftIcon = ArrowLeft;
+  readonly ArrowRightIcon = ArrowRight;
   readonly CheckIcon = Check;
   readonly LoaderIcon = Loader;
   readonly AlertCircleIcon = AlertCircle;

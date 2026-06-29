@@ -139,6 +139,32 @@ onBootstrap((e) => {
             $app.save(item.record);
         }
 
+        const groupNames = [
+            "Confraria do Churrasco",
+            "Amigos do Escritório",
+            "Turma da Faculdade",
+            "Clube do Livro 2024",
+            "Fim de Ano no Prédio",
+            "Amigos da Academia",
+            "Vizinhança Unida",
+            "Família Silva 2024",
+        ];
+
+        for (const name of groupNames) {
+            const g = new Record(groupsCollection);
+            g.set("name", name);
+            g.set("created_by", userIds[0]);
+            g.set("participants_count", 0);
+            $app.save(g);
+
+            const part = new Record(participantsCollection);
+            part.set("group_id", g.id);
+            part.set("giver_id", userIds[0]);
+            part.set("giver_name", userNames[0]);
+            part.set("joined_at", now);
+            $app.save(part);
+        }
+
         console.log("Seed: Sucesso na inserção dos dados de teste!");
     } catch (err) {
         console.error("Seed Erro Detalhado:", err);
@@ -228,6 +254,32 @@ if (env === "dev") {
             drawnParticipantIds[2].record.set("receiver_name", drawnParticipantIds[0].name);
             for (const item of drawnParticipantIds) {
                 $app.save(item.record);
+            }
+
+            const groupNames = [
+                "Confraria do Churrasco",
+                "Amigos do Escritório",
+                "Turma da Faculdade",
+                "Clube do Livro 2024",
+                "Fim de Ano no Prédio",
+                "Amigos da Academia",
+                "Vizinhança Unida",
+                "Família Silva 2024",
+            ];
+
+            for (const name of groupNames) {
+                const g = new Record(groupsCollection);
+                g.set("name", name);
+                g.set("created_by", userIds[0]);
+                g.set("participants_count", 0);
+                $app.save(g);
+
+                const part = new Record(participantsCollection);
+                part.set("group_id", g.id);
+                part.set("giver_id", userIds[0]);
+                part.set("giver_name", userNames[0]);
+                part.set("joined_at", now);
+                $app.save(part);
             }
 
             return e.json(200, { message: "Seed: dados de teste recarregados com sucesso!" });

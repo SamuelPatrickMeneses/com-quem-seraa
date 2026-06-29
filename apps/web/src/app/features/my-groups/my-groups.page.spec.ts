@@ -69,7 +69,7 @@ describe('MyGroupsComponent (integração)', () => {
     await createComponent();
 
     const cards = fixture.nativeElement.querySelectorAll('app-group-card');
-    expect(cards.length).toBe(2);
+    expect(cards.length).toBe(6);
     expect(fixture.nativeElement.textContent).toContain('Amigo Secreto 2024');
     expect(fixture.nativeElement.textContent).not.toContain('Nenhum grupo ainda');
   });
@@ -345,13 +345,13 @@ describe('MyGroupsComponent (comportamento)', () => {
   });
 
   it('should show pagination when totalPages > 1', () => {
-    expect(component.totalPages()).toBe(2);
+    expect(component.totalPages()).toBe(3);
     const paginationDiv = fixture.nativeElement.querySelector('[class*="mt-16"]');
     expect(paginationDiv).toBeTruthy();
   });
 
-  it('should show 15 group cards', () => {
-    expect(fixture.nativeElement.querySelectorAll('app-group-card').length).toBe(15);
+  it('should show 6 group cards on page 1 (paginated)', () => {
+    expect(fixture.nativeElement.querySelectorAll('app-group-card').length).toBe(6);
   });
 
   it('should update currentPage when goToPage is called', () => {

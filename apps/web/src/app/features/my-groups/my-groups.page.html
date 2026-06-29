@@ -1,4 +1,4 @@
-<div class="bg-surface text-neutral min-h-screen pb-24 md:pb-0">
+<div class="bg-surface text-neutral min-h-screen pb-28 md:pb-0">
   <!-- TopAppBar -->
   <nav class="fixed top-0 z-50 w-full bg-surface/80 backdrop-blur-xl shadow-ambient">
     <div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
@@ -78,7 +78,13 @@
     <header class="mb-12">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <p class="text-sm font-bold uppercase tracking-widest text-primary/70 mb-2">Olá, {{ firstName() }}</p>
+          <div class="flex items-center gap-3 mb-3">
+            <p class="text-sm font-bold uppercase tracking-widest text-primary/70">Olá, {{ firstName() }}</p>
+            <span class="bg-surface-lowest text-neutral/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-ambient flex items-center gap-1.5">
+              <lucide-icon [img]="CalendarIcon" size="12"></lucide-icon>
+              Temporada 2024
+            </span>
+          </div>
           <h1 class="font-display font-extrabold text-4xl md:text-5xl text-neutral tracking-tight mb-2">Seus Grupos</h1>
           <p class="text-neutral/50 text-lg font-light leading-relaxed max-w-2xl">
             Gerencie seus sorteios de fim de ano e acompanhe a entrega dos presentes com seus amigos e familiares.
@@ -141,7 +147,8 @@
           />
         }
 
-        <!-- Add New Group Card -->
+        <!-- Add New Group Card (last page only) -->
+        @if (currentPage() === totalPages()) {
         <a routerLink="/create" class="group bg-surface-low/50 border-2 border-dashed border-neutral/10 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center transition-all hover:bg-surface-low hover:border-primary/30 min-h-[300px]">
           <div class="w-16 h-16 rounded-full bg-surface-lowest flex items-center justify-center mb-4 shadow-ambient group-hover:scale-110 transition-transform">
             <lucide-icon [img]="PlusIcon" size="32" class="text-primary"></lucide-icon>
@@ -150,33 +157,33 @@
           <p class="text-neutral/50 text-xs max-w-[180px] leading-relaxed mb-6">Inicie uma nova tradição e convide seus amigos hoje mesmo.</p>
           <span class="text-primary text-xs font-extrabold uppercase tracking-widest group-hover:underline">Começar Agora</span>
         </a>
+        }
       </div>
 
       <!-- Pagination -->
       @if (totalPages() > 1) {
-        <div class="mt-16 flex items-center justify-center gap-2">
-          <button (click)="goToPage(currentPage() - 1)"
-                  [disabled]="currentPage() === 1"
-                  class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-low text-neutral/50 hover:bg-neutral/10 transition-colors disabled:opacity-30 disabled:hover:bg-surface-low">
-            <lucide-icon [img]="GiftIcon" size="16" class="rotate-180"></lucide-icon>
+        <div class="mt-16 flex items-center justify-center gap-1.5">
+          <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-lowest text-neutral/30 hover:text-neutral hover:bg-surface-low transition-colors disabled:opacity-20 disabled:cursor-not-allowed shadow-ambient">
+            <lucide-icon [img]="ChevronLeftIcon" size="18"></lucide-icon>
           </button>
-          
-          @for (page of [].constructor(totalPages()); track $index) {
-            <button (click)="goToPage($index + 1)"
-                    class="w-10 h-10 flex items-center justify-center rounded-xl font-bold text-xs transition-colors"
-                    [class.bg-primary]="currentPage() === $index + 1"
-                    [class.text-white]="currentPage() === $index + 1"
-                    [class.bg-surface-lowest]="currentPage() !== $index + 1"
-                    [class.text-neutral]="currentPage() !== $index + 1"
-                    [class.hover:bg-surface-low]="currentPage() !== $index + 1">
-              {{ $index + 1 }}
-            </button>
+
+          @for (label of getVisiblePages(); track $index) {
+            @if (label === '...') {
+              <span class="w-10 h-10 flex items-center justify-center text-neutral/30 font-bold text-sm select-none">...</span>
+            } @else {
+              <button (click)="goToPage(+label)"
+                [class]="currentPage() === +label
+                  ? 'min-w-[2.5rem] h-10 flex items-center justify-center rounded-xl font-bold text-sm transition-all duration-200 bg-gradient-to-br from-primary to-primary-focus text-white shadow-lg shadow-primary/20'
+                  : 'min-w-[2.5rem] h-10 flex items-center justify-center rounded-xl font-bold text-sm transition-all duration-200 text-neutral/60 hover:text-neutral hover:bg-surface-low'">
+                {{ label }}
+              </button>
+            }
           }
 
-          <button (click)="goToPage(currentPage() + 1)"
-                  [disabled]="currentPage() === totalPages()"
-                  class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-low text-neutral/50 hover:bg-neutral/10 transition-colors disabled:opacity-30 disabled:hover:bg-surface-low">
-            <lucide-icon [img]="GiftIcon" size="16"></lucide-icon>
+          <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-lowest text-neutral/30 hover:text-neutral hover:bg-surface-low transition-colors disabled:opacity-20 disabled:cursor-not-allowed shadow-ambient">
+            <lucide-icon [img]="ChevronRightIcon" size="18"></lucide-icon>
           </button>
         </div>
       }
@@ -201,8 +208,10 @@
     }
   </main>
 
-  <!-- Bottom Nav -->
-  <app-bottom-nav [items]="navItems" />
+  <!-- Bottom Nav (mobile only) -->
+  <div class="md:hidden">
+    <app-bottom-nav [items]="navItems" />
+  </div>
 
   <!-- Simple Atmospheric Decoration -->
   <div class="fixed top-0 right-0 -z-10 w-1/2 h-1/2 bg-gradient-to-bl from-primary/5 to-transparent blur-3xl opacity-50 pointer-events-none"></div>

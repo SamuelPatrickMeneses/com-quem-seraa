@@ -512,8 +512,9 @@ describe('GroupDashboardComponent (exibição)', () => {
     await setup({ isOrganizer: false, hasBeenDrawn: true, currentUserId: 'user-beto' });
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('Seu amigo secreto é');
-    expect(el.textContent).not.toContain('Caio');
+    expect(el.textContent).toContain('????');
     expect(el.textContent).toContain('REVELAR');
+    expect(el.textContent).not.toContain('OCULTAR');
   });
 
   it('should show receiver name after reveal', async () => {
@@ -533,8 +534,9 @@ describe('GroupDashboardComponent (exibição)', () => {
     component.toggleRevelation();
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).not.toContain('Caio');
+    expect(el.textContent).toContain('????');
     expect(el.textContent).toContain('REVELAR');
+    expect(el.textContent).not.toContain('OCULTAR');
   });
 
   it('should hide name for organizer who is also participant when drawn', async () => {

@@ -285,7 +285,11 @@ describe('MyGroupsComponent (erro)', () => {
     const loadGroupsSpy = spyOn(component, 'loadGroups').and.callThrough();
     fixture.detectChanges();
 
-    const retryButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const buttons = fixture.nativeElement.querySelectorAll('button');
+    const retryButton = Array.from(buttons).find((b) =>
+      (b as HTMLButtonElement).textContent?.includes('TENTAR NOVAMENTE')
+    ) as HTMLButtonElement;
+    expect(retryButton).toBeTruthy();
     retryButton.click();
 
     expect(loadGroupsSpy).toHaveBeenCalled();

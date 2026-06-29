@@ -10,17 +10,22 @@ describe('SessionAuthStore', () => {
   });
 
   it('should restore token and model from localStorage on init', () => {
+    // Gera um JWT válido com exp futuro, pois BaseAuthStore.parseJWT verifica exp
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(JSON.stringify({ exp: 9999999999 }));
+    const validToken = `${header}.${payload}.fake-signature`;
+
     localStorage.setItem(
       PB_AUTH_STORAGE_KEY,
       JSON.stringify({
-        token: 'stored-token',
+        token: validToken,
         model: { id: 'user-1', name: 'Ana', collectionId: 'users', collectionName: 'users' },
       }),
     );
 
     const store = new SessionAuthStore();
 
-    expect(store.token).toBe('stored-token');
+    expect(store.token).toBe(validToken);
     expect(store.model?.id).toBe('user-1');
     expect(store.isValid).toBeTrue();
   });

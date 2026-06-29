@@ -76,6 +76,11 @@ describe('ProfileComponent', () => {
 
   it('should call auth.logout when logout button is clicked', async () => {
     const { fixture } = await setup();
+    const component = fixture.componentInstance;
+    component.activeTab.set('security');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    
     const authService = TestBed.inject(AuthService) as any;
     const logoutBtn = fixture.nativeElement.querySelector('button[aria-label="Sair da Conta"]') as HTMLButtonElement | null;
     expect(logoutBtn).toBeTruthy();

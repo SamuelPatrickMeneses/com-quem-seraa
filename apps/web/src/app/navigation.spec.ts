@@ -89,7 +89,7 @@ describe('AppNavigation (integração)', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/my-groups');
     const router = TestBed.inject(Router);
-    expect(router.url).toBe('/login');
+    expect(router.url).toBe('/login?returnUrl=%2Fmy-groups');
   });
 
   it('"/login" renders LoginComponent for guest', async () => {
@@ -197,7 +197,7 @@ describe('AppNavigation (integração)', () => {
     expect(router.url).toBe('/login');
 
     await router.navigateByUrl('/my-groups');
-    expect(router.url).toBe('/login');
+    expect(router.url).toBe('/login?returnUrl=%2Fmy-groups');
   });
 
   it('"/join" without code shows error message', async () => {
@@ -255,7 +255,7 @@ describe('AppNavigation (guards)', () => {
       const router = TestBed.inject(Router);
       router.navigate(['/my-groups']);
       tick();
-      expect(router.url).toBe('/login');
+      expect(router.url).toBe('/login?returnUrl=%2Fmy-groups');
     }));
 
     it('allows authenticated access to protected routes', fakeAsync(() => {

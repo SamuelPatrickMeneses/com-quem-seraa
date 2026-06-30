@@ -8,7 +8,7 @@ import { setViewport, resetViewport, BREAKPOINTS } from '../../testing/responsiv
 @Component({ standalone: true, template: '' })
 class MockShellComponent {}
 
-async function setup(user: any = { name: 'Ana', email: 'ana@test.com' }) {
+async function setup(user: any = { name: 'Ana', email: 'ana@test.com', bio: 'Loves books' }) {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     imports: [ProfileComponent],
@@ -23,6 +23,13 @@ async function setup(user: any = { name: 'Ana', email: 'ana@test.com' }) {
         provide: AuthService,
         useValue: {
           user,
+          pocketBase: {
+            files: {
+              getUrl: jasmine.createSpy('getUrl').and.returnValue('https://cdn.example.com/avatar.png'),
+            },
+          },
+          updateAvatar: jasmine.createSpy('updateAvatar').and.resolveTo({ id: 'user-1' }),
+          updateProfile: jasmine.createSpy('updateProfile').and.resolveTo({ id: 'user-1' }),
           logout: jasmine.createSpy('logout'),
         },
       },
@@ -48,6 +55,19 @@ describe('ProfileComponent', () => {
     expect(text).toContain('ana@test.com');
   });
 
+  it('should render the avatar edit button', async () => {
+    const { fixture } = await setup({ name: 'Ana Silva', email: 'ana@test.com', avatar: 'avatars/avatar.png' });
+    const button = fixture.nativeElement.querySelector('[aria-label="Editar avatar"]');
+    expect(button).toBeTruthy();
+  });
+
+  it('should bind bio in the profile form', async () => {
+    const { fixture } = await setup({ name: 'Ana Silva', email: 'ana@test.com', bio: 'Gosta de café' });
+    const textarea = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    expect(textarea).toBeTruthy();
+    expect(textarea.value).toBe('Gosta de café');
+  });
+
   it('should have bottom nav with profile active', async () => {
     const { fixture } = await setup();
     const nav = fixture.nativeElement.querySelector('app-bottom-nav');
@@ -56,11 +76,16 @@ describe('ProfileComponent', () => {
 
   it('should call auth.logout when logout button is clicked', async () => {
     const { fixture } = await setup();
+    const component = fixture.componentInstance;
+    component.activeTab.set('security');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    
     const authService = TestBed.inject(AuthService) as any;
-    const logoutBtn = fixture.nativeElement.querySelector('.btn.btn-error') as HTMLButtonElement;
+    const logoutBtn = fixture.nativeElement.querySelector('button[aria-label="Sair da Conta"]') as HTMLButtonElement | null;
     expect(logoutBtn).toBeTruthy();
-    expect(logoutBtn.textContent).toContain('Encerrar Sessão');
-    logoutBtn.click();
+    expect(logoutBtn!.textContent).toContain('Sair da Conta');
+    logoutBtn!.click();
     expect(authService.logout).toHaveBeenCalled();
   });
 });
@@ -76,7 +101,7 @@ describe('ProfileComponent (responsivo)', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const avatar = fixture.nativeElement.querySelector('[class*="rounded-\\[2rem\\]"]') as HTMLElement;
+    const avatar = fixture.nativeElement.querySelector('[class*="bg-gradient-to-br"][class*="from-stone-300"]') as HTMLElement;
     expect(avatar).toBeTruthy();
     expect(avatar.scrollWidth).toBeLessThanOrEqual(avatar.clientWidth + 1);
     expect(avatar.scrollHeight).toBeLessThanOrEqual(avatar.clientHeight + 1);
@@ -88,7 +113,7 @@ describe('ProfileComponent (responsivo)', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const avatar = fixture.nativeElement.querySelector('[class*="rounded-\\[2rem\\]"]') as HTMLElement;
+    const avatar = fixture.nativeElement.querySelector('[class*="bg-gradient-to-br"][class*="from-stone-300"]') as HTMLElement;
     expect(avatar).toBeTruthy();
     expect(avatar.scrollWidth).toBeLessThanOrEqual(avatar.clientWidth + 1);
   });
@@ -111,5 +136,42 @@ describe('ProfileComponent (responsivo)', () => {
       expect(nav).withContext(`at ${vp.w}x${vp.h}`).toBeTruthy();
       resetViewport();
     }
+  });
+
+  it('should keep avatar request pending until save is clicked', async () => {
+    const { fixture } = await setup({ id: 'user-1', name: 'Ana Silva', email: 'ana@test.com' });
+    const component = fixture.componentInstance;
+    const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+    const input = document.createElement('input');
+
+    Object.defineProperty(input, 'files', {
+      value: [file],
+    });
+
+    await component.onAvatarSelected({ target: input } as unknown as Event);
+
+    const authService = TestBed.inject(AuthService) as unknown as { updateAvatar: jasmine.Spy };
+    expect(authService.updateAvatar).not.toHaveBeenCalled();
+    expect(component.selectedAvatarName()).toBe('avatar.png');
+  });
+
+  it('should submit the selected avatar together with profile changes', async () => {
+    const { fixture } = await setup({ id: 'user-1', name: 'Ana Silva', email: 'ana@test.com' });
+    const component = fixture.componentInstance;
+    const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+    const input = document.createElement('input');
+
+    Object.defineProperty(input, 'files', {
+      value: [file],
+    });
+
+    await component.onAvatarSelected({ target: input } as unknown as Event);
+    component.profileForm.patchValue({ name: 'Ana Silva', bio: 'Novo texto' });
+    await component.onSubmitProfile();
+
+    const authService = TestBed.inject(AuthService) as unknown as { updateAvatar: jasmine.Spy; updateProfile: jasmine.Spy };
+    expect(authService.updateProfile).toHaveBeenCalledWith('user-1', { name: 'Ana Silva', bio: 'Novo texto' });
+    expect(authService.updateAvatar).toHaveBeenCalled();
+    expect(component.selectedAvatarName()).toBeNull();
   });
 });

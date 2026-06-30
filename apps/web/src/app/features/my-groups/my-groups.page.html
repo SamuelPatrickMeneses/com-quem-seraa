@@ -1,4 +1,4 @@
-<div class="bg-surface text-neutral min-h-screen pb-24 md:pb-0">
+<div class="bg-surface text-neutral min-h-screen pb-28 md:pb-0">
   <!-- TopAppBar -->
   <nav class="fixed top-0 z-50 w-full bg-surface/80 backdrop-blur-xl shadow-ambient">
     <div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
@@ -20,12 +20,22 @@
           <div class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="flex items-center gap-3 cursor-pointer group">
               <div class="text-right">
-                <p class="text-xs font-bold font-display leading-none">{{ user()?.name?.split(' ')[0] || 'Usuário' }}</p>
-                <p class="text-[10px] text-neutral/50 uppercase tracking-widest mt-1">Organizador</p>
+                <p class="text-xs font-bold font-display leading-none">{{ firstName() }}</p>
+                <p class="text-[10px] text-neutral/50 uppercase tracking-widest mt-1">Membro</p>
               </div>
-              <div class="w-10 h-10 rounded-full bg-surface-low overflow-hidden ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all text-primary font-black flex items-center justify-center">
-                {{ user()?.name?.charAt(0) || user()?.email?.charAt(0) | uppercase }}
-              </div>
+              @let desktopAvatarUrl = avatarUrl(user());
+              @if (desktopAvatarUrl) {
+                <img
+                  [src]="desktopAvatarUrl"
+                  [alt]="'Avatar de ' + (user()?.name || user()?.email || 'usuário')"
+                  data-testid="my-groups-user-avatar"
+                  class="w-10 h-10 rounded-full bg-surface-low overflow-hidden ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all object-cover"
+                />
+              } @else {
+                <div data-testid="my-groups-user-avatar" class="w-10 h-10 rounded-full bg-surface-low overflow-hidden ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all text-primary font-black flex items-center justify-center">
+                  {{ user()?.name?.charAt(0) || user()?.email?.charAt(0) | uppercase }}
+                </div>
+              }
             </div>
             <ul tabindex="0" class="mt-4 z-[1] p-3 shadow-ambient menu menu-sm dropdown-content bg-white/90 backdrop-blur-xl rounded-[1.5rem] w-64 border border-neutral/5">
               <li class="px-4 py-3">
@@ -46,7 +56,17 @@
         @if (user()) {
           <a routerLink="/profile"
              class="w-9 h-9 rounded-full bg-surface-low overflow-hidden ring-2 ring-primary/10 text-primary font-black flex items-center justify-center text-sm">
-            {{ user()?.name?.charAt(0) || user()?.email?.charAt(0) | uppercase }}
+            @let mobileAvatarUrl = avatarUrl(user());
+            @if (mobileAvatarUrl) {
+              <img
+                [src]="mobileAvatarUrl"
+                [alt]="'Avatar de ' + (user()?.name || user()?.email || 'usuário')"
+                data-testid="my-groups-mobile-avatar"
+                class="w-full h-full object-cover"
+              />
+            } @else {
+              <span data-testid="my-groups-mobile-avatar">{{ user()?.name?.charAt(0) || user()?.email?.charAt(0) | uppercase }}</span>
+            }
           </a>
         }
       </div>
@@ -58,17 +78,32 @@
     <header class="mb-12">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
+          <div class="flex items-center gap-3 mb-3">
+            <p class="text-sm font-bold uppercase tracking-widest text-primary/70">Olá, {{ firstName() }}</p>
+            <span class="bg-surface-lowest text-neutral/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-ambient flex items-center gap-1.5">
+              <lucide-icon [img]="CalendarIcon" size="12"></lucide-icon>
+              Temporada 2024
+            </span>
+          </div>
           <h1 class="font-display font-extrabold text-4xl md:text-5xl text-neutral tracking-tight mb-2">Seus Grupos</h1>
           <p class="text-neutral/50 text-lg font-light leading-relaxed max-w-2xl">
             Gerencie seus sorteios de fim de ano e acompanhe a entrega dos presentes com seus amigos e familiares.
           </p>
         </div>
-        <div class="flex gap-2">
-          <div class="bg-surface-low px-4 py-2 rounded-xl flex items-center gap-2 border border-neutral/5">
-            <lucide-icon [img]="GiftIcon" size="16" class="text-primary"></lucide-icon>
-            <span class="text-xs font-bold uppercase tracking-tighter">Temporada 2023</span>
-          </div>
-        </div>
+        <form (submit)="joinByCode(joinCodeInput.value, $event)" class="flex gap-2">
+          <input
+            #joinCodeInput
+            type="text"
+            placeholder="Código do grupo"
+            class="bg-surface-lowest px-4 py-2 rounded-xl border border-neutral/10 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none text-sm font-bold w-40 md:w-48 transition-all placeholder:font-medium placeholder:text-neutral/40"
+          >
+          <button
+            type="submit"
+            class="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-xl font-bold text-sm transition-colors active:scale-95"
+          >
+            Entrar
+          </button>
+        </form>
       </div>
     </header>
 
@@ -112,7 +147,8 @@
           />
         }
 
-        <!-- Add New Group Card -->
+        <!-- Add New Group Card (last page only) -->
+        @if (currentPage() === totalPages()) {
         <a routerLink="/create" class="group bg-surface-low/50 border-2 border-dashed border-neutral/10 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center transition-all hover:bg-surface-low hover:border-primary/30 min-h-[300px]">
           <div class="w-16 h-16 rounded-full bg-surface-lowest flex items-center justify-center mb-4 shadow-ambient group-hover:scale-110 transition-transform">
             <lucide-icon [img]="PlusIcon" size="32" class="text-primary"></lucide-icon>
@@ -121,33 +157,33 @@
           <p class="text-neutral/50 text-xs max-w-[180px] leading-relaxed mb-6">Inicie uma nova tradição e convide seus amigos hoje mesmo.</p>
           <span class="text-primary text-xs font-extrabold uppercase tracking-widest group-hover:underline">Começar Agora</span>
         </a>
+        }
       </div>
 
       <!-- Pagination -->
       @if (totalPages() > 1) {
-        <div class="mt-16 flex items-center justify-center gap-2">
-          <button (click)="goToPage(currentPage() - 1)"
-                  [disabled]="currentPage() === 1"
-                  class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-low text-neutral/50 hover:bg-neutral/10 transition-colors disabled:opacity-30 disabled:hover:bg-surface-low">
-            <lucide-icon [img]="GiftIcon" size="16" class="rotate-180"></lucide-icon>
+        <div class="mt-16 flex items-center justify-center gap-1.5">
+          <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-lowest text-neutral/30 hover:text-neutral hover:bg-surface-low transition-colors disabled:opacity-20 disabled:cursor-not-allowed shadow-ambient">
+            <lucide-icon [img]="ChevronLeftIcon" size="18"></lucide-icon>
           </button>
-          
-          @for (page of [].constructor(totalPages()); track $index) {
-            <button (click)="goToPage($index + 1)"
-                    class="w-10 h-10 flex items-center justify-center rounded-xl font-bold text-xs transition-colors"
-                    [class.bg-primary]="currentPage() === $index + 1"
-                    [class.text-white]="currentPage() === $index + 1"
-                    [class.bg-surface-lowest]="currentPage() !== $index + 1"
-                    [class.text-neutral]="currentPage() !== $index + 1"
-                    [class.hover:bg-surface-low]="currentPage() !== $index + 1">
-              {{ $index + 1 }}
-            </button>
+
+          @for (label of getVisiblePages(); track $index) {
+            @if (label === '...') {
+              <span class="w-10 h-10 flex items-center justify-center text-neutral/30 font-bold text-sm select-none">...</span>
+            } @else {
+              <button (click)="goToPage(+label)"
+                [class]="currentPage() === +label
+                  ? 'min-w-[2.5rem] h-10 flex items-center justify-center rounded-xl font-bold text-sm transition-all duration-200 bg-gradient-to-br from-primary to-primary-focus text-white shadow-lg shadow-primary/20'
+                  : 'min-w-[2.5rem] h-10 flex items-center justify-center rounded-xl font-bold text-sm transition-all duration-200 text-neutral/60 hover:text-neutral hover:bg-surface-low'">
+                {{ label }}
+              </button>
+            }
           }
 
-          <button (click)="goToPage(currentPage() + 1)"
-                  [disabled]="currentPage() === totalPages()"
-                  class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-low text-neutral/50 hover:bg-neutral/10 transition-colors disabled:opacity-30 disabled:hover:bg-surface-low">
-            <lucide-icon [img]="GiftIcon" size="16"></lucide-icon>
+          <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-lowest text-neutral/30 hover:text-neutral hover:bg-surface-low transition-colors disabled:opacity-20 disabled:cursor-not-allowed shadow-ambient">
+            <lucide-icon [img]="ChevronRightIcon" size="18"></lucide-icon>
           </button>
         </div>
       }
@@ -172,8 +208,10 @@
     }
   </main>
 
-  <!-- Bottom Nav -->
-  <app-bottom-nav [items]="navItems" />
+  <!-- Bottom Nav (mobile only) -->
+  <div class="md:hidden">
+    <app-bottom-nav [items]="navItems" />
+  </div>
 
   <!-- Simple Atmospheric Decoration -->
   <div class="fixed top-0 right-0 -z-10 w-1/2 h-1/2 bg-gradient-to-bl from-primary/5 to-transparent blur-3xl opacity-50 pointer-events-none"></div>

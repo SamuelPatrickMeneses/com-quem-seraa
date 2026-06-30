@@ -102,18 +102,19 @@ describe('GroupDashboardComponent (integração)', () => {
     expect(el.textContent).toContain('Participantes (');
   });
 
-  it('should hide participant list for non-organizer (beto)', async () => {
+  it('should show participant list for non-organizer (beto)', async () => {
     await auth.login('beto@exemplo.com', '1234567890');
     await createComponent();
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).not.toContain('Participantes (');
+    expect(el.textContent).toContain('Participantes (');
   });
 
-  it('should show participant count for non-organizer (beto)', async () => {
+  it('should not show remove buttons for non-organizer (beto)', async () => {
     await auth.login('beto@exemplo.com', '1234567890');
     await createComponent();
-    const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).toContain('participantes no grupo');
+    const participantList = fixture.nativeElement.querySelector('.divide-y');
+    const removeButtons = participantList?.querySelectorAll('button lucide-icon') ?? [];
+    expect(removeButtons.length).toBe(0);
   });
 });
 
@@ -233,7 +234,7 @@ describe('GroupDashboardComponent (exibição)', () => {
           group_id: 'grupo-1',
           joined_at: new Date().toISOString(),
           expand: {
-            giver_id: { id: 'user-ana', name: 'Ana', email: 'ana@exemplo.com' },
+            giver_id: { id: 'user-ana', name: 'Ana', email: 'ana@exemplo.com', avatar: 'avatars/ana.png', bio: 'Bio da Ana' },
             receiver_id: drawn ? { id: 'user-beto', name: 'Beto', email: 'beto@exemplo.com' } : undefined,
           },
         },
@@ -246,7 +247,7 @@ describe('GroupDashboardComponent (exibição)', () => {
           group_id: 'grupo-1',
           joined_at: new Date().toISOString(),
           expand: {
-            giver_id: { id: 'user-beto', name: 'Beto', email: 'beto@exemplo.com' },
+            giver_id: { id: 'user-beto', name: 'Beto', email: 'beto@exemplo.com', avatar: 'avatars/beto.png', bio: 'Bio do Beto' },
             receiver_id: drawn ? { id: 'user-caio', name: 'Caio', email: 'caio@exemplo.com' } : undefined,
           },
         },
@@ -259,7 +260,7 @@ describe('GroupDashboardComponent (exibição)', () => {
           group_id: 'grupo-1',
           joined_at: new Date().toISOString(),
           expand: {
-            giver_id: { id: 'user-caio', name: 'Caio', email: 'caio@exemplo.com' },
+            giver_id: { id: 'user-caio', name: 'Caio', email: 'caio@exemplo.com', avatar: 'avatars/caio.png', bio: 'Bio do Caio' },
             receiver_id: drawn ? { id: 'user-ana', name: 'Ana', email: 'ana@exemplo.com' } : undefined,
           },
         },
@@ -273,7 +274,12 @@ describe('GroupDashboardComponent (exibição)', () => {
     mockDrawService.performDraw.and.resolveTo();
 
     const mockAuthService = jasmine.createSpyObj('AuthService', [], {
-      user: { id: uid, name: 'Ana', email: 'ana@exemplo.com' },
+      user: { id: uid, name: 'Ana', email: 'ana@exemplo.com', avatar: 'avatars/ana.png' },
+      pocketBase: {
+        files: {
+          getUrl: jasmine.createSpy('getUrl').and.returnValue('https://cdn.example.com/avatar.png'),
+        },
+      },
     });
 
     return { mockGroupService, mockParticipantService, mockDrawService, mockAuthService };
@@ -324,14 +330,161 @@ describe('GroupDashboardComponent (exibição)', () => {
     expect(el.textContent).toContain('Caio');
   });
 
-  it('should hide participant list for non-organizer', async () => {
+  it('should render participant avatars when available', async () => {
+    await setup();
+    const avatar = fixture.nativeElement.querySelector('[data-testid="participant-row-p1"] img');
+    expect(avatar).toBeTruthy();
+  });
+
+  it('should resolve participant profile from expand data', async () => {
+    await setup();
+    const participant = component.participants()[0];
+    const user = component.participantUser(participant);
+    expect(user?.name).toBe('Ana');
+    expect(user?.bio).toBe('Bio da Ana');
+    expect(user?.avatar).toBe('avatars/ana.png');
+  });
+
+  it('should fallback to giver_name when expand is missing', async () => {
+    await setup();
+    component.participants.set([
+      {
+        id: 'p-fallback',
+        giver_id: 'user-x',
+        giver_name: 'Fallback Name',
+        receiver_id: null,
+        receiver_name: null,
+        group_id: 'grupo-1',
+        joined_at: new Date().toISOString(),
+      },
+    ]);
+    const user = component.participantUser(component.participants()[0]);
+    expect(user?.name).toBe('Fallback Name');
+    expect(user?.bio).toBeUndefined();
+  });
+
+  it('should show selected participant bio when clicked', async () => {
+    await setup();
+    const participantButton = fixture.nativeElement.querySelector('[data-testid="participant-row-p1"]') as HTMLButtonElement;
+    participantButton.click();
+    fixture.detectChanges();
+
+    const panel = fixture.nativeElement.querySelector('[data-testid="participant-bio-panel"]') as HTMLElement;
+    expect(panel).toBeTruthy();
+    expect(panel.textContent).toContain('Detalhes do membro');
+    expect(panel.textContent).toContain('Bio da Ana');
+  });
+
+  it('should close participant bio when Fechar is clicked', async () => {
+    await setup();
+    const participantButton = fixture.nativeElement.querySelector('[data-testid="participant-row-p1"]') as HTMLButtonElement;
+    participantButton.click();
+    fixture.detectChanges();
+
+    const closeButton = fixture.nativeElement.querySelector('[data-testid="participant-bio-close"]') as HTMLButtonElement;
+    closeButton.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="participant-bio-panel"]')).toBeNull();
+  });
+
+  it('should toggle participant bio off when clicking the same member again', async () => {
+    await setup();
+    const participantButton = fixture.nativeElement.querySelector('[data-testid="participant-row-p1"]') as HTMLButtonElement;
+    participantButton.click();
+    fixture.detectChanges();
+    participantButton.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="participant-bio-panel"]')).toBeNull();
+  });
+
+  it('should show fallback initials when participant has no avatar', async () => {
+    await setup();
+    const mockParticipantService = TestBed.inject(ParticipantService) as jasmine.SpyObj<ParticipantService>;
+    mockParticipantService.getParticipants.and.resolveTo({
+      items: [
+        {
+          id: 'p-no-avatar',
+          giver_id: 'user-sem-avatar',
+          giver_name: 'Diana',
+          receiver_id: null,
+          receiver_name: null,
+          group_id: 'grupo-1',
+          joined_at: new Date().toISOString(),
+          expand: {
+            giver_id: { id: 'user-sem-avatar', name: 'Diana', email: 'diana@exemplo.com', bio: 'Bio da Diana' },
+          },
+        },
+      ],
+      total: 1,
+    } as any);
+
+    await component.loadData();
+    fixture.detectChanges();
+
+    const row = fixture.nativeElement.querySelector('[data-testid="participant-row-p-no-avatar"]') as HTMLElement;
+    expect(row.textContent).toContain('D');
+    expect(row.querySelector('img')).toBeNull();
+  });
+
+  it('should show empty bio message when participant has no bio', async () => {
+    await setup();
+    const mockParticipantService = TestBed.inject(ParticipantService) as jasmine.SpyObj<ParticipantService>;
+    mockParticipantService.getParticipants.and.resolveTo({
+      items: [
+        {
+          id: 'p-sem-bio',
+          giver_id: 'user-sem-bio',
+          giver_name: 'Edu',
+          receiver_id: null,
+          receiver_name: null,
+          group_id: 'grupo-1',
+          joined_at: new Date().toISOString(),
+          expand: {
+            giver_id: { id: 'user-sem-bio', name: 'Edu', email: 'edu@exemplo.com' },
+          },
+        },
+      ],
+      total: 1,
+    } as any);
+
+    await component.loadData();
+    fixture.detectChanges();
+
+    const participantButton = fixture.nativeElement.querySelector('[data-testid="participant-row-p-sem-bio"]') as HTMLButtonElement;
+    participantButton.click();
+    fixture.detectChanges();
+
+    const bioText = fixture.nativeElement.querySelector('[data-testid="participant-bio-text"]') as HTMLElement;
+    expect(bioText.textContent).toContain('Esse membro ainda não informou uma bio.');
+  });
+
+  it('should allow non-organizer to open participant bio', async () => {
+    await setup({ isOrganizer: false, currentUserId: 'user-beto' });
+    const participantButton = fixture.nativeElement.querySelector('[data-testid="participant-row-p1"]') as HTMLButtonElement;
+    participantButton.click();
+    fixture.detectChanges();
+
+    const panel = fixture.nativeElement.querySelector('[data-testid="participant-bio-panel"]') as HTMLElement;
+    expect(panel).toBeTruthy();
+    expect(panel.textContent).toContain('Bio da Ana');
+  });
+
+  it('should show participant list for non-organizer', async () => {
     await setup({ isOrganizer: false, currentUserId: 'user-beto' });
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).not.toContain('Participantes (');
-    expect(el.textContent).not.toContain('Ana');
-    expect(el.textContent).not.toContain('Beto');
-    expect(el.textContent).not.toContain('Caio');
-    expect(el.textContent).toContain('3 participantes no grupo');
+    expect(el.textContent).toContain('Participantes (');
+    expect(el.textContent).toContain('Toque em um membro para ver a bio');
+    expect(el.textContent).toContain('Ana');
+    expect(el.textContent).toContain('Beto');
+    expect(el.textContent).toContain('Caio');
+  });
+
+  it('should show bio preview in participant list when available', async () => {
+    await setup();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Bio da Ana');
   });
 
   it('should show organizer badge for creator', async () => {
@@ -359,8 +512,9 @@ describe('GroupDashboardComponent (exibição)', () => {
     await setup({ isOrganizer: false, hasBeenDrawn: true, currentUserId: 'user-beto' });
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('Seu amigo secreto é');
-    expect(el.textContent).not.toContain('Caio');
+    expect(el.textContent).toContain('????');
     expect(el.textContent).toContain('REVELAR');
+    expect(el.textContent).not.toContain('OCULTAR');
   });
 
   it('should show receiver name after reveal', async () => {
@@ -380,8 +534,9 @@ describe('GroupDashboardComponent (exibição)', () => {
     component.toggleRevelation();
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).not.toContain('Caio');
+    expect(el.textContent).toContain('????');
     expect(el.textContent).toContain('REVELAR');
+    expect(el.textContent).not.toContain('OCULTAR');
   });
 
   it('should hide name for organizer who is also participant when drawn', async () => {
@@ -654,7 +809,7 @@ describe('GroupDashboardComponent (exibição)', () => {
     await component.copyInviteLink();
 
     expect(mockWriteText).toHaveBeenCalledWith(component.inviteUrl());
-    expect(component.copied()).toBe(true);
+    expect(component.copiedLink()).toBe(true);
   });
 
   it('should reset copied state after timeout', async () => {
@@ -667,12 +822,26 @@ describe('GroupDashboardComponent (exibição)', () => {
     jasmine.clock().install();
 
     await component.copyInviteLink();
-    expect(component.copied()).toBe(true);
+    expect(component.copiedLink()).toBe(true);
 
     jasmine.clock().tick(2001);
-    expect(component.copied()).toBe(false);
+    expect(component.copiedLink()).toBe(false);
 
     jasmine.clock().uninstall();
+  });
+
+  it('should copy invite code to clipboard', async () => {
+    await setup();
+    const mockWriteText = jasmine.createSpy('writeText').and.resolveTo();
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: mockWriteText },
+      configurable: true,
+    });
+
+    await component.copyInviteCode();
+
+    expect(mockWriteText).toHaveBeenCalledWith(component.groupId);
+    expect(component.copiedCode()).toBe(true);
   });
 });
 

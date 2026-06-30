@@ -69,7 +69,7 @@ describe('MyGroupsComponent (integração)', () => {
     await createComponent();
 
     const cards = fixture.nativeElement.querySelectorAll('app-group-card');
-    expect(cards.length).toBe(2);
+    expect(cards.length).toBe(6);
     expect(fixture.nativeElement.textContent).toContain('Amigo Secreto 2024');
     expect(fixture.nativeElement.textContent).not.toContain('Nenhum grupo ainda');
   });
@@ -109,6 +109,18 @@ describe('MyGroupsComponent (responsivo)', () => {
       providers: [
         provideRouter(routes),
         { provide: POCKETBASE_URL, useValue: POCKETBASE_DIRECT_URL },
+        {
+          provide: AuthService,
+          useValue: {
+            user: { id: 'user-1', name: 'Ana Silva', email: 'ana@exemplo.com', avatar: 'avatars/ana.png' },
+            logout: jasmine.createSpy('logout'),
+            pocketBase: {
+              files: {
+                getUrl: jasmine.createSpy('getUrl').and.returnValue('https://cdn.example.com/avatars/ana.png'),
+              },
+            },
+          },
+        },
         {
           provide: GroupService,
           useValue: {
@@ -154,6 +166,16 @@ describe('MyGroupsComponent (responsivo)', () => {
     expect(heading?.className).toContain('md:text-5xl');
   });
 
+  it('should greet the logged user by first name', () => {
+    expect(fixture.nativeElement.textContent).toContain('Olá, Ana');
+  });
+
+  it('should render the current user avatar when available', () => {
+    const avatar = fixture.nativeElement.querySelector('[data-testid="my-groups-user-avatar"]') as HTMLElement;
+    expect(avatar).toBeTruthy();
+    expect(avatar.tagName.toLowerCase()).toBe('img');
+  });
+
   it('should have grid with responsive column classes', () => {
     const grid = fixture.nativeElement.querySelector('[class*="grid-cols-1"]');
     expect(grid?.className).toContain('grid-cols-1');
@@ -173,6 +195,53 @@ describe('MyGroupsComponent (responsivo)', () => {
     fixture.detectChanges();
     const root = fixture.nativeElement.firstElementChild as HTMLElement;
     expect(root.scrollWidth).toBeLessThanOrEqual(root.clientWidth + 1);
+  });
+});
+
+describe('MyGroupsComponent (avatar fallback)', () => {
+  let fixture: ComponentFixture<MyGroupsComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [MyGroupsComponent],
+      providers: [
+        provideRouter(routes),
+        { provide: POCKETBASE_URL, useValue: POCKETBASE_DIRECT_URL },
+        {
+          provide: AuthService,
+          useValue: {
+            user: { id: 'user-1', name: 'Ana Silva', email: 'ana@exemplo.com' },
+            logout: jasmine.createSpy('logout'),
+            pocketBase: {
+              files: {
+                getUrl: jasmine.createSpy('getUrl'),
+              },
+            },
+          },
+        },
+        {
+          provide: GroupService,
+          useValue: {
+            getMyGroups: () => Promise.resolve({
+              items: [{ id: '1', name: 'Teste', description: '', created_by: 'user1', created_at: new Date().toISOString(), has_been_drawn: false, participants_count: 2 }],
+              total: 1,
+            }),
+          } as any,
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(MyGroupsComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  });
+
+  it('should render initials when user has no avatar', () => {
+    const avatar = fixture.nativeElement.querySelector('[data-testid="my-groups-user-avatar"]') as HTMLElement;
+    expect(avatar).toBeTruthy();
+    expect(avatar.tagName.toLowerCase()).toBe('div');
+    expect(avatar.textContent?.trim()).toBe('A');
   });
 });
 
@@ -216,7 +285,11 @@ describe('MyGroupsComponent (erro)', () => {
     const loadGroupsSpy = spyOn(component, 'loadGroups').and.callThrough();
     fixture.detectChanges();
 
-    const retryButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const buttons = fixture.nativeElement.querySelectorAll('button');
+    const retryButton = Array.from(buttons).find((b) =>
+      (b as HTMLButtonElement).textContent?.includes('TENTAR NOVAMENTE')
+    ) as HTMLButtonElement;
+    expect(retryButton).toBeTruthy();
     retryButton.click();
 
     expect(loadGroupsSpy).toHaveBeenCalled();
@@ -272,13 +345,13 @@ describe('MyGroupsComponent (comportamento)', () => {
   });
 
   it('should show pagination when totalPages > 1', () => {
-    expect(component.totalPages()).toBe(2);
+    expect(component.totalPages()).toBe(3);
     const paginationDiv = fixture.nativeElement.querySelector('[class*="mt-16"]');
     expect(paginationDiv).toBeTruthy();
   });
 
-  it('should show 15 group cards', () => {
-    expect(fixture.nativeElement.querySelectorAll('app-group-card').length).toBe(15);
+  it('should show 6 group cards on page 1 (paginated)', () => {
+    expect(fixture.nativeElement.querySelectorAll('app-group-card').length).toBe(6);
   });
 
   it('should update currentPage when goToPage is called', () => {

@@ -138,10 +138,10 @@ describe('GroupService', () => {
 
       const result = await service.getMyGroups();
 
-      expect(mockCollection.getList).toHaveBeenCalledWith(1, 50, {
+      expect(mockCollection.getList).toHaveBeenCalledWith(1, 200, {
         filter: 'created_by = "user-1"',
       });
-      expect(mockParticipantCollection.getList).toHaveBeenCalledWith(1, 50, {
+      expect(mockParticipantCollection.getList).toHaveBeenCalledWith(1, 200, {
         filter: 'giver_id = "user-1"',
         expand: 'group_id',
       });

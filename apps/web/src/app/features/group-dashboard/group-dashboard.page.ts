@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed, Input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 import { BottomNavComponent, NavItem } from '../../shared/components/bottom-nav/bottom-nav.component';
 import { GroupService } from '../../core/services/group.service';
@@ -10,7 +10,7 @@ import { DrawService } from '../../core/services/draw.service';
 import type { Group } from '../../core/models/group.model';
 import type { GroupParticipant } from '../../core/models/group-participant.model';
 import type { User } from '../../core/models/user.model';
-import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User as UserIcon, ShieldCheck, Sparkles, ArrowRight, Copy, LogOut, Trash2, UserPlus, Eye, EyeOff } from 'lucide-angular';
+import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User as UserIcon, ShieldCheck, Sparkles, ArrowRight, Copy, LogOut, Trash2, UserPlus, Eye, EyeOff, AlertCircle, Calendar, Check } from 'lucide-angular';
 
 @Component({
   selector: 'app-group-dashboard',
@@ -37,6 +37,9 @@ export class GroupDashboardComponent implements OnInit {
   readonly UserPlusIcon = UserPlus;
   readonly EyeIcon = Eye;
   readonly EyeOffIcon = EyeOff;
+  readonly AlertCircleIcon = AlertCircle;
+  readonly CalendarIcon = Calendar;
+  readonly CheckIcon = Check;
 
   readonly navItems: NavItem[] = [
     { label: 'Grupos', icon: Users, route: '/my-groups' },
@@ -50,9 +53,11 @@ export class GroupDashboardComponent implements OnInit {
   isLoading = signal(true);
   error = signal<string | null>(null);
   authUser = signal<User | null>(null);
-  copied = signal(false);
+  copiedLink = signal(false);
+  copiedCode = signal(false);
   isDrawLoading = signal(false);
   isActionLoading = signal(false);
+  selectedParticipant = signal<User | null>(null);
   showConfirmModal = signal(false);
   confirmModalTitle = signal('');
   confirmModalMessage = signal('');
@@ -102,9 +107,78 @@ export class GroupDashboardComponent implements OnInit {
     this.loadData();
   }
 
+  participantAvatarUrl(user?: User | null): string | null {
+    if (!user?.avatar) {
+      return null;
+    }
+
+    return this.authService.pocketBase.files.getUrl(user, user.avatar);
+  }
+
+  participantUser(participant: GroupParticipant): User | null {
+    const expanded = participant.expand?.giver_id;
+    if (expanded) {
+      return {
+        ...expanded,
+        name: expanded.name || participant.giver_name,
+      };
+    }
+
+    if (!participant.giver_id) {
+      return null;
+    }
+
+    return {
+      id: participant.giver_id,
+      name: participant.giver_name,
+      email: '',
+      emailVisibility: false,
+      verified: false,
+      created: '',
+      updated: '',
+    };
+  }
+
+  participantInitial(name?: string | null): string {
+    return (name?.trim()?.charAt(0) || '?').toUpperCase();
+  }
+
+  participantBioPreview(participant: GroupParticipant): string | null {
+    const bio = this.participantUser(participant)?.bio?.trim();
+    return bio || null;
+  }
+
+  isParticipantSelected(participant: GroupParticipant): boolean {
+    const user = this.participantUser(participant);
+    return !!user && this.selectedParticipant()?.id === user.id;
+  }
+
+  participantRowClass(participant: GroupParticipant): Record<string, boolean> {
+    const selected = this.isParticipantSelected(participant);
+    return {
+      'bg-primary/5': selected,
+      'ring-1': selected,
+      'ring-primary/20': selected,
+    };
+  }
+
+  selectParticipant(participant: GroupParticipant) {
+    const user = this.participantUser(participant);
+    if (user && this.selectedParticipant()?.id === user.id) {
+      this.selectedParticipant.set(null);
+      return;
+    }
+    this.selectedParticipant.set(user);
+  }
+
+  clearSelectedParticipant() {
+    this.selectedParticipant.set(null);
+  }
+
   async loadData() {
     this.isLoading.set(true);
     this.error.set(null);
+    this.selectedParticipant.set(null);
     try {
       const [group, participantsResult] = await Promise.all([
         this.groupService.getById(this.groupId),
@@ -161,8 +235,18 @@ export class GroupDashboardComponent implements OnInit {
   async copyInviteLink() {
     try {
       await navigator.clipboard.writeText(this.inviteUrl());
-      this.copied.set(true);
-      setTimeout(() => this.copied.set(false), 2000);
+      this.copiedLink.set(true);
+      setTimeout(() => this.copiedLink.set(false), 2000);
+    } catch {
+      // Fallback para ambientes sem clipboard API
+    }
+  }
+
+  async copyInviteCode() {
+    try {
+      await navigator.clipboard.writeText(this.groupId);
+      this.copiedCode.set(true);
+      setTimeout(() => this.copiedCode.set(false), 2000);
     } catch {
       // Fallback para ambientes sem clipboard API
     }

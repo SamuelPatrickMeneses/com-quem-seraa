@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import PocketBase from 'pocketbase';
 import { PocketBaseClient } from '../../infrastructure/pocketbase/pocketbase.client';
+import { User, UpdateProfileDTO } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -18,15 +19,17 @@ export class AuthService {
   /**
    * Retorna os dados do usuário logado
    */
-  get user() {
-    return this.pbClient.instance.authStore.model;
+  get user(): User | null {
+    return this.pbClient.instance.authStore.model as User | null;
   }
 
   /**
    * Realiza o login com e-mail e senha
    */
   async login(email: string, pass: string) {
-    return await this.pbClient.instance.collection('users').authWithPassword(email, pass);
+    const authData = await this.pbClient.instance.collection('users').authWithPassword(email, pass);
+    this.pbClient.instance.authStore.save(authData.token, authData.record);
+    return authData;
   }
 
   /**
@@ -37,12 +40,12 @@ export class AuthService {
   }
 
   /**
-   * Realiza o registro de um novo usuário
+   * Realiza o registro de um novo usuário e autentica a sessão
    */
   async register(data: any) {
-    const user = await this.pbClient.instance.collection('users').create(data);
+    await this.pbClient.instance.collection('users').create(data);
     await this.pbClient.instance.collection('users').requestVerification(data.email);
-    return user;
+    return await this.login(data.email, data.password);
   }
 
   /**
@@ -50,5 +53,42 @@ export class AuthService {
    */
   get pocketBase(): PocketBase {
     return this.pbClient.instance;
+  }
+
+  /**
+   * Atualiza os dados de perfil (como o nome)
+   */
+  async updateProfile(userId: string, data: Pick<UpdateProfileDTO, 'name' | 'bio'>) {
+    const updatedUser = await this.pbClient.instance.collection('users').update(userId, data);
+    this.pbClient.instance.authStore.save(this.pbClient.instance.authStore.token, updatedUser);
+    return updatedUser;
+  }
+
+  /**
+   * Atualiza o avatar do usuário autenticado
+   */
+  async updateAvatar(userId: string, avatar: File) {
+    const updatedUser = await this.pbClient.instance.collection('users').update(userId, { avatar });
+    this.pbClient.instance.authStore.save(this.pbClient.instance.authStore.token, updatedUser);
+    return updatedUser;
+  }
+
+  /**
+   * Atualiza a senha
+   * O PocketBase exige re-autenticação antes de aceitar a troca de senha
+   */
+  async changePassword(userId: string, data: { oldPassword: string, password: string, passwordConfirm: string }) {
+    const email = this.user?.['email'];
+    if (!email) throw new Error('Usuário não autenticado.');
+
+    // Re-autentica com a senha atual para garantir token válido
+    await this.pbClient.instance.collection('users').authWithPassword(email, data.oldPassword);
+
+    // Atualiza a senha
+    return await this.pbClient.instance.collection('users').update(userId, {
+      oldPassword: data.oldPassword,
+      password: data.password,
+      passwordConfirm: data.passwordConfirm,
+    });
   }
 }

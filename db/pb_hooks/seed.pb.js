@@ -38,6 +38,43 @@ onBootstrap((e) => {
 
 
         const testUserEmails = ["ana@exemplo.com", "beto@exemplo.com", "caio@exemplo.com"];
+
+        const testUserBios = {
+            "ana@exemplo.com": `
+🎁 Lista de desejos
+
+📚 Livros: Romance, fantasia e desenvolvimento pessoal.
+☕ Café: Cafés especiais, canecas e acessórios.
+🕯️ Decoração: Velas aromáticas, difusores e plantinhas.
+🍫 Doces: Chocolates, cookies e caixas de bombons.
+💄 Beleza: Skincare, hidratantes e perfumes suaves.
+💌 Extras: Cartinhas, presentes personalizados e itens feitos à mão.
+`,
+
+            "beto@exemplo.com": `
+🎁 Lista de desejos
+
+🎮 Geek & Games: Jogos, controles, gift cards da Steam e mousepad.
+💻 Tecnologia: Fones Bluetooth, teclado mecânico e acessórios para PC.
+☕ Café: Cafés gourmet, canecas e garrafas térmicas.
+👕 Roupas: Camisetas geek, moletons e bonés.
+🧩 Hobby: LEGO, quebra-cabeças e jogos de tabuleiro.
+🍬 Extras: Chocolates e snacks importados.
+`,
+
+            "caio@exemplo.com": `
+🎁 Lista de desejos
+
+🎵 Música: Fones de ouvido, caixas de som e discos de vinil.
+✈️ Viagens: Mochilas, nécessaires, garrafas térmicas e almofadas de pescoço.
+📸 Fotografia: Acessórios para câmera e tripés.
+⌚ Acessórios: Carteira, relógio, óculos de sol e pulseiras.
+🏃 Esportes: Roupas esportivas, squeeze e acessórios fitness.
+🎁 Extras: Vale-presente, livros e experiências diferentes.
+            `,
+        };
+
+
         const userIds = [];
 
 
@@ -46,6 +83,7 @@ onBootstrap((e) => {
             const record = new Record(usersCollection);
             record.set("email", email);
             record.set("name", email.split("@")[0]);
+            record.set("bio", testUserBios[email] || "");
             record.set("password", "1234567890");
             record.set("verified", true);
             $app.save(record);
@@ -101,6 +139,32 @@ onBootstrap((e) => {
             $app.save(item.record);
         }
 
+        const groupNames = [
+            "Confraria do Churrasco",
+            "Amigos do Escritório",
+            "Turma da Faculdade",
+            "Clube do Livro 2024",
+            "Fim de Ano no Prédio",
+            "Amigos da Academia",
+            "Vizinhança Unida",
+            "Família Silva 2024",
+        ];
+
+        for (const name of groupNames) {
+            const g = new Record(groupsCollection);
+            g.set("name", name);
+            g.set("created_by", userIds[0]);
+            g.set("participants_count", 0);
+            $app.save(g);
+
+            const part = new Record(participantsCollection);
+            part.set("group_id", g.id);
+            part.set("giver_id", userIds[0]);
+            part.set("giver_name", userNames[0]);
+            part.set("joined_at", now);
+            $app.save(part);
+        }
+
         console.log("Seed: Sucesso na inserção dos dados de teste!");
     } catch (err) {
         console.error("Seed Erro Detalhado:", err);
@@ -122,16 +186,22 @@ if (env === "dev") {
 
             if (!groupsCollection || !participantsCollection) {
                 console.log("Seed: Coleções 'groups' ou 'group_participants' ainda não existem.");
-                return e.json(500, {message: "Coleções necessárias não encontradas."});
+                return e.json(500, { message: "Coleções necessárias não encontradas." });
             }
 
             const testUserEmails = ["ana@exemplo.com", "beto@exemplo.com", "caio@exemplo.com"];
+            const testUserBios = {
+                "ana@exemplo.com": "Organizadora e fã de presentes criativos.",
+                "beto@exemplo.com": "Curte livros, café e jogos de tabuleiro.",
+                "caio@exemplo.com": "Apaixonado por música e viagens.",
+            };
             const userIds = [];
 
             for (const email of testUserEmails) {
                 const record = new Record(usersCollection);
                 record.set("email", email);
                 record.set("name", email.split("@")[0]);
+                record.set("bio", testUserBios[email] || "");
                 record.set("password", "1234567890");
                 record.set("verified", true);
                 $app.save(record);
@@ -186,9 +256,35 @@ if (env === "dev") {
                 $app.save(item.record);
             }
 
-            return e.json(200, {message: "Seed: dados de teste recarregados com sucesso!"});
+            const groupNames = [
+                "Confraria do Churrasco",
+                "Amigos do Escritório",
+                "Turma da Faculdade",
+                "Clube do Livro 2024",
+                "Fim de Ano no Prédio",
+                "Amigos da Academia",
+                "Vizinhança Unida",
+                "Família Silva 2024",
+            ];
+
+            for (const name of groupNames) {
+                const g = new Record(groupsCollection);
+                g.set("name", name);
+                g.set("created_by", userIds[0]);
+                g.set("participants_count", 0);
+                $app.save(g);
+
+                const part = new Record(participantsCollection);
+                part.set("group_id", g.id);
+                part.set("giver_id", userIds[0]);
+                part.set("giver_name", userNames[0]);
+                part.set("joined_at", now);
+                $app.save(part);
+            }
+
+            return e.json(200, { message: "Seed: dados de teste recarregados com sucesso!" });
         } catch (err) {
-            return e.json(500, {message: "Seed: erro ao recarregar dados de teste.", error: String(err)});
+            return e.json(500, { message: "Seed: erro ao recarregar dados de teste.", error: String(err) });
         }
     });
 }

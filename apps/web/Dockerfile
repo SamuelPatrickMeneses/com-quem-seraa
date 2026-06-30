@@ -1,10 +1,10 @@
 FROM node:lts-alpine AS builder
 
-USER node
+RUN mkdir -p /app/apps/web/dist
 
 WORKDIR /app
 
-COPY --chown=node:node ../.. .
+COPY ../.. .
 
 ENV APP_ENV=prod
 CMD sh -c "npm install && if [ \"$APP_ENV\" = \"dev\" ]; then npm run dev:web:watch; else npm run dev:web:build; fi"

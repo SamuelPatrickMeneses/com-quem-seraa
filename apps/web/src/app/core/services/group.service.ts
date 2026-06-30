@@ -11,15 +11,15 @@ export class GroupService extends BaseCrudService<Group> {
     super('groups');
   }
 
-  async getMyGroups(page = 1, perPage = 50) {
+  async getMyGroups() {
     const user = this.pbClient.instance.authStore.model;
-    if (!user) return { items: [], totalPages: 0, page: 1, perPage: 50, total: 0 };
+    if (!user) return { items: [] };
 
-    const groupsCreated = this.getList(page, perPage, {
+    const groupsCreated = this.getList(1, 200, {
       filter: `created_by = "${user.id}"`,
     });
 
-    const groupsParticipating = this.pbClient.instance.collection('group_participants').getList<(Group & RecordModel)>(page, perPage, {
+    const groupsParticipating = this.pbClient.instance.collection('group_participants').getList<(Group & RecordModel)>(1, 200, {
       filter: `giver_id = "${user.id}"`,
       expand: 'group_id',
     });
@@ -43,13 +43,7 @@ export class GroupService extends BaseCrudService<Group> {
       return dateB - dateA;
     });
 
-    return {
-      items: allGroups,
-      totalPages: createdResult.totalPages,
-      page: createdResult.page,
-      perPage: createdResult.perPage,
-      total: allGroups.length
-    };
+    return { items: allGroups };
   }
 
   async getByInviteCode(code: string) {

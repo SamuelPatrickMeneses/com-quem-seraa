@@ -10,11 +10,11 @@ services:
       - prod
     volumes:
       - ./apps/web/src:/app/apps/web/src
-      - frontend-dist:/app/apps/web/dist/frontend/browser
+      # - frontend-dist:/app/apps/web/dist/frontend/browser
     environment:
       - APP_ENV=${APP_ENV:-prod}
     healthcheck:
-      test: ["CMD-SHELL", "test -f /app/apps/web/dist/frontend/browser/index.html"]
+      test: [ "CMD-SHELL", "test -f /app/apps/web/dist/frontend/browser/index.html" ]
       interval: 5s
       timeout: 5s
       retries: 12

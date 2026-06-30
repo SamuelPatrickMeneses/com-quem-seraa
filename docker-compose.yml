@@ -10,7 +10,7 @@ services:
       - prod
     volumes:
       - ./apps/web/src:/app/apps/web/src
-      - ./apps/web/dist/frontend/browser:/app/apps/web/dist/frontend/browser
+      - frontend-dist:/app/apps/web/dist/frontend/browser
     environment:
       - APP_ENV=${APP_ENV:-prod}
     healthcheck:
@@ -92,7 +92,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./apps/web/dist/frontend/browser:/usr/share/nginx/html:ro
+      - frontend-dist:/usr/share/nginx/html:ro
       - ./server/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./server/logs:/var/log/nginx
     depends_on:
@@ -108,3 +108,4 @@ networks:
     driver: bridge
 volumes:
   pocketbase_data:
+  frontend-dist:

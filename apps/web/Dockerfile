@@ -1,5 +1,7 @@
 FROM node:lts-alpine AS builder
 
+RUN mkdir -p /app/apps/web/dist
+
 WORKDIR /app
 
 COPY ../.. .

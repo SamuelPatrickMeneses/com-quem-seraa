@@ -1,13 +1,18 @@
 FROM node:lts-alpine AS builder
 
-USER node
-
 WORKDIR /app
 
-COPY --chown=node:node ../.. .
+COPY package*.json ./
+COPY apps/web/package*.json apps/web/
+RUN npm install
 
-ENV APP_ENV=prod
-CMD sh -c "npm install && if [ \"$APP_ENV\" = \"dev\" ]; then npm run dev:web:watch; else npm run dev:web:build; fi"
+COPY . .
+RUN npm run build -w apps/web
+
+FROM builder AS dev
+
+ENV APP_ENV=dev
+CMD npm run dev:web:watch
 
 FROM builder AS test
 
@@ -28,3 +33,8 @@ CMD npm install && \
     echo "Tentativa $i/30..."; sleep 2; \
   done && \
   npm run dev:web:test -- --browsers=SeleniumFirefox --no-watch --source-map=false
+
+FROM nginx:alpine AS production
+
+COPY --from=builder /app/apps/web/dist/frontend/browser /usr/share/nginx/html
+COPY server/default.conf.template /etc/nginx/templates/default.conf.template

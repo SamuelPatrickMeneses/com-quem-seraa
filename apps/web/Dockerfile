@@ -16,9 +16,7 @@ CMD npm run dev:web:watch
 
 FROM builder AS test
 
-USER root
 RUN apk add --no-cache curl
-USER node
 
 ENV APP_ENV=dev
 ENV KARMA_BROWSER=SeleniumFirefox

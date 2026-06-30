@@ -1,6 +1,6 @@
 services:
 
-  build:
+  angular-dev:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -12,12 +12,31 @@ services:
       - ./apps/web/dist/frontend/browser:/app/apps/web/dist/frontend/browser
     environment:
       - APP_ENV=${APP_ENV:-prod}
+      - PB_DASHBOARD_ENABLED=${PB_DASHBOARD_ENABLED:-true}
     healthcheck:
       test: ["CMD-SHELL", "test -f /app/apps/web/dist/frontend/browser/index.html"]
       interval: 5s
       timeout: 5s
       retries: 12
       start_period: 30s
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: production
+    container_name: web
+    profiles:
+      - prod
+    ports:
+      - "80:80"
+    depends_on:
+      pocketbase:
+        condition: service_started
+    environment:
+      - PB_DASHBOARD_ENABLED=false
+    networks:
+      - amigo-secreto-network
 
   test:
     build:
@@ -75,19 +94,18 @@ services:
     networks:
       - amigo-secreto-network
 
-  nginx:
+  nginx-dev:
     image: nginx:alpine
-    container_name: nginx
+    container_name: nginx-dev
     restart: unless-stopped
     profiles:
       - dev
-      - prod
     ports:
       - "80:80"
     environment:
       - APP_ENV=${APP_ENV:-prod}
-      - NGINX_ENVSUBST_FILTER=APP_ENV
-      - DOCKER_BUILD_CONDITION=${DOCKER_BUILD_CONDITION:-service_completed_successfully}
+      - PB_DASHBOARD_ENABLED=true
+      - NGINX_ENVSUBST_FILTER=PB_DASHBOARD_ENABLED
     env_file:
       - .env
     volumes:
@@ -97,8 +115,8 @@ services:
     depends_on:
       pocketbase:
         condition: service_started
-      build:
-        condition: $DOCKER_BUILD_CONDITION
+      angular-dev:
+        condition: service_started
     networks:
       - amigo-secreto-network
 

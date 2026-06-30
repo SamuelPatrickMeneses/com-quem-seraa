@@ -1,5 +1,7 @@
 FROM node:lts-alpine AS builder
 
+RUN mkdir -p /app/apps/web/dist && chown -R node:node /app
+
 USER node
 
 WORKDIR /app

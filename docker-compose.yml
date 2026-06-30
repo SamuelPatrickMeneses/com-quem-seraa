@@ -4,9 +4,10 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-      target: dev
+      target: builder
     profiles:
       - dev
+      - prod
     volumes:
       - ./apps/web/src:/app/apps/web/src
       - ./apps/web/dist/frontend/browser:/app/apps/web/dist/frontend/browser

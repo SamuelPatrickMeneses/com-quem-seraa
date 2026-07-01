@@ -1,6 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
+import { Component, inject, signal, Input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
 import { ParticipantService } from '../../core/services/participant.service';
 import { GroupService } from '../../core/services/group.service';
@@ -12,47 +11,47 @@ import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User } from 
   standalone: true,
   imports: [BottomNavComponent, RouterLink, LucideAngularModule],
   template: `
-    <div class="min-h-screen bg-[#faf9f8] pb-24 md:pb-0">
-      <header class="bg-[#ffffff] border-b border-[#e4beba]/15 px-4 py-4 md:px-8">
+    <div class="min-h-screen bg-surface pb-24 md:pb-0">
+      <header class="bg-surface-lowest border-b border-outline-variant/15 px-4 py-4 md:px-8">
         <div class="max-w-6xl mx-auto">
-          <a routerLink="/group/{{groupId}}" class="inline-flex items-center gap-1 text-sm text-[#5b403d] hover:text-[#1a1c1c] mb-2">
+          <a routerLink="/group/{{groupId}}" class="inline-flex items-center gap-1 text-sm text-on-surface-variant hover:text-neutral mb-2">
             <lucide-icon [img]="ChevronLeftIcon" size="16"></lucide-icon>
             Voltar
           </a>
-          <h1 class="text-2xl md:text-3xl font-bold text-[#1a1c1c]">{{ groupName() }}</h1>
-          <p class="text-[#5b403d] mt-1">Resultado do Sorteio</p>
+          <h1 class="text-2xl md:text-3xl font-bold text-neutral">{{ groupName() }}</h1>
+          <p class="text-on-surface-variant mt-1">Resultado do Sorteio</p>
         </div>
       </header>
 
       <main class="max-w-6xl mx-auto px-4 md:px-8 py-6">
         @if (isLoading()) {
           <div class="flex justify-center py-12">
-            <div class="w-8 h-8 border-4 border-[#a20513] border-t-transparent rounded-full animate-spin"></div>
+            <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           </div>
         } @else if (error()) {
           <div class="text-center py-12">
-            <p class="text-[#5b403d] mb-4">Algo deu errado ao carregar os pares.</p>
-            <button (click)="loadPairs()" class="px-6 py-2 bg-[#a20513] text-white font-semibold rounded-xl hover:bg-[#93000e] transition-colors">
+            <p class="text-on-surface-variant mb-4">Algo deu errado ao carregar os pares.</p>
+            <button (click)="loadPairs()" class="px-6 py-2 bg-primary text-white font-semibold rounded-xl hover:bg-primary-focus transition-colors">
               TENTAR NOVAMENTE
             </button>
           </div>
         } @else {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             @for (pair of pairs(); track pair.id) {
-              <div class="bg-[#ffffff] rounded-xl p-5 shadow-[0_2px_8px_rgba(91,64,61,0.06)]">
+              <div class="bg-tertiary-container/20 rounded-xl p-5 shadow-ambient">
                 <div class="flex items-center justify-between">
                   <div class="flex-1 text-center">
-                    <lucide-icon [img]="GiftIcon" size="24" class="mx-auto mb-1 text-[#a20513]"></lucide-icon>
-                    <p class="font-semibold text-[#1a1c1c]">{{ pair.giver_name || pair.giver_id }}</p>
-                    <p class="text-xs text-[#5b403d] mt-0.5">Presenteia</p>
+                    <lucide-icon [img]="GiftIcon" size="24" class="mx-auto mb-1 text-primary"></lucide-icon>
+                    <p class="font-semibold text-neutral">{{ pair.giver_name || pair.giver_id }}</p>
+                    <p class="text-xs text-on-surface-variant mt-0.5">Presenteia</p>
                   </div>
                   <div class="flex-shrink-0 mx-3">
-                    <lucide-icon [img]="ChevronLeftIcon" size="20" class="text-[#2b6954] rotate-180"></lucide-icon>
+                    <lucide-icon [img]="ChevronLeftIcon" size="20" class="text-secondary rotate-180"></lucide-icon>
                   </div>
                   <div class="flex-1 text-center">
-                    <lucide-icon [img]="GiftIcon" size="24" class="mx-auto mb-1 text-[#2b6954]"></lucide-icon>
-                    <p class="font-semibold text-[#1a1c1c]">{{ pair.receiver_name || pair.receiver_id }}</p>
-                    <p class="text-xs text-[#5b403d] mt-0.5">Recebe</p>
+                    <lucide-icon [img]="GiftIcon" size="24" class="mx-auto mb-1 text-secondary"></lucide-icon>
+                    <p class="font-semibold text-neutral">{{ pair.receiver_name || pair.receiver_id }}</p>
+                    <p class="text-xs text-on-surface-variant mt-0.5">Recebe</p>
                   </div>
                 </div>
               </div>
@@ -61,8 +60,8 @@ import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User } from 
 
           @if (pairs().length === 0) {
             <div class="text-center py-12">
-              <lucide-icon [img]="UsersIcon" size="48" class="mx-auto mb-3 text-[#e4beba]"></lucide-icon>
-              <p class="text-[#5b403d]">Nenhum par encontrado.</p>
+              <lucide-icon [img]="UsersIcon" size="48" class="mx-auto mb-3 text-outline-variant"></lucide-icon>
+              <p class="text-on-surface-variant">Nenhum par encontrado.</p>
             </div>
           }}
       </main>
@@ -72,7 +71,6 @@ import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User } from 
   `,
 })
 export class AdminDashboardComponent {
-  private route = inject(ActivatedRoute);
   private participantService = inject(ParticipantService);
   private groupService = inject(GroupService);
 
@@ -80,7 +78,7 @@ export class AdminDashboardComponent {
   readonly UsersIcon = Users;
   readonly ChevronLeftIcon = ChevronLeft;
 
-  groupId = this.route.snapshot.paramMap.get('groupId') || '';
+  @Input() groupId = '';
   groupName = signal('');
   pairs = signal<GroupParticipant[]>([]);
   isLoading = signal(true);

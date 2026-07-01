@@ -9,7 +9,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let mockPbClient: jasmine.SpyObj<PocketBaseClient>;
   let mockCollection: jasmine.SpyObj<ReturnType<PocketBaseClient['instance']['collection']>>;
-  let mockAuthStore: { isValid: boolean; model: Record<string, unknown> | null; clear: jasmine.Spy };
+  let mockAuthStore: { isValid: boolean; model: Record<string, unknown> | null; clear: jasmine.Spy; save: jasmine.Spy };
 
   beforeEach(() => {
     mockCollection = jasmine.createSpyObj('RecordService', [
@@ -23,6 +23,7 @@ describe('AuthService', () => {
       isValid: true,
       model: { id: 'user-1', name: 'Test User', email: 'test@example.com', collectionId: 'users', collectionName: 'users' },
       clear: jasmine.createSpy('clear'),
+      save: jasmine.createSpy('save'),
     };
 
     const mockPb = {
@@ -109,6 +110,50 @@ describe('AuthService', () => {
     it('should return the raw PocketBase instance', () => {
       const pb = service.pocketBase;
       expect(pb.collection).toBeDefined();
+    });
+  });
+
+  describe('updateName', () => {
+    it('should update user name and save to auth store', async () => {
+      const updatedRecord = {
+        id: 'user-1',
+        name: 'New Name',
+        email: 'test@example.com',
+        collectionId: 'users',
+        collectionName: 'users',
+        token: 'new-token',
+      };
+      mockCollection.update.and.resolveTo(updatedRecord);
+
+      await service.updateName('New Name');
+
+      expect(mockCollection.update).toHaveBeenCalledWith('user-1', { name: 'New Name' });
+      expect(mockAuthStore.save).toHaveBeenCalledWith('new-token', updatedRecord);
+    });
+
+    it('should throw when user is not authenticated', async () => {
+      mockAuthStore.model = null;
+      await expectAsync(service.updateName('New Name')).toBeRejectedWithError('Usuário não autenticado');
+    });
+  });
+
+  describe('updatePassword', () => {
+    it('should call collection.update with oldPassword, password and passwordConfirm', async () => {
+      mockCollection.update.and.resolveTo({ id: 'user-1' });
+
+      await service.updatePassword('oldPass', 'newPass123', 'newPass123');
+
+      expect(mockCollection.update).toHaveBeenCalledWith('user-1', {
+        oldPassword: 'oldPass',
+        password: 'newPass123',
+        passwordConfirm: 'newPass123',
+      });
+    });
+
+    it('should throw when user is not authenticated', async () => {
+      mockAuthStore.model = null;
+      await expectAsync(service.updatePassword('oldPass', 'newPass123', 'newPass123'))
+        .toBeRejectedWithError('Usuário não autenticado');
     });
   });
 });

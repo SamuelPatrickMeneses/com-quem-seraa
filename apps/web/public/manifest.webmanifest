@@ -1,0 +1,21 @@
+{
+  "name": "Com Quem Será",
+  "short_name": "ComQuemSerá",
+  "description": "Amigo Secreto Mágico",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf9f8",
+  "theme_color": "#7C3AED",
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

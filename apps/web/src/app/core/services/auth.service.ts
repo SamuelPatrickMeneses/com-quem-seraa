@@ -9,6 +9,25 @@ export class AuthService {
   private pbClient = inject(PocketBaseClient);
 
   /**
+   * Atualiza o nome do usuário autenticado
+   */
+  async updateName(name: string): Promise<void> {
+    const user = this.user;
+    if (!user?.id) throw new Error('Usuário não autenticado');
+    const record = await this.pbClient.instance.collection('users').update(user.id, { name });
+    this.pbClient.instance.authStore.save(record['token'] || '', record);
+  }
+
+  /**
+   * Altera a senha do usuário autenticado
+   */
+  async updatePassword(oldPassword: string, password: string, passwordConfirm: string): Promise<void> {
+    const user = this.user;
+    if (!user?.id) throw new Error('Usuário não autenticado');
+    await this.pbClient.instance.collection('users').update(user.id, { oldPassword, password, passwordConfirm });
+  }
+
+  /**
    * Retorna se o usuário está autenticado
    */
   get isAuthenticated(): boolean {

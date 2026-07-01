@@ -10,12 +10,12 @@ import type { Group } from '../../../core/models/group.model';
   imports: [RouterLink, LucideAngularModule, DatePipe],
   template: `
     <a [routerLink]="['/group', group().id]"
-       class="group bg-surface-lowest rounded-[2rem] p-8 shadow-ambient transition-all hover:-translate-y-1 relative overflow-hidden flex flex-col h-full border border-transparent hover:border-primary/10">
+       class="group bg-surface-lowest rounded-[2rem] p-8 shadow-ambient transition-all hover:-translate-y-1 relative overflow-hidden flex flex-col h-full hover:shadow-lg">
       
       <!-- Top Row: Badges -->
       <div class="flex justify-between items-start mb-6">
         @if (status === 'SORTEADO') {
-          <div class="bg-neutral/5 text-neutral/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+          <div class="bg-surface-container text-on-surface-variant px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
             <span class="md:hidden">SORTEADO</span>
             <span class="hidden md:inline">Finalizado</span>
           </div>

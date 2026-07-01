@@ -102,7 +102,7 @@ description: Extrai lógica de cache para um service separado
 ## 🔧 Arquivos modificados
 
 ```
-<output do git diff --stat>
+<output do comando tree com paths relativos, ex: tree apps/web/src --charset=utf-8 | grep -v node_modules>
 ```
 
 ## 🧪 Como testar

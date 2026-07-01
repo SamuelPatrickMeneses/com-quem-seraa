@@ -9,7 +9,7 @@
 ## 🤖 1. Orquestração e Contexto de IA (MCP)
 > Configuração dos servidores Model Context Protocol para a IDE Agêntica.
 
-* **Figma/Stitch MCP:** `N/A - Projeto sem design prévio no Figma (será feito diretamente com Tailwind).`
+* **Stitch MCP:** Protótipo navegável em https://stitch.withgoogle.com/projects/8277683531406145894
 * **Pocketbase MCP:** Contexto do banco de dados local ou pocketbase.io (coleções: `users`, `group`, `group_participant`).
 * **GitHub MCP:** Leitura das Issues do Kanban para orientar a implementação (Spec-Driven).
 

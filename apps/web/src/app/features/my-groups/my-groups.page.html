@@ -27,7 +27,7 @@
                 {{ user()?.name?.charAt(0) || user()?.email?.charAt(0) | uppercase }}
               </div>
             </div>
-            <ul tabindex="0" class="mt-4 z-[1] p-3 shadow-ambient menu menu-sm dropdown-content bg-white/90 backdrop-blur-xl rounded-[1.5rem] w-64 border border-neutral/5">
+            <ul tabindex="0" class="mt-4 z-[1] p-3 shadow-ambient menu menu-sm dropdown-content bg-surface/80 backdrop-blur-xl rounded-[1.5rem] w-64">
               <li class="px-4 py-3">
                 <p class="font-black text-neutral truncate">{{ user()?.name || user()?.email }}</p>
                 <p class="text-xs font-bold text-neutral/40 truncate">{{ user()?.email }}</p>
@@ -64,7 +64,7 @@
           </p>
         </div>
         <div class="flex gap-2">
-          <div class="bg-surface-low px-4 py-2 rounded-xl flex items-center gap-2 border border-neutral/5">
+          <div class="bg-surface-container px-4 py-2 rounded-xl flex items-center gap-2">
             <lucide-icon [img]="GiftIcon" size="16" class="text-primary"></lucide-icon>
             <span class="text-xs font-bold uppercase tracking-tighter">Temporada 2023</span>
           </div>

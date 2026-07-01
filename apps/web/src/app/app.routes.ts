@@ -18,7 +18,13 @@ export const routes: Routes = [
   { path: 'my-groups', component: MyGroupsComponent, canActivate: [authGuard] },
   { path: 'create', component: CreateGroupComponent, canActivate: [authGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
-  { path: 'group/:groupId', component: GroupDashboardComponent, canActivate: [authGuard, groupExistsGuard] },
-  { path: 'group/:groupId/admin', component: AdminDashboardComponent, canActivate: [authGuard, groupExistsGuard, isOrganizerGuard] },
+  {
+    path: 'group/:groupId',
+    canActivate: [authGuard, groupExistsGuard],
+    children: [
+      { path: '', component: GroupDashboardComponent },
+      { path: 'admin', component: AdminDashboardComponent, canActivate: [isOrganizerGuard] },
+    ],
+  },
   { path: '', redirectTo: 'my-groups', pathMatch: 'full' }
 ];

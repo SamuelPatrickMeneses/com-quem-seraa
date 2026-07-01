@@ -213,6 +213,7 @@ describe('AppNavigation (integração)', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/join?code=test123');
     const router = TestBed.inject(Router);
+    await new Promise(resolve => setTimeout(resolve));
     expect(router.url).toContain('/login');
     expect(router.url).toContain(encodeURIComponent('/join?code=test123'));
   });

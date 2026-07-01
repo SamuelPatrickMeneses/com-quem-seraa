@@ -26,11 +26,10 @@ server {
         proxy_read_timeout 60s;
     }
 
-    # Proxy para admin UI do Pocketbase (apenas em desenvolvimento)
+    # Proxy para admin UI do Pocketbase (controlado por PB_DASHBOARD_ENABLED)
     location ^~ /_/ {
-        # Bloqueio se não for ambiente de desenvolvimento
-        set $env_mode "${APP_ENV}";
-        if ($env_mode != "dev") {
+        set $pb_dashboard "${PB_DASHBOARD_ENABLED}";
+        if ($pb_dashboard != "true") {
             return 403;
         }
 

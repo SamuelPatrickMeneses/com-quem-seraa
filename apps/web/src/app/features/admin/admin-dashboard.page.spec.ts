@@ -9,7 +9,7 @@ import { routes } from '../../app.routes';
 import { setViewport, resetViewport } from '../../testing/responsive-helper';
 import { NgZone } from '@angular/core';
 
-const POCKETBASE_DIRECT_URL = 'http://pocketbase:8090';
+const POCKETBASE_DIRECT_URL = 'http://pocketbase-dev:8090';
 
 function mockGroup(id: string, created_by: string) {
   return { id, name: 'Amigo Secreto 2024', created_by, has_been_drawn: true, participants_count: 3, created_at: new Date().toISOString() };

@@ -6,7 +6,7 @@ import { ParticipantService } from '../../core/services/participant.service';
 import { GroupService } from '../../core/services/group.service';
 import { POCKETBASE_URL } from '../../infrastructure/pocketbase/pocketbase.client';
 
-const POCKETBASE_DIRECT_URL = 'http://pocketbase:8090';
+const POCKETBASE_DIRECT_URL = 'http://pocketbase-dev:8090';
 
 describe('JoinComponent', () => {
   let component: JoinComponent;

@@ -1,25 +1,134 @@
 services:
 
+  angular-dev:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: dev
+    profiles:
+      - dev
+    volumes:
+      - ./apps/web/src:/app/apps/web/src
+      - ./apps/web/dist/frontend/browser:/app/apps/web/dist/frontend/browser
+    environment:
+      - APP_ENV=${APP_ENV:-prod}
+      - PB_DASHBOARD_ENABLED=${PB_DASHBOARD_ENABLED:-true}
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /app/apps/web/dist/frontend/browser/index.html"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - amigo-secreto-network
+
   web:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
       target: production
+    profiles:
+      - prod
     depends_on:
       pocketbase:
         condition: service_healthy
     environment:
       - PB_DASHBOARD_ENABLED=false
 
+  test:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: test
+    profiles:
+      - test
+    volumes:
+      - ./apps/web/src:/app/apps/web/src
+    environment:
+      - APP_ENV=dev
+      - SELENIUM_HOST=selenium-firefox
+      - SELENIUM_PORT=4444
+      - KARMA_HOSTNAME=test
+      - KARMA_BROWSER=SeleniumFirefox
+    depends_on:
+      selenium-firefox:
+        condition: service_started
+      pocketbase-dev:
+        condition: service_started
+    networks:
+      - amigo-secreto-network
+
+  selenium-firefox:
+    image: selenium/standalone-firefox:latest
+    container_name: selenium-firefox
+    profiles:
+      - test
+    shm_size: 2gb
+    restart: unless-stopped
+    environment:
+      - SE_NODE_MAX_SESSIONS=5
+    networks:
+      - amigo-secreto-network
+
   pocketbase:
     build:
       context: ./db
       dockerfile: Dockerfile
+    profiles:
+      - prod
     restart: unless-stopped
     volumes:
       - pocketbase_data:/app/pb_data
     env_file:
       - .env
+
+  pocketbase-dev:
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    profiles:
+      - dev
+      - test
+    restart: unless-stopped
+    volumes:
+      - pocketbase_data:/app/pb_data
+      - ./db/pb_public:/app/pb_public
+      - ./db/pb_hooks:/app/pb_hooks
+      - ./db/pb_migrations:/app/pb_migrations
+    env_file:
+      - .env
+    networks:
+      - amigo-secreto-network
+
+  nginx-dev:
+    image: nginx:alpine
+    container_name: nginx-dev
+    restart: unless-stopped
+    profiles:
+      - dev
+    ports:
+      - "80:80"
+    environment:
+      - APP_ENV=${APP_ENV:-prod}
+      - PB_DASHBOARD_ENABLED=true
+      - NGINX_ENVSUBST_FILTER=PB_DASHBOARD_ENABLED
+    env_file:
+      - .env
+    volumes:
+      - ./apps/web/dist/frontend/browser:/usr/share/nginx/html:ro
+      - ./server/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./server/logs:/var/log/nginx
+    depends_on:
+      pocketbase-dev:
+        condition: service_started
+      angular-dev:
+        condition: service_started
+    networks:
+      - amigo-secreto-network
+
+networks:
+  amigo-secreto-network:
+    driver: bridge
 
 volumes:
   pocketbase_data:

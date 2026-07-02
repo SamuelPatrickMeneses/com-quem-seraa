@@ -17,7 +17,7 @@ import { LoginComponent } from './features/auth/login/login.page';
 import { RegisterComponent } from './features/auth/register/register.page';
 import { JoinComponent } from './features/join/join.page';
 
-const POCKETBASE_DIRECT_URL = 'http://pocketbase:8090';
+const POCKETBASE_DIRECT_URL = 'http://pocketbase-dev:8090';
 
 // ============================================================
 // INTEGRATION TESTS  -  RouterTestingHarness + PocketBase real

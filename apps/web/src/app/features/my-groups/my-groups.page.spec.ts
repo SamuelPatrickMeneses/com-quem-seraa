@@ -8,7 +8,7 @@ import { PocketBaseClient, POCKETBASE_URL } from '../../infrastructure/pocketbas
 import { routes } from '../../app.routes';
 import { setViewport, resetViewport } from '../../testing/responsive-helper';
 
-const POCKETBASE_DIRECT_URL = 'http://pocketbase:8090';
+const POCKETBASE_DIRECT_URL = 'http://pocketbase-dev:8090';
 
 describe('MyGroupsComponent (integração)', () => {
   let component: MyGroupsComponent;

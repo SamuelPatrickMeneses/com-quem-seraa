@@ -10,7 +10,7 @@ import { routes } from '../../app.routes';
 import { setViewport, resetViewport } from '../../testing/responsive-helper';
 import { NgZone } from '@angular/core';
 
-const POCKETBASE_DIRECT_URL = 'http://pocketbase:8090';
+const POCKETBASE_DIRECT_URL = 'http://pocketbase-dev:8090';
 
 async function loginToken(): Promise<string> {
   const loginRes = await fetch(`${POCKETBASE_DIRECT_URL}/api/collections/users/auth-with-password`, {

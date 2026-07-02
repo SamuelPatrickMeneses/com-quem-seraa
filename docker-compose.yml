@@ -28,8 +28,6 @@ services:
     container_name: web
     profiles:
       - prod
-    ports:
-      - "80"
     depends_on:
       pocketbase:
         condition: service_started
@@ -84,8 +82,6 @@ services:
       - dev
       - prod
       - test
-    ports:
-      - "8090"
     volumes:
       - pocketbase_data:/app/pb_data
       - ./db/pb_public:/app/pb_public

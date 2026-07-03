@@ -34,7 +34,6 @@ services:
         condition: service_healthy
     environment:
       - PB_DASHBOARD_ENABLED=false
-      - NGINX_ENVSUBST_FILTER=PB_DASHBOARD_ENABLED
 
   test:
     build:

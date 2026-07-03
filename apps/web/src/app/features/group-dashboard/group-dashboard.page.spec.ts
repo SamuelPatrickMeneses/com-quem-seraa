@@ -216,7 +216,7 @@ describe('GroupDashboardComponent (exibição)', () => {
       created_by: createdBy,
       has_been_drawn: drawn,
       participants_count: pCount,
-      created_at: new Date().toISOString(),
+      created: new Date().toISOString(),
       expand: { created_by: { id: createdBy, name: 'Ana', email: 'ana@exemplo.com' } },
     });
     mockGroupService.delete.and.resolveTo(true);
@@ -484,7 +484,7 @@ describe('GroupDashboardComponent (exibição)', () => {
     const mockGroupService = jasmine.createSpyObj('GroupService', ['getById', 'delete']);
     mockGroupService.getById.and.resolveTo({
       id: 'grupo-1', name: 'Amigo Secreto 2024', created_by: createdBy,
-      has_been_drawn: false, participants_count: 3, created_at: new Date().toISOString(),
+      has_been_drawn: false, participants_count: 3, created: new Date().toISOString(),
     });
 
     const mockParticipantService = jasmine.createSpyObj('ParticipantService', ['getParticipants', 'delete', 'joinGroup']);
@@ -601,7 +601,7 @@ describe('GroupDashboardComponent (exibição)', () => {
     const mockGroupService = jasmine.createSpyObj('GroupService', ['getById', 'delete']);
     mockGroupService.getById.and.resolveTo({
       id: 'grupo-1', name: 'Amigo Secreto 2024', created_by: createdBy,
-      has_been_drawn: false, participants_count: 1, created_at: new Date().toISOString(),
+      has_been_drawn: false, participants_count: 1, created: new Date().toISOString(),
     });
 
     const mockParticipantService = jasmine.createSpyObj('ParticipantService', ['getParticipants', 'delete', 'joinGroup']);
@@ -683,7 +683,7 @@ describe('GroupDashboardComponent (responsivo)', () => {
     const mockGroupService = jasmine.createSpyObj('GroupService', ['getById']);
     mockGroupService.getById.and.resolveTo({
       id: 'grupo-1', name: 'Amigo Secreto 2024', created_by: 'user-1',
-      has_been_drawn: false, participants_count: 3, created_at: new Date().toISOString(),
+      has_been_drawn: false, participants_count: 3, created: new Date().toISOString(),
     });
 
     const mockParticipantService = jasmine.createSpyObj('ParticipantService', ['getParticipants']);
@@ -740,7 +740,7 @@ describe('GroupDashboardComponent (erro)', () => {
     const mockGroupService = jasmine.createSpyObj('GroupService', ['getById']);
     mockGroupService.getById.and.resolveTo({
       id: 'grupo-1', name: 'Amigo Secreto 2024', created_by: 'user-1',
-      has_been_drawn: false, participants_count: 3, created_at: new Date().toISOString(),
+      has_been_drawn: false, participants_count: 3, created: new Date().toISOString(),
     });
 
     const mockParticipantService = jasmine.createSpyObj('ParticipantService', ['getParticipants']);

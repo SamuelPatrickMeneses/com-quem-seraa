@@ -9,7 +9,7 @@ const mockGroup: Group = {
   name: 'Meu Grupo',
   description: 'Descrição',
   created_by: 'user1',
-  created_at: '2025-01-15T10:00:00Z',
+  created: '2025-01-15T10:00:00Z',
   has_been_drawn: false,
   participants_count: 5,
 };

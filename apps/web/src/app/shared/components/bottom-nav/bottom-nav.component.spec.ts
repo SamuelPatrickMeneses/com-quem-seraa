@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { Users, PlusCircle, User } from 'lucide-angular';
 import { BottomNavComponent, NavItem } from './bottom-nav.component';
 import { setViewport, resetViewport, isVisible } from '../../../testing/responsive-helper';
+import { PwaInstallService } from '../../../core/services/pwa-install.service';
 
 @Component({ standalone: true, template: '<router-outlet/>' })
 class ShellComponent {}
@@ -13,6 +14,13 @@ const items: NavItem[] = [
   { label: 'Criar', icon: PlusCircle, route: '/create' },
   { label: 'Perfil', icon: User, route: '/profile' },
 ];
+
+function createMockPwaInstallService(canInstall = false) {
+  return {
+    canInstall: signal(canInstall),
+    install: jasmine.createSpy('install').and.resolveTo(),
+  };
+}
 
 describe('BottomNavComponent', () => {
 
@@ -116,5 +124,82 @@ describe('BottomNavComponent (responsivo)', () => {
       const el = icon as HTMLElement;
       expect(el.scrollWidth).toBeLessThanOrEqual(Math.max(el.clientWidth, 1) + 1);
     });
+  });
+});
+
+describe('BottomNavComponent (PWA install)', () => {
+  it('should not show install button when canInstall is false', async () => {
+    const mockPwaService = createMockPwaInstallService(false);
+
+    TestBed.configureTestingModule({
+      imports: [BottomNavComponent],
+      providers: [
+        provideRouter([
+          { path: 'my-groups', component: ShellComponent },
+          { path: 'create', component: ShellComponent },
+          { path: 'profile', component: ShellComponent },
+        ]),
+        { provide: PwaInstallService, useValue: mockPwaService },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(BottomNavComponent);
+    fixture.componentRef.setInput('items', items);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const installButton = fixture.nativeElement.querySelector('button');
+    expect(installButton).toBeNull();
+  });
+
+  it('should show install button when canInstall is true', async () => {
+    const mockPwaService = createMockPwaInstallService(true);
+
+    TestBed.configureTestingModule({
+      imports: [BottomNavComponent],
+      providers: [
+        provideRouter([
+          { path: 'my-groups', component: ShellComponent },
+          { path: 'create', component: ShellComponent },
+          { path: 'profile', component: ShellComponent },
+        ]),
+        { provide: PwaInstallService, useValue: mockPwaService },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(BottomNavComponent);
+    fixture.componentRef.setInput('items', items);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const installButton = fixture.nativeElement.querySelector('button');
+    expect(installButton).toBeTruthy();
+    expect(installButton.textContent).toContain('Instalar');
+  });
+
+  it('should call install when button is clicked', async () => {
+    const mockPwaService = createMockPwaInstallService(true);
+
+    TestBed.configureTestingModule({
+      imports: [BottomNavComponent],
+      providers: [
+        provideRouter([
+          { path: 'my-groups', component: ShellComponent },
+          { path: 'create', component: ShellComponent },
+          { path: 'profile', component: ShellComponent },
+        ]),
+        { provide: PwaInstallService, useValue: mockPwaService },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(BottomNavComponent);
+    fixture.componentRef.setInput('items', items);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const installButton = fixture.nativeElement.querySelector('button');
+    installButton.click();
+
+    expect(mockPwaService.install).toHaveBeenCalled();
   });
 });

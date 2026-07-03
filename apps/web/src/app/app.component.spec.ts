@@ -6,6 +6,7 @@ import { routes } from './app.routes';
 describe('AppComponent', () => {
 
   beforeEach(async () => {
+    sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [

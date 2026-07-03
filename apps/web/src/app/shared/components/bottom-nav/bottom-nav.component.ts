@@ -1,6 +1,7 @@
-import { Component, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { LucideAngularModule, type LucideIconData } from 'lucide-angular';
+import { LucideAngularModule, Download, type LucideIconData } from 'lucide-angular';
+import { PwaInstallService } from '../../../core/services/pwa-install.service';
 
 export interface NavItem {
   label: string;
@@ -24,10 +25,19 @@ export interface NavItem {
             <span class="text-[10px] font-black tracking-wider uppercase">{{ item.label }}</span>
           </a>
         }
+        @if (pwaInstall.canInstall()) {
+          <button (click)="pwaInstall.install()"
+                  class="flex flex-col items-center gap-1 px-4 py-2 rounded-2xl bg-primary text-white transition-all duration-200">
+            <lucide-icon [img]="downloadIcon" size="20"></lucide-icon>
+            <span class="text-[10px] font-black tracking-wider uppercase">Instalar</span>
+          </button>
+        }
       </div>
     </nav>
   `
 })
 export class BottomNavComponent {
   readonly items = input.required<NavItem[]>();
+  readonly pwaInstall = inject(PwaInstallService);
+  readonly downloadIcon = Download;
 }

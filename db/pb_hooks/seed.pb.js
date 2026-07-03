@@ -7,10 +7,8 @@ onBootstrap((e) => {
 
     let shouldSeed = false;
     try {
-        const env = (typeof $os !== "undefined" && $os.getenv) ? $os.getenv("APP_ENV") || "" : "";
         const pbSeed = (typeof $os !== "undefined" && $os.getenv) ? $os.getenv("PB_SEED") || "" : "";
-        shouldSeed = (env === "dev" && pbSeed === "true");
-        console.log("Seed: APP_ENV detectado como:", env);
+        shouldSeed = (pbSeed === "true");
         console.log("Seed: PB_SEED detectado como:", pbSeed);
 
         if (shouldSeed) {
@@ -24,7 +22,7 @@ onBootstrap((e) => {
     }
 
     if (!shouldSeed) {
-        console.log("Seed: Bootstrap seed não requisitado (APP_ENV=dev + PB_SEED=true). Pulando...");
+        console.log("Seed: Bootstrap seed não requisitado (PB_SEED=true). Pulando...");
         return;
     }
 
@@ -110,8 +108,8 @@ onBootstrap((e) => {
 })
 
 
-const env = (typeof $os !== "undefined" && $os.getenv) ? $os.getenv("APP_ENV") : "";
-if (env === "dev") {
+const pbSeed = (typeof $os !== "undefined" && $os.getenv) ? $os.getenv("PB_SEED") || "" : "";
+if (pbSeed === "true") {
     routerAdd("GET", "/api/test/reseed", (e) => {
         try {
             $app.db().newQuery("DELETE FROM group_participants").execute()

@@ -395,7 +395,7 @@ describe('AppNavigation (links)', () => {
   let mockAuth: any;
 
   const mockGroupService = {
-    getById: () => Promise.resolve({ id: 'g-1', name: 'Teste', created_by: 'user-1', has_been_drawn: false, participants_count: 3, created_at: new Date().toISOString() }),
+    getById: () => Promise.resolve({ id: 'g-1', name: 'Teste', created_by: 'user-1', has_been_drawn: false, participants_count: 3, created: new Date().toISOString() }),
   };
 
   const mockParticipantService = {

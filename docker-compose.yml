@@ -33,6 +33,7 @@ services:
       pocketbase:
         condition: service_healthy
     environment:
+      - POCKETBASE_HOST=pocketbase
       - PB_DASHBOARD_ENABLED=false
 
   test:
@@ -97,7 +98,7 @@ services:
       - test
     restart: unless-stopped
     volumes:
-      - pocketbase_data:/app/pb_data
+      - pocketbase_dev_data:/app/pb_data
       - ./db/pb_public:/app/pb_public
       - ./db/pb_hooks:/app/pb_hooks
       - ./db/pb_migrations:/app/pb_migrations
@@ -118,8 +119,9 @@ services:
       - "80:80"
     environment:
       - APP_ENV=${APP_ENV:-prod}
+      - POCKETBASE_HOST=pocketbase-dev
       - PB_DASHBOARD_ENABLED=true
-      - NGINX_ENVSUBST_FILTER=PB_DASHBOARD_ENABLED
+      - NGINX_ENVSUBST_FILTER=PB_DASHBOARD_ENABLED|POCKETBASE_HOST
     env_file:
       - .env
     volumes:
@@ -140,3 +142,4 @@ networks:
 
 volumes:
   pocketbase_data:
+  pocketbase_dev_data:

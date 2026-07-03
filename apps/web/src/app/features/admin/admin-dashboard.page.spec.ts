@@ -12,7 +12,7 @@ import { NgZone } from '@angular/core';
 const POCKETBASE_DIRECT_URL = 'http://pocketbase-dev:8090';
 
 function mockGroup(id: string, created_by: string) {
-  return { id, name: 'Amigo Secreto 2024', created_by, has_been_drawn: true, participants_count: 3, created_at: new Date().toISOString() };
+  return { id, name: 'Amigo Secreto 2024', created_by, has_been_drawn: true, participants_count: 3, created: new Date().toISOString() };
 }
 
 function mockParticipant(id: string, giverName: string, receiverName: string) {

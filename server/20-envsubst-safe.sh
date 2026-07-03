@@ -20,7 +20,7 @@ if [ ! -w "$output_dir" ]; then
     exit 0
 fi
 
-SUBSTITUTE_VARS="PB_DASHBOARD_ENABLED"
+SUBSTITUTE_VARS="PB_DASHBOARD_ENABLED POCKETBASE_HOST"
 
 find "$template_dir" -follow -type f -name "*$suffix" -print | while read -r template; do
     relative_path="${template#"$template_dir/"}"

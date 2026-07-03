@@ -11,7 +11,7 @@ server {
     # Proxy para API do Pocketbase
     location ^~ /api/ {
         resolver 127.0.0.11 valid=30s;
-        set $pocketbase_proxy http://pocketbase:8090;
+        set $pocketbase_proxy http://${POCKETBASE_HOST}:8090;
         proxy_pass $pocketbase_proxy;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
@@ -31,7 +31,7 @@ server {
     # Proxy para admin UI do Pocketbase (controlado por PB_DASHBOARD_ENABLED)
     location ^~ /_/ {
         resolver 127.0.0.11 valid=30s;
-        set $pocketbase_proxy http://pocketbase:8090;
+        set $pocketbase_proxy http://${POCKETBASE_HOST}:8090;
         set $pb_dashboard "${PB_DASHBOARD_ENABLED}";
         if ($pb_dashboard != "true") {
             return 403;

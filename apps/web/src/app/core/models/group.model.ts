@@ -6,7 +6,7 @@ export interface Group {
   name: string;
   description?: string;
   created_by: string;
-  created_at: string;
+  created: string;
   has_been_drawn: boolean;
   drawn_at?: string;
   participants_count: number;
@@ -16,4 +16,4 @@ export interface Group {
   };
 }
 
-export type CreateGroupDTO = Omit<Group, 'id' | 'created_at' | 'has_been_drawn'>;
+export type CreateGroupDTO = Omit<Group, 'id' | 'created' | 'has_been_drawn'>;

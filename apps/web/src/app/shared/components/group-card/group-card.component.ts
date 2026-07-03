@@ -41,7 +41,7 @@ import type { Group } from '../../../core/models/group.model';
 
       <!-- Group Name -->
       <h3 class="font-display font-extrabold text-2xl text-neutral mb-1">{{ group().name }}</h3>
-      <p class="text-neutral/50 text-sm mb-8">Criado em {{ group().created_at | date:'dd de MMM, yyyy' }}</p>
+      <p class="text-neutral/50 text-sm mb-8">Criado em {{ group().created | date:'dd de MMM, yyyy' }}</p>
 
       <!-- Bottom Row -->
       <div class="mt-auto">

@@ -113,7 +113,7 @@ describe('MyGroupsComponent (responsivo)', () => {
           provide: GroupService,
           useValue: {
             getMyGroups: () => Promise.resolve({
-              items: [{ id: '1', name: 'Teste', description: '', created_by: 'user1', created_at: new Date().toISOString(), has_been_drawn: false, participants_count: 2 }],
+              items: [{ id: '1', name: 'Teste', description: '', created_by: 'user1', created: new Date().toISOString(), has_been_drawn: false, participants_count: 2 }],
               total: 1,
             }),
           } as any,
@@ -248,7 +248,7 @@ describe('MyGroupsComponent (comportamento)', () => {
                 name: `Grupo ${i + 1}`,
                 description: '',
                 created_by: 'user-1',
-                created_at: new Date().toISOString(),
+                created: new Date().toISOString(),
                 has_been_drawn: false,
                 participants_count: 2,
               })),

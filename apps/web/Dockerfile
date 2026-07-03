@@ -35,3 +35,5 @@ FROM nginx:alpine AS production
 
 COPY --from=builder /app/apps/web/dist/frontend/browser /usr/share/nginx/html
 COPY server/default.conf.template /etc/nginx/templates/default.conf.template
+RUN rm /docker-entrypoint.d/20-envsubst-on-templates.sh
+COPY server/20-envsubst-safe.sh /docker-entrypoint.d/20-envsubst-on-templates.sh

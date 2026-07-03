@@ -5,24 +5,26 @@ onBootstrap((e) => {
     // IMPORTANTE: Permitir a inicialização do PocketBase antes de qualquer acesso ao DB
     e.next();
 
-    let isDev = false;
+    let shouldSeed = false;
     try {
-        // Tenta acessar variáveis de ambiente de forma resiliente
-        const env = (typeof $os !== "undefined" && $os.getenv) ? $os.getenv("APP_ENV") : "";
-        isDev = (env === "dev");
-        if (isDev) {
+        const env = (typeof $os !== "undefined" && $os.getenv) ? $os.getenv("APP_ENV") || "" : "";
+        const pbSeed = (typeof $os !== "undefined" && $os.getenv) ? $os.getenv("PB_SEED") || "" : "";
+        shouldSeed = (env === "dev" && pbSeed === "true");
+        console.log("Seed: APP_ENV detectado como:", env);
+        console.log("Seed: PB_SEED detectado como:", pbSeed);
+
+        if (shouldSeed) {
             $app.db().newQuery("DELETE FROM group_participants").execute()
             $app.db().newQuery("DELETE FROM groups").execute()
             $app.db().newQuery("DELETE FROM users").execute()
         }
-        console.log("Seed: APP_ENV detectado como:", env);
     } catch (err) {
         console.log("Seed: Erro ao detectar ambiente:", err);
         return;
     }
 
-    if (!isDev) {
-        console.log("Seed: Ambiente não é 'dev'. Pulando...");
+    if (!shouldSeed) {
+        console.log("Seed: Bootstrap seed não requisitado (APP_ENV=dev + PB_SEED=true). Pulando...");
         return;
     }
 

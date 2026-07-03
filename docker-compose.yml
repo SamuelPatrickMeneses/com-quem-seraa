@@ -84,8 +84,8 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8090/api/health || exit 1"]
       interval: 30s
-      timeout: 5s
-      retries: 3
+      timeout: 10s
+      retries: 5
       start_period: 10s
 
   pocketbase-dev:

@@ -71,13 +71,7 @@
             <span class="font-bold">Você é o organizador</span>
           </div>
 
-          @if (status === 'SORTEADO') {
-            <a [routerLink]="'/group/' + groupId + '/admin'"
-               class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
-              Ver resultado do sorteio
-              <lucide-icon [img]="ArrowRightIcon" size="16"></lucide-icon>
-            </a>
-          } @else if (status === 'ATIVO') {
+          @if (status === 'ATIVO') {
             <button (click)="performDraw()" [disabled]="isDrawLoading()"
                     class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-primary to-primary-focus text-white font-semibold rounded-xl hover:brightness-110 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               @if (isDrawLoading()) {

@@ -10,7 +10,7 @@ import { DrawService } from '../../core/services/draw.service';
 import type { Group } from '../../core/models/group.model';
 import type { GroupParticipant } from '../../core/models/group-participant.model';
 import type { User } from '../../core/models/user.model';
-import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User as UserIcon, ShieldCheck, Sparkles, ArrowRight, Copy, LogOut, Trash2, UserPlus, Eye, EyeOff } from 'lucide-angular';
+import { LucideAngularModule, Gift, Users, ChevronLeft, PlusCircle, User as UserIcon, ShieldCheck, Sparkles, Copy, LogOut, Trash2, UserPlus, Eye, EyeOff } from 'lucide-angular';
 
 @Component({
   selector: 'app-group-dashboard',
@@ -30,7 +30,6 @@ export class GroupDashboardComponent implements OnInit {
   readonly ChevronLeftIcon = ChevronLeft;
   readonly ShieldCheckIcon = ShieldCheck;
   readonly SparklesIcon = Sparkles;
-  readonly ArrowRightIcon = ArrowRight;
   readonly CopyIcon = Copy;
   readonly LogOutIcon = LogOut;
   readonly Trash2Icon = Trash2;

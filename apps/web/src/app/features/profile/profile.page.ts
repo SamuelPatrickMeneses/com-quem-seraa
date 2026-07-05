@@ -2,8 +2,9 @@ import { Component, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
-import { LucideAngularModule, Gift, LogOut, User, Sparkles, PlusCircle, Users, Mail, Lock, Eye, EyeOff, Check, X, AlertCircle } from 'lucide-angular';
+import { LucideAngularModule, Gift, LogOut, User, Sparkles, PlusCircle, Users, Mail, Lock, Eye, EyeOff, Check, X, AlertCircle, Download } from 'lucide-angular';
 import { AuthService } from '../../core/services/auth.service';
+import { PwaInstallService } from '../../core/services/pwa-install.service';
 import { filter, map } from 'rxjs/operators';
 import { BottomNavComponent, NavItem } from '../../shared/components/bottom-nav/bottom-nav.component';
 
@@ -187,6 +188,13 @@ function notOnlyWhitespace(control: AbstractControl): ValidationErrors | null {
               <lucide-icon [img]="UserIcon" size="16"></lucide-icon>
               Sessão
             </h2>
+            @if (pwaInstall.canInstall()) {
+              <button (click)="pwaInstall.install()"
+                      class="btn w-full h-14 rounded-2xl bg-gradient-to-r from-primary to-primary-focus text-white font-black gap-2 mb-3">
+                <lucide-icon [img]="DownloadIcon" size="18"></lucide-icon>
+                Instalar Aplicativo
+              </button>
+            }
             <button (click)="logout()"
                     class="btn btn-error w-full h-14 rounded-2xl border-none bg-gradient-to-r from-error to-error/80 text-white font-black gap-2">
               <lucide-icon [img]="LogOutIcon" size="18"></lucide-icon>
@@ -208,6 +216,7 @@ export class ProfileComponent {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   auth = inject(AuthService);
+  pwaInstall = inject(PwaInstallService);
 
   readonly currentRoute = toSignal(
     this.router.events.pipe(
@@ -243,6 +252,7 @@ export class ProfileComponent {
   readonly CheckIcon = Check;
   readonly XIcon = X;
   readonly AlertCircleIcon = AlertCircle;
+  readonly DownloadIcon = Download;
 
   readonly navItems: NavItem[] = [
     { label: 'Grupos', icon: Users, route: '/my-groups' },

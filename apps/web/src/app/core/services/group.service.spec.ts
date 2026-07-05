@@ -141,13 +141,58 @@ describe('GroupService', () => {
       expect(mockCollection.getList).toHaveBeenCalledWith(1, 50, {
         filter: 'created_by = "user-1"',
       });
-      expect(mockParticipantCollection.getList).toHaveBeenCalledWith(1, 50, {
+      expect(mockParticipantCollection.getList).toHaveBeenCalledWith(1, 200, {
         filter: 'giver_id = "user-1"',
         expand: 'group_id',
       });
       expect(result.items.length).toBe(2);
       expect(result.items[0].id).toBe('group-1');
       expect(result.items[1].id).toBe('group-2');
+    });
+
+    it('should filter groups by search term', async () => {
+      const allCreatedGroups = [
+        { id: 'group-1', name: 'Natal 2024', created_by: 'user-1' },
+        { id: 'group-2', name: 'Aniversário João', created_by: 'user-1' },
+      ];
+      const participantRecords = {
+        items: [
+          {
+            id: 'p1',
+            group_id: 'group-3',
+            expand: { group_id: { id: 'group-3', name: 'Família Natal', created_by: 'user-2' } },
+          },
+          {
+            id: 'p2',
+            group_id: 'group-4',
+            expand: { group_id: { id: 'group-4', name: 'Churrasco', created_by: 'user-2' } },
+          },
+        ],
+        totalItems: 2,
+        totalPages: 1,
+        page: 1,
+        perPage: 200,
+      };
+
+      mockCollection.getList.and.callFake((page?: number, perPage?: number, options?: any) => {
+        const filter = options?.filter || '';
+        const searchMatch = filter.match(/name ~ "(.+?)"/);
+        const term = searchMatch ? searchMatch[1].toLowerCase() : '';
+        const items: any[] = term ? allCreatedGroups.filter((g: any) => g.name.toLowerCase().includes(term)) : allCreatedGroups;
+        return Promise.resolve({ items, totalItems: items.length, totalPages: 1, page: page ?? 1, perPage: perPage ?? 50 });
+      });
+      mockParticipantCollection.getList.and.resolveTo(participantRecords);
+
+      const result = await service.getMyGroups(1, 50, 'natal');
+
+      expect(mockCollection.getList).toHaveBeenCalledWith(1, 50, {
+        filter: 'created_by = "user-1" && name ~ "natal"',
+      });
+      expect(result.items.length).toBe(2);
+      expect(result.items[0].name).toBe('Natal 2024');
+      expect(result.items[1].name).toBe('Família Natal');
+      expect(result.totalPages).toBe(1);
+      expect(result.total).toBe(2);
     });
 
     it('should return empty list when user is not authenticated', async () => {

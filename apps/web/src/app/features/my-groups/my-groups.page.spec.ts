@@ -115,6 +115,7 @@ describe('MyGroupsComponent (responsivo)', () => {
             getMyGroups: () => Promise.resolve({
               items: [{ id: '1', name: 'Teste', description: '', created_by: 'user1', created: new Date().toISOString(), has_been_drawn: false, participants_count: 2 }],
               total: 1,
+              totalPages: 1,
             }),
           } as any,
         },
@@ -253,6 +254,7 @@ describe('MyGroupsComponent (comportamento)', () => {
                 participants_count: 2,
               })),
               total: 15,
+              totalPages: 2,
             }),
           } as any,
         },
@@ -273,7 +275,7 @@ describe('MyGroupsComponent (comportamento)', () => {
 
   it('should show pagination when totalPages > 1', () => {
     expect(component.totalPages()).toBe(2);
-    const paginationDiv = fixture.nativeElement.querySelector('[class*="mt-16"]');
+    const paginationDiv = fixture.nativeElement.querySelector('[class*="mt-6"]');
     expect(paginationDiv).toBeTruthy();
   });
 

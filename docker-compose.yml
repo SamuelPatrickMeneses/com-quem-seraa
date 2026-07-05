@@ -36,6 +36,24 @@ services:
       - POCKETBASE_HOST=pocketbase
       - PB_DASHBOARD_ENABLED=${PB_DASHBOARD_ENABLED:-false}
 
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: production
+    container_name: web
+    profiles:
+      - prod
+    ports:
+      - "80"
+    depends_on:
+      pocketbase:
+        condition: service_started
+    environment:
+      - PB_DASHBOARD_ENABLED=false
+    networks:
+      - amigo-secreto-network
+
   test:
     build:
       context: .

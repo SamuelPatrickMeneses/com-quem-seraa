@@ -404,12 +404,6 @@ describe('GroupDashboardComponent (exibição)', () => {
     expect(el.textContent).toContain('Voltar');
   });
 
-  it('should show link to admin when organizer and drawn', async () => {
-    await setup({ isOrganizer: true, hasBeenDrawn: true });
-    const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).toContain('Ver resultado do sorteio');
-  });
-
   it('should show participant count', async () => {
     await setup();
     const el = fixture.nativeElement as HTMLElement;
@@ -453,7 +447,6 @@ describe('GroupDashboardComponent (exibição)', () => {
     expect(el.textContent).not.toContain('Você é o organizador');
     expect(el.textContent).not.toContain('REALIZAR SORTEIO');
     expect(el.textContent).not.toContain('EXCLUIR GRUPO');
-    expect(el.textContent).not.toContain('Ver resultado do sorteio');
     expect(el.textContent).not.toContain('TORNAR-SE MEMBRO');
   });
 

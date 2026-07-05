@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ProfileComponent } from './profile.page';
 import { AuthService } from '../../core/services/auth.service';
+import { PwaInstallService } from '../../core/services/pwa-install.service';
 import { setViewport, resetViewport, BREAKPOINTS } from '../../testing/responsive-helper';
 
 @Component({ standalone: true, template: '' })
@@ -17,9 +18,17 @@ function createMockAuth(user: any = { name: 'Ana', email: 'ana@test.com' }) {
   };
 }
 
-async function setup(user: any = { name: 'Ana', email: 'ana@test.com' }) {
+function createMockPwaInstallService(canInstall = false) {
+  return {
+    canInstall: signal(canInstall),
+    install: jasmine.createSpy('install').and.resolveTo(),
+  };
+}
+
+async function setup(user: any = { name: 'Ana', email: 'ana@test.com' }, canInstall = false) {
   TestBed.resetTestingModule();
   const mockAuth = createMockAuth(user);
+  const mockPwaService = createMockPwaInstallService(canInstall);
   TestBed.configureTestingModule({
     imports: [ProfileComponent],
     providers: [
@@ -30,12 +39,13 @@ async function setup(user: any = { name: 'Ana', email: 'ana@test.com' }) {
         { path: 'login', component: MockShellComponent },
       ]),
       { provide: AuthService, useValue: mockAuth },
+      { provide: PwaInstallService, useValue: mockPwaService },
     ],
   });
   const fixture = TestBed.createComponent(ProfileComponent);
   fixture.detectChanges();
   await fixture.whenStable();
-  return { fixture, mockAuth };
+  return { fixture, mockAuth, mockPwaService };
 }
 
 function getNativeElement<T extends Element = HTMLElement>(fixture: any, selector: string): T | null {
@@ -298,6 +308,33 @@ describe('ProfileComponent', () => {
 
       expect(currentPass!.value).toBe('');
     });
+  });
+});
+
+describe('ProfileComponent (PWA install)', () => {
+  it('should not show install button when canInstall is false', async () => {
+    const { fixture } = await setup({ name: 'Ana', email: 'ana@test.com' }, false);
+    const installButton = fixture.nativeElement.querySelector('button.btn-gradient-from-primary');
+    expect(installButton).toBeNull();
+  });
+
+  it('should show install button when canInstall is true', async () => {
+    const { fixture } = await setup({ name: 'Ana', email: 'ana@test.com' }, true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const text = getTextContent(fixture);
+    expect(text).toContain('Instalar Aplicativo');
+  });
+
+  it('should call install when button is clicked', async () => {
+    const { fixture, mockPwaService } = await setup({ name: 'Ana', email: 'ana@test.com' }, true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const installButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((btn) => (btn as HTMLButtonElement).textContent?.includes('Instalar')) as HTMLButtonElement;
+    expect(installButton).toBeTruthy();
+    installButton.click();
+    expect(mockPwaService.install).toHaveBeenCalled();
   });
 });
 

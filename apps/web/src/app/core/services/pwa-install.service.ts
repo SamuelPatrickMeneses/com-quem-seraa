@@ -6,10 +6,22 @@ export class PwaInstallService {
   canInstall = signal(false);
 
   constructor() {
+    const win = window as any;
+    if (win.__deferredInstallPrompt?.then) {
+      win.__deferredInstallPrompt.then((e: Event) => {
+        if (!this.deferredPrompt) {
+          this.deferredPrompt = e;
+          this.canInstall.set(true);
+        }
+      });
+    }
+
     window.addEventListener('beforeinstallprompt', (e: Event) => {
       e.preventDefault();
-      this.deferredPrompt = e;
-      this.canInstall.set(true);
+      if (!this.deferredPrompt) {
+        this.deferredPrompt = e;
+        this.canInstall.set(true);
+      }
     });
 
     window.addEventListener('appinstalled', () => {

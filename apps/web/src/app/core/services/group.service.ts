@@ -11,15 +11,19 @@ export class GroupService extends BaseCrudService<Group> {
     super('groups');
   }
 
-  async getMyGroups(page = 1, perPage = 50) {
+  async getMyGroups(page = 1, perPage = 50, search?: string) {
     const user = this.pbClient.instance.authStore.model;
     if (!user) return { items: [], totalPages: 0, page: 1, perPage: 50, total: 0 };
 
+    const createdFilter = search
+      ? `created_by = "${user.id}" && name ~ "${search}"`
+      : `created_by = "${user.id}"`;
+
     const groupsCreated = this.getList(page, perPage, {
-      filter: `created_by = "${user.id}"`,
+      filter: createdFilter,
     });
 
-    const groupsParticipating = this.pbClient.instance.collection('group_participants').getList<(Group & RecordModel)>(page, perPage, {
+    const groupsParticipating = this.pbClient.instance.collection('group_participants').getList<(Group & RecordModel)>(1, 200, {
       filter: `giver_id = "${user.id}"`,
       expand: 'group_id',
     });
@@ -30,8 +34,9 @@ export class GroupService extends BaseCrudService<Group> {
       .filter((p: any) => p.expand?.group_id)
       .map((p: any) => p.expand.group_id);
 
-    const allGroups = [...createdResult.items];
+    let allGroups: any[] = [...createdResult.items];
     for (const g of participatingGroups) {
+      if (search && g.name && !g.name.toLowerCase().includes(search.toLowerCase())) continue;
       if (!allGroups.some(existing => existing.id === g.id)) {
         allGroups.push(g);
       }
@@ -42,6 +47,16 @@ export class GroupService extends BaseCrudService<Group> {
       const dateB = new Date(b.created || 0).getTime();
       return dateB - dateA;
     });
+
+    if (search) {
+      return {
+        items: allGroups,
+        totalPages: Math.ceil(allGroups.length / perPage),
+        page,
+        perPage,
+        total: allGroups.length,
+      };
+    }
 
     return {
       items: allGroups,

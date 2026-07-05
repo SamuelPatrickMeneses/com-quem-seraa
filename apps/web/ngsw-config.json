@@ -9,10 +9,13 @@
       "resources": {
         "files": [
           "/favicon.ico",
-          "/manifest.webmanifest",
           "/*.css",
           "/*.js",
-          "/images/icone.png"
+          "/images/icone.png",
+          "/images/android-icon-*.png",
+          "/images/apple-icon-*.png",
+          "/images/favicon-*.png",
+          "/images/ms-icon-*.png"
         ]
       }
     },

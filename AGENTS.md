@@ -102,7 +102,8 @@ description: Extrai lógica de cache para um service separado
 ## 🔧 Arquivos modificados
 
 ```
-<output do comando tree com paths relativos, ex: tree apps/web/src --charset=utf-8 | grep -v node_modules>
+<output do comando `tree` com paths relativos, ex:
+tree apps/web/src/app --charset=utf-8 -P '*.ts' --prune | grep -v node_modules | head -50
 ```
 
 ## 🧪 Como testar
@@ -122,7 +123,7 @@ npm run docker:test
 | **Issues** | `Closes #N` para cada issue resolvida (opcional se não houver) |
 | **Descrição** | 1-2 parágrafos explicando o contexto e o que o PR entrega |
 | **O que foi feito** | Lista de bullets com as mudanças, agrupadas por área se necessário |
-| **Arquivos** | Output de `git diff --stat` dentro de code block |
+| **Arquivos** | Output do comando `tree` com paths relativos dentro de code block |
 | **Como testar** | Comando(s) para validar, dentro de code block bash |
 
 ## 🛠️ Diretrizes de Resposta

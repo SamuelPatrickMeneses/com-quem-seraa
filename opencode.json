@@ -1,5 +1,33 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "stitch": {
+      "type": "remote",
+      "url": "https://stitch.googleapis.com/mcp",
+      "enabled": true,
+      "headers": {
+        "X-Goog-Api-Key": "{env:STITCH_API_KEY}"
+      }
+    },
+    "github": {
+      "command": [
+        "docker",
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "-e",
+        "GITHUB_HOST",
+        "ghcr.io/github/github-mcp-server"
+      ],
+      "type": "local",
+      "enabled": true,
+      "environment": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    }
+  },
   "command": {
     "monorepo-workflow": {
       "template": "You must follow the instructions in @.agent/skills/monorepo-workflow/SKILL.md.\nExecute the audit checklist and return a structured report.",
@@ -11,10 +39,6 @@
       "description": "🧱 Audita a arquitetura Angular: Feature-Driven (core/shared/features), standalone-only, Tailwind-only, rotas",
       "agent": "build"
     },
-    "commit-workflow": {
-      "template": "You must follow the instructions in @.agent/skills/commit-workflow/SKILL.md.\nInspect staged changes, generate a YAML commit message per the convention in AGENTS.md, present it for approval, and commit when approved.",
-      "description": "📝 Commita mudanças staged seguindo a convenção YAML em inglês",
-      "agent": "build"
-    }
   }
 }
+

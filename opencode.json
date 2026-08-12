@@ -6,7 +6,7 @@
       "url": "https://stitch.googleapis.com/mcp",
       "enabled": true,
       "headers": {
-        "X-Goog-Api-Key": "{env:STITCH_API_KEY}"
+        "X-Goog-Api-Key": "{env:COM_QUEM_SERAA_STITCH_API_KEY}"
       }
     },
     "github": {
@@ -24,7 +24,7 @@
       "type": "local",
       "enabled": true,
       "environment": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:COM_QUEM_SERAA_GITHUB_PERSONAL_ACCESS_TOKEN}"
       }
     }
   },
@@ -38,7 +38,7 @@
       "template": "You must follow the instructions in @.agent/skills/angular-workflow/SKILL.md.\nExecute the audit checklist and return a structured report.",
       "description": "🧱 Audita a arquitetura Angular: Feature-Driven (core/shared/features), standalone-only, Tailwind-only, rotas",
       "agent": "build"
-    },
+    }
   }
 }
 
